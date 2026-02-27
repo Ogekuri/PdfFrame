@@ -63,7 +63,7 @@ from pdfframe.qt import QTimer
 
 ---
 
-# autotrim.py | Python | 65L | 3 symbols | 1 imports | 6 comments
+# autotrim.py | Python | 73L | 3 symbols | 1 imports | 6 comments
 > Path: `src/pdfframe/autotrim.py`
 
 ## Imports
@@ -73,18 +73,35 @@ from pdfframe.qt import *
 
 ## Definitions
 
-### fn `def autoTrimMargins(img, r, minr, sensitivity, allowedchanges)` (L19-65)
+### fn `def autoTrimMargins(img, r, minr, sensitivity, grayscale_sensitivity)` (L19-73)
+- Brief: Auto-trims margins of a rectangle using grayscale-transition thresholds.
+- Details: Scans rectangle border lines and trims sides while per-line grayscale transitions remain within configured sensitivity and grayscale-sensitivity.
+- Param: img {QImage} Page image used for grayscale sampling.
+- Param: r {QRect} Candidate rectangle to trim.
+- Param: minr {QRect|None} Optional minimum rectangle that limits trimming.
+- Param: sensitivity {float} Minimum pixel delta counted as a transition.
+- Param: grayscale_sensitivity {float} Maximum accepted transition count per scan line.
+- Return: {QRect} Trimmed rectangle clamped to image bounds.
 
-### fn `def pixAt(x, y)` (L23-25)
+### fn `def pixAt(x, y)` (L32-34)
+- Brief: Auto-trims margins of a rectangle using grayscale-transition thresholds.
+- Details: Scans rectangle border lines and trims sides while per-line grayscale
+transitions remain within configured sensitivity and grayscale-sensitivity.
+- Param: img {QImage} Page image used for grayscale sampling.
+- Param: r {QRect} Candidate rectangle to trim.
+- Param: minr {QRect|None} Optional minimum rectangle that limits trimming.
+- Param: sensitivity {float} Minimum pixel delta counted as a transition.
+- Param: grayscale_sensitivity {float} Maximum accepted transition count per scan line.
+- Return: {QRect} Trimmed rectangle clamped to image bounds.
 
-### fn `def isTrimmable(L)` (L26-38)
+### fn `def isTrimmable(L)` (L35-47)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`autoTrimMargins`|fn|pub|19-65|def autoTrimMargins(img, r, minr, sensitivity, allowedcha...|
-|`pixAt`|fn|pub|23-25|def pixAt(x, y)|
-|`isTrimmable`|fn|pub|26-38|def isTrimmable(L)|
+|`autoTrimMargins`|fn|pub|19-73|def autoTrimMargins(img, r, minr, sensitivity, grayscale_...|
+|`pixAt`|fn|pub|32-34|def pixAt(x, y)|
+|`isTrimmable`|fn|pub|35-47|def isTrimmable(L)|
 
 
 ---
@@ -452,7 +469,7 @@ from pdfframe.autotrim import autoTrimMargins
 
 ### fn `def trimMarginsSelection(self, sel)` (L1170-1262)
 - Brief: Computes auto-trim rectangle for a selection using configured thresholds.
-- Details: Reads sensitivity/allowed-changes from Basic-tab controls, selects page scope based on "Use all pages" checkbox (current page only when unchecked, all visible pages when checked), and applies auto-trim with padding and aspect-ratio adjustments.
+- Details: Reads color-sensitivity and grayscale-sensitivity values from Basic-tab controls, selects page scope based on "Use all pages" checkbox (current page only when unchecked, all visible pages when checked), and applies auto-trim with padding and aspect-ratio adjustments.
 - Param: sel {ViewerSelectionItem} Selection item to trim.
 - Return: {None} Mutates selection bounding rectangle.
 
@@ -552,7 +569,7 @@ from pdfframe.autotrim import autoTrimMargins
 
 ---
 
-# mainwindowui_qt5.py | Python | 466L | 3 symbols | 1 imports | 7 comments
+# mainwindowui_qt5.py | Python | 469L | 3 symbols | 1 imports | 7 comments
 > Path: `src/pdfframe/mainwindowui_qt5.py`
 
 ## Imports
@@ -578,7 +595,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 ---
 
-# mainwindowui_qt6.py | Python | 464L | 3 symbols | 1 imports | 6 comments
+# mainwindowui_qt6.py | Python | 467L | 3 symbols | 1 imports | 6 comments
 > Path: `src/pdfframe/mainwindowui_qt6.py`
 
 ## Imports

@@ -94,7 +94,7 @@
         - `format_shell_command(...)`: render deterministic shell-escaped command diagnostics [`src/pdfframe/pdfframecmd.py`]
         - `extract_ghostscript_page_numbers(...)`: parse processed page numbers strictly from lines matching `^Page\\s+\\d+\\n` in captured output [`src/pdfframe/pdfframecmd.py`]
     - `MainWindow.slotTrimMarginsAll(...)`: trim currently visible selections on the active page [`src/pdfframe/mainwindow.py`]
-      - `MainWindow.trimMarginsSelection(...)`: compute auto-trim rectangle using current page or all visible pages (per `checkTrimUseAllPages` checkbox) with sensitivity/allowedchanges parsed from Basic-tab trim controls, apply configured padding, and clamp the padded rectangle to page-image bounds (fallback to current selection bounds when page-image geometry is unavailable) [`src/pdfframe/mainwindow.py`]
+      - `MainWindow.trimMarginsSelection(...)`: compute auto-trim rectangle using current page or all visible pages (per `checkTrimUseAllPages` checkbox) with color-sensitivity/grayscale-sensitivity parsed from Basic-tab trim controls, apply configured padding, and clamp the padded rectangle to page-image bounds (fallback to current selection bounds when page-image geometry is unavailable) [`src/pdfframe/mainwindow.py`]
         - `autoTrimMargins(...)`: derive trimmed rectangle from image luminance transitions and threshold parameters [`src/pdfframe/autotrim.py`]
       - `MainWindow.getPadding(...)`: parse CSS-like trim padding string into top/right/bottom/left numeric offsets [`src/pdfframe/mainwindow.py`]
 - External Boundaries:

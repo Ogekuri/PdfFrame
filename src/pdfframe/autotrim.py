@@ -16,9 +16,18 @@ the Free Software Foundation; either version 3 of the License, or
 from pdfframe.qt import *
 
 
-def autoTrimMargins(img, r, minr, sensitivity, allowedchanges):
-    """Given a QImage img and a QRect r, automatically trims the margins of
-    that rectangle according to the parameters."""
+def autoTrimMargins(img, r, minr, sensitivity, grayscale_sensitivity):
+    """
+    @brief Auto-trims margins of a rectangle using grayscale-transition thresholds.
+    @details Scans rectangle border lines and trims sides while per-line grayscale
+    transitions remain within configured sensitivity and grayscale-sensitivity.
+    @param img {QImage} Page image used for grayscale sampling.
+    @param r {QRect} Candidate rectangle to trim.
+    @param minr {QRect|None} Optional minimum rectangle that limits trimming.
+    @param sensitivity {float} Minimum pixel delta counted as a transition.
+    @param grayscale_sensitivity {float} Maximum accepted transition count per scan line.
+    @return {QRect} Trimmed rectangle clamped to image bounds.
+    """
 
     def pixAt(x, y):
         return qGray(img.pixel(x, y))
@@ -31,7 +40,7 @@ def autoTrimMargins(img, r, minr, sensitivity, allowedchanges):
         for x in L:
             if abs(x-y) > sensitivity:
                 changes += 1
-                if changes > allowedchanges:
+                if changes > grayscale_sensitivity:
                     return False
             y = x
         return True
@@ -62,4 +71,3 @@ def autoTrimMargins(img, r, minr, sensitivity, allowedchanges):
         r.setRight(r.right()-1)
 
     return r
-

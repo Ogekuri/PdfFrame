@@ -116,10 +116,10 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-001**: MUST parse `--whichpages` as exactly one range expression in one of these forms: `N`, `N-`, `-N`, or `N-M`, converting it into zero-based page indices.
 - **REQ-002**: MUST create selection grids from `CxR` format or a single integer resolved by current page orientation.
 - **REQ-003**: MUST apply GUI selections to all processed pages without selection-mode variants or exception-page overrides.
-- **REQ-004**: MUST auto-trim selection edges when grayscale changes remain within sensitivity and allowed-change thresholds configured through the dedicated Basic-tab trim settings section.
+- **REQ-004**: MUST auto-trim selection edges when grayscale changes remain within configured color-sensitivity and grayscale-sensitivity thresholds in the dedicated Basic-tab trim settings section.
 - **REQ-005**: MUST default trim page scope to current page only and MAY optionally use all visible pages when user enables the "Use all pages" trim setting exposed in the Basic-tab trim settings section.
 - **REQ-006**: MUST expose conversion mode selector with `Frame` and `Crop` options and default to `Frame` at application startup.
-- **REQ-007**: MUST show warnings and use safe defaults when grid or trim-settings values (padding, allowed changes, sensitivity) are invalid.
+- **REQ-007**: MUST show warnings and use safe defaults when grid or trim-settings values (padding, grayscale sensitivity, color sensitivity) are invalid.
 - **REQ-008**: MUST process only pages selected by `--whichpages` (or all pages when empty), compute crop parameters from the primary GUI selection only, and execute one Ghostscript command configured with `-dFirstPage` and `-dLastPage` for the selected range.
 - **REQ-009**: MUST remove GUI controls for include-pages-without-selections and selection-application modes so these options cannot affect conversion behavior.
 - **REQ-010**: MUST invoke Ghostscript with script-style BeginPage clipping commands, using `crop` mode for translated physical cropping and `frame` mode for original-page clipping without scaling.
@@ -142,6 +142,7 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-027**: MUST expose a `Save Margins` button adjacent to `Trim Margins` that saves current crop/frame margins as a new preset named by default with `%Y/%m/%d %H:%M:%S`.
 - **REQ-028**: MUST support preset deletion via a `-` control anchored at the right edge of each preset-list row and preset rename via double-click inline editing, persisting the modified preset name.
 - **REQ-029**: MUST persist the full `presets` array to `~/.pdfframe/config.json` after preset add, rename, update, or delete operations.
+- **REQ-030**: MUST label the trim threshold field as `Grayscale sensitivity` and provide tooltip/help text that defines it as tolerated grayscale transitions used by margin auto-trimming.
 
 ## 4. Test Requirements
 
@@ -155,6 +156,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-006**: MUST include unit tests that validate Ghostscript command logging/output toggles (`--verbose`, `--debug`), Ghostscript range command argument assembly, and desktop integration branding identifiers (`pdfframe` / `com.ogekuri.pdfframe`).
 - **TST-007**: MUST include unit tests that validate startup config bootstrap at `~/.pdfframe/config.json`, including missing-file creation with `config` defaults and startup override precedence for persisted `config` keys.
 - **TST-008**: MUST include unit tests that validate preset list CRUD interactions (save/apply/rename/delete), right-edge alignment behavior of per-row delete controls, and persistence of the `presets` array in `~/.pdfframe/config.json`.
+- **TST-009**: MUST include unit tests that validate `Grayscale sensitivity` nomenclature across trim UI labels/tooltips/help text and runtime persistence keys used by trim settings and presets.
 
 ## 5. Evidence Matrix
 
@@ -186,10 +188,10 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-001 | `src/pdfframe/mainwindow.py::str2pages` — accepts only one range token (`N`, `N-`, `-N`, `N-M`) and returns zero-based indices. |
 | REQ-002 | `src/pdfframe/mainwindow.py::createSelectionGrid` — parses `grid.split('x')`, supports single value orientation-dependent rows/cols. |
 | REQ-003 | `src/pdfframe/viewerselections.py::selectionVisibleOnPage` applies selections uniformly to all processed pages without mode-dependent branching. |
-| REQ-004 | `src/pdfframe/mainwindow.py::trimMarginsSelection` reads trim thresholds from Basic-tab controls and `src/pdfframe/autotrim.py::autoTrimMargins` applies them to edge trimming. |
+| REQ-004 | `src/pdfframe/mainwindow.py::trimMarginsSelection` reads color/grayscale sensitivity thresholds from Basic-tab controls and `src/pdfframe/autotrim.py::autoTrimMargins` applies them to edge trimming. |
 | REQ-005 | `src/pdfframe/mainwindow.py::trimMarginsSelection` defaults to current page and conditionally uses all visible pages via `checkTrimUseAllPages` checkbox. |
 | REQ-006 | `src/pdfframe/mainwindow.py` creates `Mode` radio controls with default `Frame` and `Crop` alternate mode. |
-| REQ-007 | `src/pdfframe/mainwindow.py::createSelectionGrid/getPadding/trimMarginsSelection` — invalid grid or trim-settings values trigger `showWarning(...)` and fallback defaults. |
+| REQ-007 | `src/pdfframe/mainwindow.py::createSelectionGrid/getPadding/trimMarginsSelection` — invalid grid or trim-settings values (`padding`, `grayscale sensitivity`, `color sensitivity`) trigger `showWarning(...)` and fallback defaults. |
 | REQ-008 | `src/pdfframe/mainwindow.py::buildGhostscriptCropPlan` processes only requested pages, derives geometry from the primary selection tuple, and emits one command using `-dFirstPage/-dLastPage`. |
 | REQ-009 | `src/pdfframe/mainwindow.py` removes include-without-selections and selection-mode controls from conversion flow. |
 | REQ-010 | `src/pdfframe/pdfframecmd.py::build_ghostscript_page_crop_command` emits script-style BeginPage clipping commands for `frame` and `crop` modes with matching page bounds. |
@@ -212,6 +214,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-027 | `src/pdfframe/mainwindow.py::_setupTrimPresetAction/slotSaveMarginsPreset/_defaultTrimPresetName` adds `Save Margins` button adjacent to trim action and creates timestamp-named presets `%Y/%m/%d %H:%M:%S`. |
 | REQ-028 | `src/pdfframe/mainwindow.py::_refreshTrimPresetList/slotDeleteTrimPreset/slotTrimPresetDoubleClicked/slotTrimPresetChanged` implements per-entry `-` deletion anchored at row right edge and double-click rename with persisted names. |
 | REQ-029 | `src/pdfframe/mainwindow.py::_persistTrimPresetDocument` plus calls in `slotSaveMarginsPreset`, `slotTrimPresetChanged`, `slotDeleteTrimPreset`, and `writeSettings` persist updated `presets` arrays to JSON config. |
+| REQ-030 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindowui_qt5.py`, and `src/pdfframe/mainwindowui_qt6.py` label trim threshold as `Grayscale sensitivity` and define tooltip/help semantics for tolerated grayscale transitions. |
 | TST-001 | `tests.sh` — creates `.venv` when missing and installs `requirements.txt` before invoking pytest. |
 | TST-002 | `tests.sh` — default `set -- tests` and runs `PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" ${VENVDIR}/bin/python3 -m 'pytest' "$@"`. |
 | TST-003 | `tests/test_pdfframecmd.py` validates script-style Ghostscript command generation for `frame` and `crop` modes. |
@@ -220,6 +223,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-006 | `tests/test_pdfframecmd.py` and `tests/test_mainwindow_progress_updates.py` validate command/output logging toggles and Ghostscript range-argument command assembly; `tests/test_desktop_metadata_branding.py` validates desktop/AppStream branding identifiers. |
 | TST-007 | `tests/test_jsonconfig.py` validates JSON bootstrap default creation and persisted-config override precedence with default-key backfill. |
 | TST-008 | `tests/test_mainwindow_presets.py` validates preset snapshot/apply/rename/delete/save behavior, right-edge delete-control row layout, and persistence trigger paths. |
+| TST-009 | `tests/test_mainwindow_trim_settings.py` and `tests/test_mainwindow_presets.py` validate `grayscale_sensitivity` runtime/preset keys; `tests/test_mainwindow_trim_nomenclature.py` validates renamed UI labels/tooltips/help semantics. |
 
 ## 6. Test Coverage Summary
 

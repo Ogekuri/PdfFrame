@@ -142,14 +142,14 @@ class Ui_MainWindow(object):
         self.editPadding.setText("")
         self.editPadding.setObjectName("editPadding")
         self.gridLayout_3.addWidget(self.editPadding, 1, 1, 1, 1)
-        self.labelAllowedChanges = QtWidgets.QLabel(self.groupTrimMargins)
-        self.labelAllowedChanges.setEnabled(True)
-        self.labelAllowedChanges.setObjectName("labelAllowedChanges")
-        self.gridLayout_3.addWidget(self.labelAllowedChanges, 2, 0, 1, 1)
-        self.editAllowedChanges = QtWidgets.QLineEdit(self.groupTrimMargins)
-        self.editAllowedChanges.setEnabled(True)
-        self.editAllowedChanges.setObjectName("editAllowedChanges")
-        self.gridLayout_3.addWidget(self.editAllowedChanges, 2, 1, 1, 1)
+        self.labelGrayscaleSensitivity = QtWidgets.QLabel(self.groupTrimMargins)
+        self.labelGrayscaleSensitivity.setEnabled(True)
+        self.labelGrayscaleSensitivity.setObjectName("labelGrayscaleSensitivity")
+        self.gridLayout_3.addWidget(self.labelGrayscaleSensitivity, 2, 0, 1, 1)
+        self.editGrayscaleSensitivity = QtWidgets.QLineEdit(self.groupTrimMargins)
+        self.editGrayscaleSensitivity.setEnabled(True)
+        self.editGrayscaleSensitivity.setObjectName("editGrayscaleSensitivity")
+        self.gridLayout_3.addWidget(self.editGrayscaleSensitivity, 2, 1, 1, 1)
         self.labelSensitivity = QtWidgets.QLabel(self.groupTrimMargins)
         self.labelSensitivity.setEnabled(True)
         self.labelSensitivity.setObjectName("labelSensitivity")
@@ -412,7 +412,9 @@ class Ui_MainWindow(object):
         self.labelPadding.setToolTip(_translate("MainWindow", "<p>How much padding to use when trimming.</p><p><i>Eg:</i> 2 or 5,2 or 5,2,5,5 (interpreted as in CSS)</p>"))
         self.labelPadding.setText(_translate("MainWindow", "Padding:"))
         self.editPadding.setToolTip(_translate("MainWindow", "<p>How much padding to use when trimming.</p><p><i>Eg:</i> 2 or 5,2 or 5,2,5,5 (interpreted as in CSS)</p>"))
-        self.labelAllowedChanges.setText(_translate("MainWindow", "Allowed changes:"))
+        self.labelGrayscaleSensitivity.setToolTip(_translate("MainWindow", "<p>Maximum number of grayscale transitions tolerated on each inspected line while auto-trimming margins.</p>"))
+        self.labelGrayscaleSensitivity.setText(_translate("MainWindow", "Grayscale sensitivity:"))
+        self.editGrayscaleSensitivity.setToolTip(_translate("MainWindow", "<p>Maximum number of grayscale transitions tolerated on each inspected line while auto-trimming margins.</p>"))
         self.labelSensitivity.setText(_translate("MainWindow", "Color sensitivity:"))
         self.groupDistribute.setToolTip(_translate("MainWindow", "<p>Use this option if you want to break up each selection into pieces that exactly fit a certain aspect ratio. This is useful for displaying files on devices that don\'t support scrolling well.</p>"))
         self.groupDistribute.setTitle(_translate("MainWindow", "Fit screen of device"))
@@ -427,6 +429,7 @@ class Ui_MainWindow(object):
 "<p>Right-click a selection to delete it. Or simply press the Delete key.</p>\n"
 "<p>You can choose to create individual selections for each page.</p>\n"
 "<p>You can automatically trim the margins of your selections.</p>\n"
+"<p>Grayscale sensitivity controls how many grayscale transitions are accepted while trimming.</p>\n"
 "<p>Examples and more information can be found at: <a href=\'https://ogekuri.com/software/pdfframe\'>ogekuri.com</a></p>\n"
 ""))
         self.labelHelpCopyright.setToolTip(_translate("MainWindow", "<p>This program is free software and available to you in the hope that it will be useful; but without any warranty. It is distributed under the terms of the GNU General Public License (GPLv3+). See the accompanying files for more information.</p>"))

@@ -56,7 +56,7 @@ def _build_fake_window():
     fake = SimpleNamespace()
     fake.ui = SimpleNamespace(
         editPadding=_FakeLineEdit("1,2,3,4"),
-        editAllowedChanges=_FakeLineEdit("3"),
+        editGrayscaleSensitivity=_FakeLineEdit("3"),
         editSensitivity=_FakeLineEdit("7"),
         checkTrimUseAllPages=_FakeCheckBox(True),
     )
@@ -72,7 +72,7 @@ def test_trim_preset_snapshot_captures_current_controls_and_crop():
     preset = MainWindow._trimPresetFromCurrentSelection(fake)
     assert preset["mode"] == "crop"
     assert preset["padding"] == "1,2,3,4"
-    assert preset["allowed_changes"] == "3"
+    assert preset["grayscale_sensitivity"] == "3"
     assert preset["sensitivity"] == "7"
     assert preset["use_all_pages"] is True
     assert preset["crop"] == [0.1, 0.2, 0.3, 0.4]
@@ -88,7 +88,7 @@ def test_apply_trim_preset_updates_runtime_controls_and_crop():
             "name": "Preset A",
             "mode": "frame",
             "padding": "5",
-            "allowed_changes": "1",
+            "grayscale_sensitivity": "1",
             "sensitivity": "9",
             "use_all_pages": False,
             "crop": [0.2, 0.1, 0.2, 0.1],
@@ -101,7 +101,7 @@ def test_apply_trim_preset_updates_runtime_controls_and_crop():
     assert fake.radioModeFrame.isChecked() is True
     assert fake.radioModeCrop.isChecked() is False
     assert fake.ui.editPadding.text() == "5"
-    assert fake.ui.editAllowedChanges.text() == "1"
+    assert fake.ui.editGrayscaleSensitivity.text() == "1"
     assert fake.ui.editSensitivity.text() == "9"
     assert fake.ui.checkTrimUseAllPages.isChecked() is False
     assert captured["crop"] == [0.2, 0.1, 0.2, 0.1]

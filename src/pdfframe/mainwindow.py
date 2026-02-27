@@ -375,7 +375,7 @@ class MainWindow(QMainWindow):
             "PDF/Optimize": "gs" if self.ui.checkGhostscript.isChecked() else "no",
             "PDF/Mode": self.selectedConversionMode(),
             "Trim/Padding": self.ui.editPadding.text(),
-            "Trim/AllowedChanges": self.ui.editAllowedChanges.text(),
+            "Trim/GrayscaleSensitivity": self.ui.editGrayscaleSensitivity.text(),
             "Trim/Sensitivity": self.ui.editSensitivity.text(),
             "Trim/UseAllPages": self.ui.checkTrimUseAllPages.isChecked(),
         }
@@ -390,7 +390,7 @@ class MainWindow(QMainWindow):
             "name": self._defaultTrimPresetName(),
             "mode": self.selectedConversionMode(),
             "padding": self.ui.editPadding.text(),
-            "allowed_changes": self.ui.editAllowedChanges.text(),
+            "grayscale_sensitivity": self.ui.editGrayscaleSensitivity.text(),
             "sensitivity": self.ui.editSensitivity.text(),
             "use_all_pages": self.ui.checkTrimUseAllPages.isChecked(),
         }
@@ -492,8 +492,8 @@ class MainWindow(QMainWindow):
         self.radioModeFrame.setChecked(mode != "crop")
         self.radioModeCrop.setChecked(mode == "crop")
         self.ui.editPadding.setText(str(preset.get("padding", self.ui.editPadding.text())))
-        self.ui.editAllowedChanges.setText(
-            str(preset.get("allowed_changes", self.ui.editAllowedChanges.text()))
+        self.ui.editGrayscaleSensitivity.setText(
+            str(preset.get("grayscale_sensitivity", self.ui.editGrayscaleSensitivity.text()))
         )
         self.ui.editSensitivity.setText(str(preset.get("sensitivity", self.ui.editSensitivity.text())))
         self.ui.checkTrimUseAllPages.setChecked(
@@ -641,7 +641,7 @@ class MainWindow(QMainWindow):
         self.radioModeFrame.setChecked(mode != "crop")
         self.radioModeCrop.setChecked(mode == "crop")
         self.ui.editPadding.setText(str(config_values.get("Trim/Padding", "0") or "0"))
-        self.ui.editAllowedChanges.setText(str(config_values.get("Trim/AllowedChanges", "0") or "0"))
+        self.ui.editGrayscaleSensitivity.setText(str(config_values.get("Trim/GrayscaleSensitivity", "0") or "0"))
         self.ui.editSensitivity.setText(str(config_values.get("Trim/Sensitivity", "5") or "5"))
         self.ui.checkTrimUseAllPages.setChecked(
             self._toBool(config_values.get("Trim/UseAllPages", False))
@@ -666,7 +666,7 @@ class MainWindow(QMainWindow):
                 self.ui.checkGhostscript.isChecked() else "no")
         settings.setValue("PDF/Mode", self.selectedConversionMode())
         settings.setValue("Trim/Padding", self.ui.editPadding.text())
-        settings.setValue("Trim/AllowedChanges", self.ui.editAllowedChanges.text())
+        settings.setValue("Trim/GrayscaleSensitivity", self.ui.editGrayscaleSensitivity.text())
         settings.setValue("Trim/Sensitivity", self.ui.editSensitivity.text())
         settings.setValue("Trim/UseAllPages", "true" if
                 self.ui.checkTrimUseAllPages.isChecked() else "false")
@@ -1170,7 +1170,7 @@ class MainWindow(QMainWindow):
     def trimMarginsSelection(self, sel):
         """
         @brief Computes auto-trim rectangle for a selection using configured thresholds.
-        @details Reads sensitivity/allowed-changes from Basic-tab controls, selects page scope
+        @details Reads color-sensitivity and grayscale-sensitivity values from Basic-tab controls, selects page scope
         based on "Use all pages" checkbox (current page only when unchecked, all visible pages
         when checked), and applies auto-trim with padding and aspect-ratio adjustments.
         @param sel {ViewerSelectionItem} Selection item to trim.
@@ -1183,11 +1183,11 @@ class MainWindow(QMainWindow):
                 "color sensitivity (under trim settings) must be a float."))
             sensitivity = 5.0
         try:
-            allowedchanges = float(self.ui.editAllowedChanges.text())
+            grayscale_sensitivity = float(self.ui.editGrayscaleSensitivity.text())
         except ValueError:
-            self.showWarning(self.tr("Bad value for allowed changes"), self.tr("The value of "
-                "allowed changes (under trim settings) must be a float."))
-            allowedchanges = 0.0
+            self.showWarning(self.tr("Bad value for grayscale sensitivity"), self.tr("The value of "
+                "grayscale sensitivity (under trim settings) must be a float indicating tolerated grayscale transitions."))
+            grayscale_sensitivity = 0.0
 
         pages = [self.viewer.currentPageIndex]
         if self.ui.checkTrimUseAllPages.isChecked():
@@ -1204,7 +1204,7 @@ class MainWindow(QMainWindow):
                 img = self.viewer.getImage(idx)
                 if img is None:
                     continue
-                nrect = autoTrimMargins(img, orect, nrect, sensitivity, allowedchanges)
+                nrect = autoTrimMargins(img, orect, nrect, sensitivity, grayscale_sensitivity)
             if nrect is None:
                 self.showWarning(self.tr("Something got in our way"),
                     self.tr("Trim Margins could not load page images for automatic trimming."))

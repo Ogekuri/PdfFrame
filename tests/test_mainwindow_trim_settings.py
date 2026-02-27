@@ -117,12 +117,12 @@ class _FakeSelection:
 class _FakeTrimWindow:
     """MainWindow-like stub for trimMarginsSelection settings behavior."""
 
-    def __init__(self, sensitivity="5", allowed_changes="0", padding="0",
+    def __init__(self, sensitivity="5", grayscale_sensitivity="0", padding="0",
                  use_all_pages=False):
         self.viewer = _FakeViewerSinglePage()
         self.ui = SimpleNamespace(
             editSensitivity=_FakeLineEdit(sensitivity),
-            editAllowedChanges=_FakeLineEdit(allowed_changes),
+            editGrayscaleSensitivity=_FakeLineEdit(grayscale_sensitivity),
             editPadding=_FakeLineEdit(padding),
             checkTrimUseAllPages=_FakeCheckBox(use_all_pages),
         )
@@ -139,42 +139,42 @@ class _FakeTrimWindow:
 
 
 def test_trim_margins_selection_uses_ui_threshold_values(monkeypatch):
-    """Arrange/Act/Assert: trim operation reads sensitivity and allowed-change from UI."""
-    fake = _FakeTrimWindow(sensitivity="7", allowed_changes="3", padding="0")
+    """Arrange/Act/Assert: trim operation reads sensitivity and grayscale-sensitivity from UI."""
+    fake = _FakeTrimWindow(sensitivity="7", grayscale_sensitivity="3", padding="0")
     selection = _FakeSelection()
     captured = {}
 
-    def _fake_auto_trim(img, orect, nrect, sensitivity, allowedchanges):
+    def _fake_auto_trim(img, orect, nrect, sensitivity, grayscale_sensitivity):
         del img
         captured["sensitivity"] = sensitivity
-        captured["allowedchanges"] = allowedchanges
+        captured["grayscale_sensitivity"] = grayscale_sensitivity
         return orect if nrect is None else nrect
 
     monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
     monkeypatch.setattr(mainwindow_module, "autoTrimMargins", _fake_auto_trim)
     MainWindow.trimMarginsSelection(fake, selection)
     assert captured["sensitivity"] == 7.0
-    assert captured["allowedchanges"] == 3.0
+    assert captured["grayscale_sensitivity"] == 3.0
     assert selection.updated is True
 
 
 def test_trim_margins_selection_invalid_thresholds_fall_back_to_defaults(monkeypatch):
     """Arrange/Act/Assert: invalid threshold values warn and default to 5/0."""
-    fake = _FakeTrimWindow(sensitivity="bad", allowed_changes="oops", padding="0")
+    fake = _FakeTrimWindow(sensitivity="bad", grayscale_sensitivity="oops", padding="0")
     selection = _FakeSelection()
     captured = {}
 
-    def _fake_auto_trim(img, orect, nrect, sensitivity, allowedchanges):
+    def _fake_auto_trim(img, orect, nrect, sensitivity, grayscale_sensitivity):
         del img
         captured["sensitivity"] = sensitivity
-        captured["allowedchanges"] = allowedchanges
+        captured["grayscale_sensitivity"] = grayscale_sensitivity
         return orect if nrect is None else nrect
 
     monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
     monkeypatch.setattr(mainwindow_module, "autoTrimMargins", _fake_auto_trim)
     MainWindow.trimMarginsSelection(fake, selection)
     assert captured["sensitivity"] == 5.0
-    assert captured["allowedchanges"] == 0.0
+    assert captured["grayscale_sensitivity"] == 0.0
     assert len(fake.warnings) == 2
 
 
@@ -199,8 +199,8 @@ def test_trim_defaults_to_current_page_only(monkeypatch):
     selection = _FakeSelection()
     page_indices_seen = []
 
-    def _fake_auto_trim(img, orect, nrect, sensitivity, allowedchanges):
-        del img, sensitivity, allowedchanges
+    def _fake_auto_trim(img, orect, nrect, sensitivity, grayscale_sensitivity):
+        del img, sensitivity, grayscale_sensitivity
         page_indices_seen.append(len(page_indices_seen))
         return orect if nrect is None else nrect
 
@@ -217,8 +217,8 @@ def test_trim_uses_all_pages_when_checkbox_checked(monkeypatch):
     selection = _FakeSelection()
     page_indices_seen = []
 
-    def _fake_auto_trim(img, orect, nrect, sensitivity, allowedchanges):
-        del img, sensitivity, allowedchanges
+    def _fake_auto_trim(img, orect, nrect, sensitivity, grayscale_sensitivity):
+        del img, sensitivity, grayscale_sensitivity
         page_indices_seen.append(len(page_indices_seen))
         return orect if nrect is None else nrect
 
@@ -257,8 +257,8 @@ def test_trim_padding_expands_final_highlighted_area(monkeypatch):
             del rect
             return mainwindow_module.QRectF(2, 2, 4, 4)
 
-    def _fake_auto_trim(img, orect, nrect, sensitivity, allowedchanges):
-        del img, sensitivity, allowedchanges
+    def _fake_auto_trim(img, orect, nrect, sensitivity, grayscale_sensitivity):
+        del img, sensitivity, grayscale_sensitivity
         return orect if nrect is None else nrect
 
     fake = _FakeTrimWindow(padding="1")

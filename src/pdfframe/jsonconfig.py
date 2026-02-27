@@ -13,7 +13,7 @@ DEFAULT_CONFIG_VALUES = {
     "PDF/Optimize": "gs",
     "PDF/Mode": "frame",
     "Trim/Padding": "0",
-    "Trim/AllowedChanges": "0",
+    "Trim/GrayscaleSensitivity": "0",
     "Trim/Sensitivity": "5",
     "Trim/UseAllPages": False,
 }
