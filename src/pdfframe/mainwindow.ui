@@ -273,41 +273,65 @@
             <string>Settings for trimming margins</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="0" column="0" colspan="2">
-             <widget class="QCheckBox" name="checkTrimUseAllPages">
-              <property name="toolTip">
-               <string>&lt;p&gt;If selected, all pages will be inspected (which can be very slow!) in order to determine the margins for auto trimming. Otherwise, only the current page is inspected.&lt;/p&gt;</string>
-              </property>
-              <property name="text">
-               <string>Use all pages (slow!)</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="labelPadding">
-              <property name="toolTip">
-               <string>&lt;p&gt;How much padding to use when trimming.&lt;/p&gt;&lt;p&gt;&lt;i&gt;Eg:&lt;/i&gt; 2 or 5,2 or 5,2,5,5 (interpreted as in CSS)&lt;/p&gt;</string>
+             <item row="0" column="0" colspan="2">
+              <widget class="QCheckBox" name="checkTrimPagesRange">
+               <property name="toolTip">
+                <string>&lt;p&gt;If selected, only visible pages inside the configured page range will be inspected for auto trimming. Otherwise, only the current page is inspected.&lt;/p&gt;</string>
+               </property>
+               <property name="text">
+                <string>Trim pages range</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+                </property>
+               </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="labelTrimPagesRange">
+               <property name="text">
+                <string>Pages range:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="editTrimPagesRange">
+               <property name="toolTip">
+                <string>&lt;p&gt;Page range for trim margins when range mode is enabled.&lt;/p&gt;&lt;p&gt;Format: N-M (one-based, inclusive).&lt;/p&gt;</string>
+               </property>
+               <property name="text">
+                <string>1-1</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="Line" name="lineTrimPagesRangeSeparator">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="labelPadding">
+               <property name="toolTip">
+                <string>&lt;p&gt;How much padding to use when trimming.&lt;/p&gt;&lt;p&gt;&lt;i&gt;Eg:&lt;/i&gt; 2 or 5,2 or 5,2,5,5 (interpreted as in CSS)&lt;/p&gt;</string>
               </property>
               <property name="text">
                <string>Padding:</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="editPadding">
-              <property name="toolTip">
-               <string>&lt;p&gt;How much padding to use when trimming.&lt;/p&gt;&lt;p&gt;&lt;i&gt;Eg:&lt;/i&gt; 2 or 5,2 or 5,2,5,5 (interpreted as in CSS)&lt;/p&gt;</string>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="editPadding">
+               <property name="toolTip">
+                <string>&lt;p&gt;How much padding to use when trimming.&lt;/p&gt;&lt;p&gt;&lt;i&gt;Eg:&lt;/i&gt; 2 or 5,2 or 5,2,5,5 (interpreted as in CSS)&lt;/p&gt;</string>
               </property>
               <property name="text">
                <string/>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="labelGrayscaleSensitivity">
+             <item row="4" column="0">
+              <widget class="QLabel" name="labelGrayscaleSensitivity">
                <property name="enabled">
                 <bool>true</bool>
                </property>
@@ -319,8 +343,8 @@
                </property>
               </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="editGrayscaleSensitivity">
+             <item row="4" column="1">
+              <widget class="QLineEdit" name="editGrayscaleSensitivity">
                <property name="enabled">
                 <bool>true</bool>
                </property>
@@ -329,8 +353,8 @@
                </property>
               </widget>
             </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="labelSensitivity">
+             <item row="5" column="0">
+              <widget class="QLabel" name="labelSensitivity">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -339,8 +363,8 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QLineEdit" name="editSensitivity">
+             <item row="5" column="1">
+              <widget class="QLineEdit" name="editSensitivity">
               <property name="enabled">
                <bool>true</bool>
               </property>

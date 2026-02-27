@@ -118,13 +118,14 @@ class _FakeTrimWindow:
     """MainWindow-like stub for trimMarginsSelection settings behavior."""
 
     def __init__(self, sensitivity="5", grayscale_sensitivity="0", padding="0",
-                 use_all_pages=False):
+                 trim_pages_range=False, pages_range="1-1"):
         self.viewer = _FakeViewerSinglePage()
         self.ui = SimpleNamespace(
             editSensitivity=_FakeLineEdit(sensitivity),
             editGrayscaleSensitivity=_FakeLineEdit(grayscale_sensitivity),
             editPadding=_FakeLineEdit(padding),
-            checkTrimUseAllPages=_FakeCheckBox(use_all_pages),
+            checkTrimPagesRange=_FakeCheckBox(trim_pages_range),
+            editTrimPagesRange=_FakeLineEdit(pages_range),
         )
         self.warnings = []
 
@@ -136,6 +137,9 @@ class _FakeTrimWindow:
 
     def showWarning(self, title, text):
         self.warnings.append((title, text))
+
+    def _parseTrimPagesRange(self):
+        return MainWindow._parseTrimPagesRange(self)
 
 
 def test_trim_margins_selection_uses_ui_threshold_values(monkeypatch):
@@ -193,8 +197,8 @@ class _FakeViewerMultiPage:
 
 
 def test_trim_defaults_to_current_page_only(monkeypatch):
-    """Arrange/Act/Assert: unchecked 'use all pages' trims only the current page."""
-    fake = _FakeTrimWindow(use_all_pages=False)
+    """Arrange/Act/Assert: disabled range mode trims only the current page."""
+    fake = _FakeTrimWindow(trim_pages_range=False)
     fake.viewer = _FakeViewerMultiPage()
     selection = _FakeSelection()
     page_indices_seen = []
@@ -210,9 +214,9 @@ def test_trim_defaults_to_current_page_only(monkeypatch):
     assert len(page_indices_seen) == 1
 
 
-def test_trim_uses_all_pages_when_checkbox_checked(monkeypatch):
-    """Arrange/Act/Assert: checked 'use all pages' trims across all visible pages."""
-    fake = _FakeTrimWindow(use_all_pages=True)
+def test_trim_uses_configured_pages_range_when_checkbox_checked(monkeypatch):
+    """Arrange/Act/Assert: enabled range mode trims only pages inside configured interval."""
+    fake = _FakeTrimWindow(trim_pages_range=True, pages_range="1-2")
     fake.viewer = _FakeViewerMultiPage()
     selection = _FakeSelection()
     page_indices_seen = []
@@ -225,7 +229,7 @@ def test_trim_uses_all_pages_when_checkbox_checked(monkeypatch):
     monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
     monkeypatch.setattr(mainwindow_module, "autoTrimMargins", _fake_auto_trim)
     MainWindow.trimMarginsSelection(fake, selection)
-    assert len(page_indices_seen) == 3
+    assert len(page_indices_seen) == 2
 
 
 def test_trim_padding_expands_final_highlighted_area(monkeypatch):

@@ -11,12 +11,16 @@ class _FakeLineEdit:
 
     def __init__(self, value):
         self._value = value
+        self._enabled = True
 
     def text(self):
         return self._value
 
     def setText(self, value):
         self._value = value
+
+    def setEnabled(self, enabled):
+        self._enabled = enabled
 
 
 class _FakeCheckBox:
@@ -58,11 +62,13 @@ def _build_fake_window():
         editPadding=_FakeLineEdit("1,2,3,4"),
         editGrayscaleSensitivity=_FakeLineEdit("3"),
         editSensitivity=_FakeLineEdit("7"),
-        checkTrimUseAllPages=_FakeCheckBox(True),
+        checkTrimPagesRange=_FakeCheckBox(True),
+        editTrimPagesRange=_FakeLineEdit("2-3"),
     )
     fake.viewer = _FakeViewer([(0.1, 0.2, 0.3, 0.4)])
     fake.selectedConversionMode = lambda: "crop"
     fake._defaultTrimPresetName = lambda: "2026/01/01 01:02:03"
+    fake._updateTrimPagesRangeControls = lambda enabled: MainWindow._updateTrimPagesRangeControls(fake, enabled)
     return fake
 
 
@@ -74,7 +80,8 @@ def test_trim_preset_snapshot_captures_current_controls_and_crop():
     assert preset["padding"] == "1,2,3,4"
     assert preset["grayscale_sensitivity"] == "3"
     assert preset["sensitivity"] == "7"
-    assert preset["use_all_pages"] is True
+    assert preset["pages_range_enabled"] is True
+    assert preset["pages_range"] == "2-3"
     assert preset["crop"] == [0.1, 0.2, 0.3, 0.4]
 
 
@@ -90,7 +97,8 @@ def test_apply_trim_preset_updates_runtime_controls_and_crop():
             "padding": "5",
             "grayscale_sensitivity": "1",
             "sensitivity": "9",
-            "use_all_pages": False,
+            "pages_range_enabled": False,
+            "pages_range": "1-1",
             "crop": [0.2, 0.1, 0.2, 0.1],
         }
     ]
@@ -103,7 +111,8 @@ def test_apply_trim_preset_updates_runtime_controls_and_crop():
     assert fake.ui.editPadding.text() == "5"
     assert fake.ui.editGrayscaleSensitivity.text() == "1"
     assert fake.ui.editSensitivity.text() == "9"
-    assert fake.ui.checkTrimUseAllPages.isChecked() is False
+    assert fake.ui.checkTrimPagesRange.isChecked() is False
+    assert fake.ui.editTrimPagesRange.text() == "1-1"
     assert captured["crop"] == [0.2, 0.1, 0.2, 0.1]
 
 

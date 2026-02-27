@@ -14,6 +14,7 @@ the Free Software Foundation; either version 3 of the License, or
 """
 
 import sys
+import re
 from datetime import datetime
 from os.path import splitext
 from shutil import which
@@ -225,6 +226,7 @@ class MainWindow(QMainWindow):
         self.ui.documentView.customContextMenuRequested.connect(self.slotContextMenu)
         self.ui.editCurrentPage.textEdited.connect(self.slotCurrentPageEdited)
         self.ui.splitter.splitterMoved.connect(self.slotSplitterMoved)
+        self.ui.checkTrimPagesRange.toggled.connect(self._updateTrimPagesRangeControls)
 
         self.pdfScene = QGraphicsScene(self.ui.documentView)
         self.pdfScene.setBackgroundBrush(self.pdfScene.palette().dark())
@@ -313,7 +315,7 @@ class MainWindow(QMainWindow):
             header.setSectionResizeMode(0, QHeaderView.Stretch)
             header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
         group_layout.addWidget(self.treeTrimPresets)
-        self.ui.gridLayout_3.addWidget(self.groupTrimPresets, 4, 0, 1, 2)
+        self.ui.gridLayout_3.addWidget(self.groupTrimPresets, 6, 0, 1, 2)
         self.treeTrimPresets.itemClicked.connect(self.slotTrimPresetClicked)
         self.treeTrimPresets.itemDoubleClicked.connect(self.slotTrimPresetDoubleClicked)
         self.treeTrimPresets.itemChanged.connect(self.slotTrimPresetChanged)
@@ -365,6 +367,34 @@ class MainWindow(QMainWindow):
             return value
         return str(value).strip().lower() in ("1", "true", "yes", "on")
 
+    def _updateTrimPagesRangeControls(self, enabled):
+        """
+        @brief Updates `Pages range` control enabled state.
+        @details Enables range input only when trim-range mode is active and ensures default text `1-1` when empty.
+        @param enabled {bool} State propagated from trim-range toggle.
+        @return {None} Applies UI side effects.
+        """
+        self.ui.editTrimPagesRange.setEnabled(enabled)
+        if not self.ui.editTrimPagesRange.text().strip():
+            self.ui.editTrimPagesRange.setText("1-1")
+
+    def _parseTrimPagesRange(self):
+        """
+        @brief Parses and validates the trim pages range expression.
+        @details Accepts only `N-M` one-based inclusive format, validates positive ordered bounds, and converts to zero-based bounds.
+        @return {tuple[int,int]} `(start_index, end_index)` inclusive zero-based page bounds.
+        @throws {ValueError} If the range is missing or syntactically/semantically invalid.
+        """
+        text = self.ui.editTrimPagesRange.text().strip()
+        match = re.fullmatch(r"(\d+)\s*-\s*(\d+)", text)
+        if not match:
+            raise ValueError("bad trim pages range format")
+        page_start = int(match.group(1))
+        page_end = int(match.group(2))
+        if page_start <= 0 or page_end <= 0 or page_start > page_end:
+            raise ValueError("bad trim pages range bounds")
+        return page_start - 1, page_end - 1
+
     def _collectRuntimeConfigValues(self):
         """
         @brief Collects runtime config values mapped to JSON `config` keys.
@@ -377,7 +407,8 @@ class MainWindow(QMainWindow):
             "Trim/Padding": self.ui.editPadding.text(),
             "Trim/GrayscaleSensitivity": self.ui.editGrayscaleSensitivity.text(),
             "Trim/Sensitivity": self.ui.editSensitivity.text(),
-            "Trim/UseAllPages": self.ui.checkTrimUseAllPages.isChecked(),
+            "Trim/PagesRangeEnabled": self.ui.checkTrimPagesRange.isChecked(),
+            "Trim/PagesRange": self.ui.editTrimPagesRange.text(),
         }
 
     def _trimPresetFromCurrentSelection(self):
@@ -392,7 +423,8 @@ class MainWindow(QMainWindow):
             "padding": self.ui.editPadding.text(),
             "grayscale_sensitivity": self.ui.editGrayscaleSensitivity.text(),
             "sensitivity": self.ui.editSensitivity.text(),
-            "use_all_pages": self.ui.checkTrimUseAllPages.isChecked(),
+            "pages_range_enabled": self.ui.checkTrimPagesRange.isChecked(),
+            "pages_range": self.ui.editTrimPagesRange.text(),
         }
         crop_values = self.viewer.cropValues(self.viewer.currentPageIndex)
         if crop_values:
@@ -496,9 +528,11 @@ class MainWindow(QMainWindow):
             str(preset.get("grayscale_sensitivity", self.ui.editGrayscaleSensitivity.text()))
         )
         self.ui.editSensitivity.setText(str(preset.get("sensitivity", self.ui.editSensitivity.text())))
-        self.ui.checkTrimUseAllPages.setChecked(
-            self._toBool(preset.get("use_all_pages", self.ui.checkTrimUseAllPages.isChecked()))
+        self.ui.checkTrimPagesRange.setChecked(
+            self._toBool(preset.get("pages_range_enabled", self.ui.checkTrimPagesRange.isChecked()))
         )
+        self.ui.editTrimPagesRange.setText(str(preset.get("pages_range", self.ui.editTrimPagesRange.text())))
+        self._updateTrimPagesRangeControls(self.ui.checkTrimPagesRange.isChecked())
         if "crop" in preset:
             self._applyCropPreset(preset.get("crop"))
 
@@ -643,9 +677,11 @@ class MainWindow(QMainWindow):
         self.ui.editPadding.setText(str(config_values.get("Trim/Padding", "0") or "0"))
         self.ui.editGrayscaleSensitivity.setText(str(config_values.get("Trim/GrayscaleSensitivity", "0") or "0"))
         self.ui.editSensitivity.setText(str(config_values.get("Trim/Sensitivity", "5") or "5"))
-        self.ui.checkTrimUseAllPages.setChecked(
-            self._toBool(config_values.get("Trim/UseAllPages", False))
+        self.ui.checkTrimPagesRange.setChecked(
+            self._toBool(config_values.get("Trim/PagesRangeEnabled", False))
         )
+        self.ui.editTrimPagesRange.setText(str(config_values.get("Trim/PagesRange", "1-1") or "1-1"))
+        self._updateTrimPagesRangeControls(self.ui.checkTrimPagesRange.isChecked())
 
         self.selAspectRatioTypes.loadTypes(settings)
         self.deviceTypes.loadTypes(settings)
@@ -668,8 +704,9 @@ class MainWindow(QMainWindow):
         settings.setValue("Trim/Padding", self.ui.editPadding.text())
         settings.setValue("Trim/GrayscaleSensitivity", self.ui.editGrayscaleSensitivity.text())
         settings.setValue("Trim/Sensitivity", self.ui.editSensitivity.text())
-        settings.setValue("Trim/UseAllPages", "true" if
-                self.ui.checkTrimUseAllPages.isChecked() else "false")
+        settings.setValue("Trim/PagesRangeEnabled", "true" if
+                self.ui.checkTrimPagesRange.isChecked() else "false")
+        settings.setValue("Trim/PagesRange", self.ui.editTrimPagesRange.text())
 
         self.selAspectRatioTypes.saveTypes(settings)
         self.deviceTypes.saveTypes(settings)
@@ -1171,8 +1208,8 @@ class MainWindow(QMainWindow):
         """
         @brief Computes auto-trim rectangle for a selection using configured thresholds.
         @details Reads color-sensitivity and grayscale-sensitivity values from Basic-tab controls, selects page scope
-        based on "Use all pages" checkbox (current page only when unchecked, all visible pages
-        when checked), and applies auto-trim with padding and aspect-ratio adjustments.
+        using current page by default or a validated `Pages range` slice of visible pages when range mode is enabled,
+        and applies auto-trim with padding and aspect-ratio adjustments.
         @param sel {ViewerSelectionItem} Selection item to trim.
         @return {None} Mutates selection bounding rectangle.
         """
@@ -1190,9 +1227,20 @@ class MainWindow(QMainWindow):
             grayscale_sensitivity = 0.0
 
         pages = [self.viewer.currentPageIndex]
-        if self.ui.checkTrimUseAllPages.isChecked():
-            pages = [i for i in range(self.viewer.numPages())
-                     if sel.selectionVisibleOnPage(i)]
+        if self.ui.checkTrimPagesRange.isChecked():
+            try:
+                range_start, range_end = self._parseTrimPagesRange()
+            except ValueError:
+                self.showWarning(
+                    self.tr("Bad value for pages range"),
+                    self.tr("The value of pages range (under trim settings) must use N-M with positive integers; falling back to 1-1."),
+                )
+                self.ui.editTrimPagesRange.setText("1-1")
+                range_start, range_end = 0, 0
+            pages = [
+                i for i in range(self.viewer.numPages())
+                if range_start <= i <= range_end and sel.selectionVisibleOnPage(i)
+            ]
 
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:

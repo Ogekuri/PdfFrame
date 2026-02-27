@@ -15,7 +15,8 @@ DEFAULT_CONFIG_VALUES = {
     "Trim/Padding": "0",
     "Trim/GrayscaleSensitivity": "0",
     "Trim/Sensitivity": "5",
-    "Trim/UseAllPages": False,
+    "Trim/PagesRangeEnabled": False,
+    "Trim/PagesRange": "1-1",
 }
 
 

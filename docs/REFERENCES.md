@@ -129,7 +129,7 @@ from PyQt5 import QtCore
 
 ---
 
-# jsonconfig.py | Python | 112L | 8 symbols | 3 imports | 9 comments
+# jsonconfig.py | Python | 113L | 8 symbols | 3 imports | 9 comments
 > Path: `src/pdfframe/jsonconfig.py`
 
 ## Imports
@@ -142,39 +142,39 @@ from pathlib import Path
 ## Definitions
 
 - var `DEFAULT_CONFIG_VALUES = {` (L12)
-### fn `def default_config_path()` (L22-30)
+### fn `def default_config_path()` (L23-31)
 - Brief: Returns canonical user JSON configuration path.
 - Details: Resolves `~/.pdfframe/config.json` using current user home directory.
 - Return: {pathlib.Path} Expanded configuration file path.
 
-### fn `def default_config_document()` (L31-39)
+### fn `def default_config_document()` (L32-40)
 - Brief: Returns default JSON configuration document.
 - Details: Includes top-level `config` object seeded from `DEFAULT_CONFIG_VALUES` and empty `presets` array.
 - Return: {dict[str,object]} Default config document payload.
 
-### class `class JsonConfigStore` (L40-112)
+### class `class JsonConfigStore` (L41-113)
 - Brief: Provides normalized JSON config read/write operations.
 - Details: Enforces top-level `config` and `presets` sections and guarantees default keys for config values.
-- fn `def __init__(self, path=None)` `priv` (L46-53)
+- fn `def __init__(self, path=None)` `priv` (L47-54)
   - Brief: Provides normalized JSON config read/write operations.
   - Brief: Initializes JSON config store.
   - Details: Enforces top-level `config` and `presets` sections and guarantees default keys for config values.
   - Details: Uses explicit path when provided; otherwise defaults to `~/.pdfframe/config.json`.
   - Param: path {str|pathlib.Path|None} Optional configuration path override.
-- fn `def _normalize_document(self, document)` `priv` (L54-78)
+- fn `def _normalize_document(self, document)` `priv` (L55-79)
   - Brief: Normalizes JSON config document shape.
   - Details: Validates root object and top-level section types, merges missing default config keys, and guarantees list type for presets.
   - Param: document {dict[str,object]} Raw decoded JSON payload.
   - Return: {dict[str,object]} Normalized document.
   - Throws: {ValueError} If root or required sections have incompatible types.
-- fn `def load_or_initialize(self)` (L79-98)
+- fn `def load_or_initialize(self)` (L80-99)
   - Brief: Loads JSON configuration and creates defaults when missing.
   - Details: Creates `~/.pdfframe/config.json` when absent, normalizes loaded documents, and writes back normalization deltas.
   - Return: {dict[str,object]} Normalized configuration document.
   - Throws: {OSError} If filesystem operations fail.
   - Throws: {ValueError} If existing JSON document has invalid structure.
   - Throws: {json.JSONDecodeError} If existing JSON file is syntactically invalid.
-- fn `def save(self, document)` (L99-112)
+- fn `def save(self, document)` (L100-113)
   - Brief: Writes normalized JSON configuration to disk.
   - Details: Validates/normalizes payload, ensures parent directory exists, and serializes with deterministic indentation.
   - Param: document {dict[str,object]} Document payload to persist.
@@ -186,23 +186,24 @@ from pathlib import Path
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
 |`DEFAULT_CONFIG_VALUES`|var|pub|12||
-|`default_config_path`|fn|pub|22-30|def default_config_path()|
-|`default_config_document`|fn|pub|31-39|def default_config_document()|
-|`JsonConfigStore`|class|pub|40-112|class JsonConfigStore|
-|`JsonConfigStore.__init__`|fn|priv|46-53|def __init__(self, path=None)|
-|`JsonConfigStore._normalize_document`|fn|priv|54-78|def _normalize_document(self, document)|
-|`JsonConfigStore.load_or_initialize`|fn|pub|79-98|def load_or_initialize(self)|
-|`JsonConfigStore.save`|fn|pub|99-112|def save(self, document)|
+|`default_config_path`|fn|pub|23-31|def default_config_path()|
+|`default_config_document`|fn|pub|32-40|def default_config_document()|
+|`JsonConfigStore`|class|pub|41-113|class JsonConfigStore|
+|`JsonConfigStore.__init__`|fn|priv|47-54|def __init__(self, path=None)|
+|`JsonConfigStore._normalize_document`|fn|priv|55-79|def _normalize_document(self, document)|
+|`JsonConfigStore.load_or_initialize`|fn|pub|80-99|def load_or_initialize(self)|
+|`JsonConfigStore.save`|fn|pub|100-113|def save(self, document)|
 
 
 ---
 
-# mainwindow.py | Python | 1267L | 85 symbols | 13 imports | 63 comments
+# mainwindow.py | Python | 1315L | 87 symbols | 14 imports | 65 comments
 > Path: `src/pdfframe/mainwindow.py`
 
 ## Imports
 ```
 import sys
+import re
 from datetime import datetime
 from os.path import splitext
 from shutil import which
@@ -219,166 +220,178 @@ from pdfframe.autotrim import autoTrimMargins
 
 ## Definitions
 
-### class `class AspectRatioType` (L43-48)
-- fn `def __init__(self, name, width, height)` `priv` (L44-48)
+### class `class AspectRatioType` (L44-49)
+- fn `def __init__(self, name, width, height)` `priv` (L45-49)
 
-### class `class AspectRatioTypeManager` (L49-101)
-- fn `def __init__(self)` `priv` (L51-54)
-- fn `def __iter__(self)` `priv` (L55-57)
-- fn `def addType(self, name, width, height)` (L58-60)
-- fn `def getType(self, index)` (L61-65)
-- fn `def addDefaults(self)` (L66-68)
-- fn `def settingsCaption(self)` (L69-71)
-- fn `def saveTypes(self, settings)` (L72-88)
-- fn `def loadTypes(self, settings)` (L89-101)
+### class `class AspectRatioTypeManager` (L50-102)
+- fn `def __init__(self)` `priv` (L52-55)
+- fn `def __iter__(self)` `priv` (L56-58)
+- fn `def addType(self, name, width, height)` (L59-61)
+- fn `def getType(self, index)` (L62-66)
+- fn `def addDefaults(self)` (L67-69)
+- fn `def settingsCaption(self)` (L70-72)
+- fn `def saveTypes(self, settings)` (L73-89)
+- fn `def loadTypes(self, settings)` (L90-102)
 
-### class `class SelAspectRatioTypeManager(AspectRatioTypeManager)` : AspectRatioTypeManager (L102-115)
-- fn `def settingsCaption(self)` (L104-106)
-- fn `def addDefaults(self)` (L107-115)
+### class `class SelAspectRatioTypeManager(AspectRatioTypeManager)` : AspectRatioTypeManager (L103-116)
+- fn `def settingsCaption(self)` (L105-107)
+- fn `def addDefaults(self)` (L108-116)
 
-### class `class DeviceTypeManager(AspectRatioTypeManager)` : AspectRatioTypeManager (L116-128)
-- fn `def settingsCaption(self)` (L118-120)
-- fn `def addDefaults(self)` (L121-128)
+### class `class DeviceTypeManager(AspectRatioTypeManager)` : AspectRatioTypeManager (L117-129)
+- fn `def settingsCaption(self)` (L119-121)
+- fn `def addDefaults(self)` (L122-129)
 
-### class `class MainWindow(QMainWindow)` : QMainWindow (L129-328)
-- fn `def __init__(self)` `priv` (L133-252)
-- fn `def viewer(self)` (L254-256)
-- fn `def selections(self)` (L258-260)
-- fn `def _setupConversionModeControls(self)` `priv` (L261-278)
+### class `class MainWindow(QMainWindow)` : QMainWindow (L130-329)
+- fn `def __init__(self)` `priv` (L134-254)
+- fn `def viewer(self)` (L256-258)
+- fn `def selections(self)` (L260-262)
+- fn `def _setupConversionModeControls(self)` `priv` (L263-280)
   - Brief: Adds conversion mode controls to the basic tab.
   - Details: Creates `Mode` group with `Frame` and `Crop` radio buttons, defaults to `Frame`, and inserts it into the basic-tab layout.
   - Return: {None} Applies UI side effects.
-- fn `def _setupTrimSettingsControls(self)` `priv` (L279-289)
+- fn `def _setupTrimSettingsControls(self)` `priv` (L281-291)
   - Brief: Relocates trim configuration controls into the Basic tab.
   - Details: Reuses the existing trim-settings group from the advanced UI definition, moves it to the bottom of the basic layout with all controls visible.
   - Return: {None} Applies UI side effects.
-- fn `def _setupTrimPresetControls(self)` `priv` (L290-320)
+- fn `def _setupTrimPresetControls(self)` `priv` (L292-322)
   - Brief: Adds trim preset controls under trim settings.
   - Details: Creates a `Presets` section with editable list rows and per-row remove buttons, then wires click/double-click/item-change signals for apply/rename flows.
   - Return: {None} Applies UI side effects.
 
-### fn `def _setupTrimPresetAction(self)` `priv` (L321-338)
+### fn `def _setupTrimPresetAction(self)` `priv` (L323-340)
 - Brief: Adds the `Save Margins` toolbar action next to trim action.
 - Details: Inserts a dedicated action directly to the right of `Trim Margins`, then binds it to preset creation and keeps it disabled until a PDF is loaded.
 - Return: {None} Applies UI side effects.
 
-### fn `def _trimPresetEditableFlag(self)` `priv` (L339-343)
+### fn `def _trimPresetEditableFlag(self)` `priv` (L341-345)
 
-### fn `def _trimPresetRole(self)` `priv` (L344-348)
+### fn `def _trimPresetRole(self)` `priv` (L346-350)
 
-### fn `def _defaultTrimPresetName(self)` `priv` (L349-356)
+### fn `def _defaultTrimPresetName(self)` `priv` (L351-358)
 - Brief: Returns default trim preset name.
 - Details: Generates timestamp name in `%Y/%m/%d %H:%M:%S` format.
 - Return: {str} Default preset display label.
 
-### fn `def _toBool(self, value)` `priv` (L357-367)
+### fn `def _toBool(self, value)` `priv` (L359-369)
 - Brief: Normalizes persisted boolean-like values.
 - Details: Accepts bools and common string tokens produced by historical settings writers.
 - Param: value {object} Input value from settings/config source.
 - Return: {bool} Parsed boolean result.
 
-### fn `def _collectRuntimeConfigValues(self)` `priv` (L368-382)
+### fn `def _updateTrimPagesRangeControls(self, enabled)` `priv` (L370-380)
+- Brief: Updates `Pages range` control enabled state.
+- Details: Enables range input only when trim-range mode is active and ensures default text `1-1` when empty.
+- Param: enabled {bool} State propagated from trim-range toggle.
+- Return: {None} Applies UI side effects.
+
+### fn `def _parseTrimPagesRange(self)` `priv` (L381-397)
+- Brief: Parses and validates the trim pages range expression.
+- Details: Accepts only `N-M` one-based inclusive format, validates positive ordered bounds, and converts to zero-based bounds.
+- Return: {tuple[int,int]} `(start_index, end_index)` inclusive zero-based page bounds.
+- Throws: {ValueError} If the range is missing or syntactically/semantically invalid.
+
+### fn `def _collectRuntimeConfigValues(self)` `priv` (L398-413)
 - Brief: Collects runtime config values mapped to JSON `config` keys.
 - Details: Converts current UI control state into serializable values for `~/.pdfframe/config.json`.
 - Return: {dict[str,object]} Persistable runtime config key/value mapping.
 
-### fn `def _trimPresetFromCurrentSelection(self)` `priv` (L383-401)
+### fn `def _trimPresetFromCurrentSelection(self)` `priv` (L414-433)
 - Brief: Creates a trim preset payload from current UI state.
 - Details: Captures mode and trim parameters plus the primary current-page crop tuple when available.
 - Return: {dict[str,object]} New preset payload ready for persistence.
 
-### fn `def _refreshTrimPresetList(self)` `priv` (L402-430)
+### fn `def _refreshTrimPresetList(self)` `priv` (L434-462)
 - Brief: Rebuilds trim preset tree rows from in-memory presets.
 - Details: Clears the list, creates editable name rows, and attaches one remove button per row mapped to preset index inside a right-aligned cell container.
 - Return: {None} Applies UI side effects.
 
-### fn `def _persistTrimPresetDocument(self)` `priv` (L431-448)
+### fn `def _persistTrimPresetDocument(self)` `priv` (L463-480)
 - Brief: Persists runtime config and preset list to JSON config file.
 - Details: Writes both `config` values and `presets` array through JsonConfigStore, surfacing warning on I/O failures.
 - Return: {None} Writes `~/.pdfframe/config.json`.
 
-### fn `def _applyCropPreset(self, crop_values)` `priv` (L449-480)
+### fn `def _applyCropPreset(self, crop_values)` `priv` (L481-512)
 - Brief: Applies normalized crop tuple to current selection.
 - Details: Maps `[left,top,right,bottom]` normalized margins to viewer coordinates and updates (or creates) the current selection.
 - Param: crop_values {list[float]} Normalized crop tuple values.
 - Return: {None} Mutates current selection geometry.
 
-### fn `def _applyTrimPreset(self, index)` `priv` (L481-504)
+### fn `def _applyTrimPreset(self, index)` `priv` (L513-538)
 - Brief: Applies one stored preset to current runtime controls.
 - Details: Restores mode and trim values, then applies saved crop tuple when present.
 - Param: index {int} Preset list index.
 - Return: {None} Applies UI and selection updates.
 
-### fn `def slotTrimPresetClicked(self, item, column)` (L505-517)
+### fn `def slotTrimPresetClicked(self, item, column)` (L539-551)
 - Brief: Applies a preset when the preset name cell is clicked.
 - Details: Ignores delete-button column and list rebuild events.
 - Param: item {QTreeWidgetItem} Clicked row item.
 - Param: column {int} Clicked column index.
 - Return: {None} Applies preset side effects.
 
-### fn `def slotTrimPresetDoubleClicked(self, item, column)` (L518-528)
+### fn `def slotTrimPresetDoubleClicked(self, item, column)` (L552-562)
 - Brief: Starts inline rename for preset names.
 - Details: Enables user-driven preset rename on double-click of first column.
 - Param: item {QTreeWidgetItem} Double-clicked row item.
 - Param: column {int} Double-clicked column index.
 - Return: {None} Opens in-place editor.
 
-### fn `def slotTrimPresetChanged(self, item, column)` (L529-552)
+### fn `def slotTrimPresetChanged(self, item, column)` (L563-586)
 - Brief: Persists preset rename changes from inline editing.
 - Details: Normalizes empty labels to timestamp defaults and rewrites JSON config after updates.
 - Param: item {QTreeWidgetItem} Changed row item.
 - Param: column {int} Changed column index.
 - Return: {None} Persists preset list updates.
 
-### fn `def slotDeleteTrimPreset(self)` (L553-571)
+### fn `def slotDeleteTrimPreset(self)` (L587-605)
 - Brief: Deletes one preset from remove-button click.
 - Details: Resolves row index from sender button metadata, updates in-memory list, refreshes UI, and persists JSON state.
 - Return: {None} Applies preset delete side effects.
 
-### fn `def slotSaveMarginsPreset(self)` (L572-583)
+### fn `def slotSaveMarginsPreset(self)` (L606-617)
 - Brief: Saves current crop/trim state as a new preset.
 - Details: Captures active control values, appends new preset with timestamp default name, refreshes list, and persists JSON state.
 - Return: {None} Applies preset creation side effects.
 
-### fn `def selectedConversionMode(self)` (L584-591)
+### fn `def selectedConversionMode(self)` (L618-625)
 - Brief: Returns selected conversion mode for Ghostscript execution.
 - Details: Maps GUI mode controls to backend mode tokens expected by command generation.
 - Return: {str} Conversion mode token (`frame` or `crop`).
 
-### fn `def currentSelectionUpdated(self)` (L592-607)
+### fn `def currentSelectionUpdated(self)` (L626-641)
 
-### fn `def readSettings(self)` (L608-653)
+### fn `def readSettings(self)` (L642-689)
 - Brief: Reads persisted runtime settings from QSettings and JSON config.
 - Details: Restores window geometry from QSettings, loads trim/runtime defaults from `~/.pdfframe/config.json`, and refreshes preset UI entries.
 - Return: {None} Applies UI state restoration side effects.
 
-### fn `def writeSettings(self)` (L654-677)
+### fn `def writeSettings(self)` (L690-714)
 - Brief: Persists runtime settings to legacy and JSON backends.
 - Details: Writes window/session metadata to QSettings and writes trim/runtime config plus presets to `~/.pdfframe/config.json`.
 - Return: {None} Persists runtime state.
 
-### fn `def openFile(self, fileName)` (L678-697)
+### fn `def openFile(self, fileName)` (L715-734)
 
-### fn `def slotOpenFile(self)` (L698-703)
+### fn `def slotOpenFile(self)` (L735-740)
 
-### fn `def slotSelectFile(self)` (L704-713)
+### fn `def slotSelectFile(self)` (L741-750)
 
-### fn `def showWarning(self, title, text)` (L714-721)
+### fn `def showWarning(self, title, text)` (L751-758)
 
-### fn `def str2pages(self, s)` (L722-739)
+### fn `def str2pages(self, s)` (L759-776)
 
-### fn `def requestedUnsupportedGhostscriptOptions(self)` (L740-747)
+### fn `def requestedUnsupportedGhostscriptOptions(self)` (L777-784)
 - Brief: Lists GUI options unsupported by the Ghostscript backend.
 - Details: Returns empty list because unsupported options were removed from conversion controls.
 - Return: {list[str]} Unsupported option identifiers requested by the user.
 
-### fn `def primarySelectionCropValue(self, page_indexes)` (L748-761)
+### fn `def primarySelectionCropValue(self, page_indexes)` (L785-798)
 - Brief: Gets primary selection crop tuple for conversion planning.
 - Details: Resolves first available normalized crop tuple from current page first, then requested pages, and returns only the primary tuple used for all output pages.
 - Param: page_indexes {list[int]} Ordered page indexes selected for processing.
 - Return: {tuple[float,float,float,float]|None} Primary normalized crop tuple or None when no selections are available.
 
-### fn `def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None)` (L762-796)
+### fn `def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None)` (L799-833)
 - Brief: Builds single Ghostscript crop plan from GUI-derived parameters.
 - Details: Iterates only requested pages (or all pages when omitted), derives geometry from the primary GUI selection tuple, computes crop bbox from page-size metadata, and emits one Ghostscript command for the full selected range using `-dFirstPage/-dLastPage`.
 - Param: inputFileName {str} Source PDF path.
@@ -386,18 +399,18 @@ from pdfframe.autotrim import autoTrimMargins
 - Param: requestedPageIndexes {set[int]|None} Optional zero-based page-index filter derived from `--whichpages`.
 - Return: {dict[str,object]|None} Crop plan containing selected page indexes and one Ghostscript command vector.
 
-### fn `def createConversionProgressDialog(self, totalPages)` (L797-819)
+### fn `def createConversionProgressDialog(self, totalPages)` (L834-856)
 - Brief: Creates modal conversion progress dialog for crop execution.
 - Details: Configures progress dialog with deterministic page range and cancellable stop action used during long-running conversion command execution.
 - Param: totalPages {int} Number of selected pages to process.
 - Return: {QProgressDialog} Configured progress dialog instance.
 
-### fn `def slotPdfFrame(self)` (L820-948)
+### fn `def slotPdfFrame(self)` (L857-985)
 - Brief: Executes PDF crop action using Ghostscript command backend.
 - Details: Validates unsupported GUI options, verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
 - Return: {None} Triggers output PDF generation side effect.
 
-### fn `def mark_page_processed(page_number)` (L880-898)
+### fn `def mark_page_processed(page_number)` (L917-935)
 - Brief: Executes PDF crop action using Ghostscript command backend.
 - Brief: Marks one selected page as processed for progress updates.
 - Details: Validates unsupported GUI options, verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
@@ -406,170 +419,172 @@ from pdfframe.autotrim import autoTrimMargins
 - Return: {None} Triggers output PDF generation side effect.
 - Return: {None} Applies progress side effects.
 
-### fn `def on_output_line(line)` (L899-913)
+### fn `def on_output_line(line)` (L936-950)
 - Brief: Processes streamed Ghostscript output lines during conversion.
 - Details: Uses parsed Ghostscript page numbers from captured output to advance conversion progress without forwarding captured command output to user-visible UI messages.
 - Param: line {str} Single output line emitted by Ghostscript.
 - Return: {None} Applies progress side effects.
 
-### fn `def slotZoomIn(self)` (L949-952)
+### fn `def slotZoomIn(self)` (L986-989)
 
-### fn `def slotZoomOut(self)` (L953-956)
+### fn `def slotZoomOut(self)` (L990-993)
 
-### fn `def slotFitInView(self, checked)` (L957-961)
+### fn `def slotFitInView(self, checked)` (L994-998)
 
-### fn `def slotSplitterMoved(self, pos, idx)` (L962-964)
+### fn `def slotSplitterMoved(self, pos, idx)` (L999-1001)
 
-### fn `def slotPreviousPage(self)` (L965-968)
+### fn `def slotPreviousPage(self)` (L1002-1005)
 
-### fn `def slotNextPage(self)` (L969-972)
+### fn `def slotNextPage(self)` (L1006-1009)
 
-### fn `def slotFirstPage(self)` (L973-976)
+### fn `def slotFirstPage(self)` (L1010-1013)
 
-### fn `def slotLastPage(self)` (L977-980)
+### fn `def slotLastPage(self)` (L1014-1017)
 
-### fn `def slotCurrentPageEdited(self, text)` (L981-988)
+### fn `def slotCurrentPageEdited(self, text)` (L1018-1025)
 
-### fn `def updateControls(self)` (L989-997)
+### fn `def updateControls(self)` (L1026-1034)
 
-### fn `def slotSelectionMode(self, checked)` (L998-1001)
+### fn `def slotSelectionMode(self, checked)` (L1035-1038)
 
-### fn `def slotSelExceptionsChanged(self)` (L1002-1004)
+### fn `def slotSelExceptionsChanged(self)` (L1039-1041)
 
-### fn `def slotSelExceptionsEdited(self, text)` (L1005-1009)
+### fn `def slotSelExceptionsEdited(self, text)` (L1042-1046)
 
-### fn `def slotSelAspectRatioChanged(self)` (L1010-1018)
+### fn `def slotSelAspectRatioChanged(self)` (L1047-1055)
 
-### fn `def slotSelAspectRatioTypeChanged(self, index)` (L1019-1038)
+### fn `def slotSelAspectRatioTypeChanged(self, index)` (L1056-1075)
 
-### fn `def distributeAspectRatioChanged(self, aspectRatio)` (L1039-1041)
+### fn `def distributeAspectRatioChanged(self, aspectRatio)` (L1076-1078)
 
-### fn `def slotDistributeAspectRatioChanged(self)` (L1042-1044)
+### fn `def slotDistributeAspectRatioChanged(self)` (L1079-1081)
 
-### fn `def slotDeviceTypeChanged(self, index)` (L1045-1051)
+### fn `def slotDeviceTypeChanged(self, index)` (L1082-1088)
 
-### fn `def slotContextMenu(self, pos)` (L1052-1072)
+### fn `def slotContextMenu(self, pos)` (L1089-1109)
 
-### fn `def slotDeleteSelection(self)` (L1073-1076)
+### fn `def slotDeleteSelection(self)` (L1110-1113)
 
-### fn `def slotNewSelection(self)` (L1077-1079)
+### fn `def slotNewSelection(self)` (L1114-1116)
 
-### fn `def slotNewSelectionGrid(self)` (L1080-1089)
+### fn `def slotNewSelectionGrid(self)` (L1117-1126)
 
-### fn `def createSelectionGrid(self, grid)` (L1090-1123)
+### fn `def createSelectionGrid(self, grid)` (L1127-1160)
 
-### fn `def getPadding(self)` (L1124-1151)
+### fn `def getPadding(self)` (L1161-1188)
 - Brief: Returns trim padding in CSS-expanded order.
 - Details: Reads trim padding text from the dedicated Basic-tab controls and expands one-to-four comma-separated values to `[top,right,bottom,left]`.
 - Return: {list[float]} Padding tuple in top,right,bottom,left order.
 
-### fn `def slotTrimMarginsAll(self)` (L1152-1164)
+### fn `def slotTrimMarginsAll(self)` (L1189-1201)
 
-### fn `def slotTrimMargins(self)` (L1165-1169)
+### fn `def slotTrimMargins(self)` (L1202-1206)
 
-### fn `def trimMarginsSelection(self, sel)` (L1170-1262)
+### fn `def trimMarginsSelection(self, sel)` (L1207-1310)
 - Brief: Computes auto-trim rectangle for a selection using configured thresholds.
-- Details: Reads color-sensitivity and grayscale-sensitivity values from Basic-tab controls, selects page scope based on "Use all pages" checkbox (current page only when unchecked, all visible pages when checked), and applies auto-trim with padding and aspect-ratio adjustments.
+- Details: Reads color-sensitivity and grayscale-sensitivity values from Basic-tab controls, selects page scope using current page by default or a validated `Pages range` slice of visible pages when range mode is enabled, and applies auto-trim with padding and aspect-ratio adjustments.
 - Param: sel {ViewerSelectionItem} Selection item to trim.
 - Return: {None} Mutates selection bounding rectangle.
 
-### fn `def resizeEvent(self, event)` (L1263-1265)
+### fn `def resizeEvent(self, event)` (L1311-1313)
 
-### fn `def closeEvent(self, event)` (L1266-1267)
+### fn `def closeEvent(self, event)` (L1314-1315)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`AspectRatioType`|class|pub|43-48|class AspectRatioType|
-|`AspectRatioType.__init__`|fn|priv|44-48|def __init__(self, name, width, height)|
-|`AspectRatioTypeManager`|class|pub|49-101|class AspectRatioTypeManager|
-|`AspectRatioTypeManager.__init__`|fn|priv|51-54|def __init__(self)|
-|`AspectRatioTypeManager.__iter__`|fn|priv|55-57|def __iter__(self)|
-|`AspectRatioTypeManager.addType`|fn|pub|58-60|def addType(self, name, width, height)|
-|`AspectRatioTypeManager.getType`|fn|pub|61-65|def getType(self, index)|
-|`AspectRatioTypeManager.addDefaults`|fn|pub|66-68|def addDefaults(self)|
-|`AspectRatioTypeManager.settingsCaption`|fn|pub|69-71|def settingsCaption(self)|
-|`AspectRatioTypeManager.saveTypes`|fn|pub|72-88|def saveTypes(self, settings)|
-|`AspectRatioTypeManager.loadTypes`|fn|pub|89-101|def loadTypes(self, settings)|
-|`SelAspectRatioTypeManager`|class|pub|102-115|class SelAspectRatioTypeManager(AspectRatioTypeManager)|
-|`SelAspectRatioTypeManager.settingsCaption`|fn|pub|104-106|def settingsCaption(self)|
-|`SelAspectRatioTypeManager.addDefaults`|fn|pub|107-115|def addDefaults(self)|
-|`DeviceTypeManager`|class|pub|116-128|class DeviceTypeManager(AspectRatioTypeManager)|
-|`DeviceTypeManager.settingsCaption`|fn|pub|118-120|def settingsCaption(self)|
-|`DeviceTypeManager.addDefaults`|fn|pub|121-128|def addDefaults(self)|
-|`MainWindow`|class|pub|129-328|class MainWindow(QMainWindow)|
-|`MainWindow.__init__`|fn|priv|133-252|def __init__(self)|
-|`MainWindow.viewer`|fn|pub|254-256|def viewer(self)|
-|`MainWindow.selections`|fn|pub|258-260|def selections(self)|
-|`MainWindow._setupConversionModeControls`|fn|priv|261-278|def _setupConversionModeControls(self)|
-|`MainWindow._setupTrimSettingsControls`|fn|priv|279-289|def _setupTrimSettingsControls(self)|
-|`MainWindow._setupTrimPresetControls`|fn|priv|290-320|def _setupTrimPresetControls(self)|
-|`_setupTrimPresetAction`|fn|priv|321-338|def _setupTrimPresetAction(self)|
-|`_trimPresetEditableFlag`|fn|priv|339-343|def _trimPresetEditableFlag(self)|
-|`_trimPresetRole`|fn|priv|344-348|def _trimPresetRole(self)|
-|`_defaultTrimPresetName`|fn|priv|349-356|def _defaultTrimPresetName(self)|
-|`_toBool`|fn|priv|357-367|def _toBool(self, value)|
-|`_collectRuntimeConfigValues`|fn|priv|368-382|def _collectRuntimeConfigValues(self)|
-|`_trimPresetFromCurrentSelection`|fn|priv|383-401|def _trimPresetFromCurrentSelection(self)|
-|`_refreshTrimPresetList`|fn|priv|402-430|def _refreshTrimPresetList(self)|
-|`_persistTrimPresetDocument`|fn|priv|431-448|def _persistTrimPresetDocument(self)|
-|`_applyCropPreset`|fn|priv|449-480|def _applyCropPreset(self, crop_values)|
-|`_applyTrimPreset`|fn|priv|481-504|def _applyTrimPreset(self, index)|
-|`slotTrimPresetClicked`|fn|pub|505-517|def slotTrimPresetClicked(self, item, column)|
-|`slotTrimPresetDoubleClicked`|fn|pub|518-528|def slotTrimPresetDoubleClicked(self, item, column)|
-|`slotTrimPresetChanged`|fn|pub|529-552|def slotTrimPresetChanged(self, item, column)|
-|`slotDeleteTrimPreset`|fn|pub|553-571|def slotDeleteTrimPreset(self)|
-|`slotSaveMarginsPreset`|fn|pub|572-583|def slotSaveMarginsPreset(self)|
-|`selectedConversionMode`|fn|pub|584-591|def selectedConversionMode(self)|
-|`currentSelectionUpdated`|fn|pub|592-607|def currentSelectionUpdated(self)|
-|`readSettings`|fn|pub|608-653|def readSettings(self)|
-|`writeSettings`|fn|pub|654-677|def writeSettings(self)|
-|`openFile`|fn|pub|678-697|def openFile(self, fileName)|
-|`slotOpenFile`|fn|pub|698-703|def slotOpenFile(self)|
-|`slotSelectFile`|fn|pub|704-713|def slotSelectFile(self)|
-|`showWarning`|fn|pub|714-721|def showWarning(self, title, text)|
-|`str2pages`|fn|pub|722-739|def str2pages(self, s)|
-|`requestedUnsupportedGhostscriptOptions`|fn|pub|740-747|def requestedUnsupportedGhostscriptOptions(self)|
-|`primarySelectionCropValue`|fn|pub|748-761|def primarySelectionCropValue(self, page_indexes)|
-|`buildGhostscriptCropPlan`|fn|pub|762-796|def buildGhostscriptCropPlan(self, inputFileName, outputF...|
-|`createConversionProgressDialog`|fn|pub|797-819|def createConversionProgressDialog(self, totalPages)|
-|`slotPdfFrame`|fn|pub|820-948|def slotPdfFrame(self)|
-|`mark_page_processed`|fn|pub|880-898|def mark_page_processed(page_number)|
-|`on_output_line`|fn|pub|899-913|def on_output_line(line)|
-|`slotZoomIn`|fn|pub|949-952|def slotZoomIn(self)|
-|`slotZoomOut`|fn|pub|953-956|def slotZoomOut(self)|
-|`slotFitInView`|fn|pub|957-961|def slotFitInView(self, checked)|
-|`slotSplitterMoved`|fn|pub|962-964|def slotSplitterMoved(self, pos, idx)|
-|`slotPreviousPage`|fn|pub|965-968|def slotPreviousPage(self)|
-|`slotNextPage`|fn|pub|969-972|def slotNextPage(self)|
-|`slotFirstPage`|fn|pub|973-976|def slotFirstPage(self)|
-|`slotLastPage`|fn|pub|977-980|def slotLastPage(self)|
-|`slotCurrentPageEdited`|fn|pub|981-988|def slotCurrentPageEdited(self, text)|
-|`updateControls`|fn|pub|989-997|def updateControls(self)|
-|`slotSelectionMode`|fn|pub|998-1001|def slotSelectionMode(self, checked)|
-|`slotSelExceptionsChanged`|fn|pub|1002-1004|def slotSelExceptionsChanged(self)|
-|`slotSelExceptionsEdited`|fn|pub|1005-1009|def slotSelExceptionsEdited(self, text)|
-|`slotSelAspectRatioChanged`|fn|pub|1010-1018|def slotSelAspectRatioChanged(self)|
-|`slotSelAspectRatioTypeChanged`|fn|pub|1019-1038|def slotSelAspectRatioTypeChanged(self, index)|
-|`distributeAspectRatioChanged`|fn|pub|1039-1041|def distributeAspectRatioChanged(self, aspectRatio)|
-|`slotDistributeAspectRatioChanged`|fn|pub|1042-1044|def slotDistributeAspectRatioChanged(self)|
-|`slotDeviceTypeChanged`|fn|pub|1045-1051|def slotDeviceTypeChanged(self, index)|
-|`slotContextMenu`|fn|pub|1052-1072|def slotContextMenu(self, pos)|
-|`slotDeleteSelection`|fn|pub|1073-1076|def slotDeleteSelection(self)|
-|`slotNewSelection`|fn|pub|1077-1079|def slotNewSelection(self)|
-|`slotNewSelectionGrid`|fn|pub|1080-1089|def slotNewSelectionGrid(self)|
-|`createSelectionGrid`|fn|pub|1090-1123|def createSelectionGrid(self, grid)|
-|`getPadding`|fn|pub|1124-1151|def getPadding(self)|
-|`slotTrimMarginsAll`|fn|pub|1152-1164|def slotTrimMarginsAll(self)|
-|`slotTrimMargins`|fn|pub|1165-1169|def slotTrimMargins(self)|
-|`trimMarginsSelection`|fn|pub|1170-1262|def trimMarginsSelection(self, sel)|
-|`resizeEvent`|fn|pub|1263-1265|def resizeEvent(self, event)|
-|`closeEvent`|fn|pub|1266-1267|def closeEvent(self, event)|
+|`AspectRatioType`|class|pub|44-49|class AspectRatioType|
+|`AspectRatioType.__init__`|fn|priv|45-49|def __init__(self, name, width, height)|
+|`AspectRatioTypeManager`|class|pub|50-102|class AspectRatioTypeManager|
+|`AspectRatioTypeManager.__init__`|fn|priv|52-55|def __init__(self)|
+|`AspectRatioTypeManager.__iter__`|fn|priv|56-58|def __iter__(self)|
+|`AspectRatioTypeManager.addType`|fn|pub|59-61|def addType(self, name, width, height)|
+|`AspectRatioTypeManager.getType`|fn|pub|62-66|def getType(self, index)|
+|`AspectRatioTypeManager.addDefaults`|fn|pub|67-69|def addDefaults(self)|
+|`AspectRatioTypeManager.settingsCaption`|fn|pub|70-72|def settingsCaption(self)|
+|`AspectRatioTypeManager.saveTypes`|fn|pub|73-89|def saveTypes(self, settings)|
+|`AspectRatioTypeManager.loadTypes`|fn|pub|90-102|def loadTypes(self, settings)|
+|`SelAspectRatioTypeManager`|class|pub|103-116|class SelAspectRatioTypeManager(AspectRatioTypeManager)|
+|`SelAspectRatioTypeManager.settingsCaption`|fn|pub|105-107|def settingsCaption(self)|
+|`SelAspectRatioTypeManager.addDefaults`|fn|pub|108-116|def addDefaults(self)|
+|`DeviceTypeManager`|class|pub|117-129|class DeviceTypeManager(AspectRatioTypeManager)|
+|`DeviceTypeManager.settingsCaption`|fn|pub|119-121|def settingsCaption(self)|
+|`DeviceTypeManager.addDefaults`|fn|pub|122-129|def addDefaults(self)|
+|`MainWindow`|class|pub|130-329|class MainWindow(QMainWindow)|
+|`MainWindow.__init__`|fn|priv|134-254|def __init__(self)|
+|`MainWindow.viewer`|fn|pub|256-258|def viewer(self)|
+|`MainWindow.selections`|fn|pub|260-262|def selections(self)|
+|`MainWindow._setupConversionModeControls`|fn|priv|263-280|def _setupConversionModeControls(self)|
+|`MainWindow._setupTrimSettingsControls`|fn|priv|281-291|def _setupTrimSettingsControls(self)|
+|`MainWindow._setupTrimPresetControls`|fn|priv|292-322|def _setupTrimPresetControls(self)|
+|`_setupTrimPresetAction`|fn|priv|323-340|def _setupTrimPresetAction(self)|
+|`_trimPresetEditableFlag`|fn|priv|341-345|def _trimPresetEditableFlag(self)|
+|`_trimPresetRole`|fn|priv|346-350|def _trimPresetRole(self)|
+|`_defaultTrimPresetName`|fn|priv|351-358|def _defaultTrimPresetName(self)|
+|`_toBool`|fn|priv|359-369|def _toBool(self, value)|
+|`_updateTrimPagesRangeControls`|fn|priv|370-380|def _updateTrimPagesRangeControls(self, enabled)|
+|`_parseTrimPagesRange`|fn|priv|381-397|def _parseTrimPagesRange(self)|
+|`_collectRuntimeConfigValues`|fn|priv|398-413|def _collectRuntimeConfigValues(self)|
+|`_trimPresetFromCurrentSelection`|fn|priv|414-433|def _trimPresetFromCurrentSelection(self)|
+|`_refreshTrimPresetList`|fn|priv|434-462|def _refreshTrimPresetList(self)|
+|`_persistTrimPresetDocument`|fn|priv|463-480|def _persistTrimPresetDocument(self)|
+|`_applyCropPreset`|fn|priv|481-512|def _applyCropPreset(self, crop_values)|
+|`_applyTrimPreset`|fn|priv|513-538|def _applyTrimPreset(self, index)|
+|`slotTrimPresetClicked`|fn|pub|539-551|def slotTrimPresetClicked(self, item, column)|
+|`slotTrimPresetDoubleClicked`|fn|pub|552-562|def slotTrimPresetDoubleClicked(self, item, column)|
+|`slotTrimPresetChanged`|fn|pub|563-586|def slotTrimPresetChanged(self, item, column)|
+|`slotDeleteTrimPreset`|fn|pub|587-605|def slotDeleteTrimPreset(self)|
+|`slotSaveMarginsPreset`|fn|pub|606-617|def slotSaveMarginsPreset(self)|
+|`selectedConversionMode`|fn|pub|618-625|def selectedConversionMode(self)|
+|`currentSelectionUpdated`|fn|pub|626-641|def currentSelectionUpdated(self)|
+|`readSettings`|fn|pub|642-689|def readSettings(self)|
+|`writeSettings`|fn|pub|690-714|def writeSettings(self)|
+|`openFile`|fn|pub|715-734|def openFile(self, fileName)|
+|`slotOpenFile`|fn|pub|735-740|def slotOpenFile(self)|
+|`slotSelectFile`|fn|pub|741-750|def slotSelectFile(self)|
+|`showWarning`|fn|pub|751-758|def showWarning(self, title, text)|
+|`str2pages`|fn|pub|759-776|def str2pages(self, s)|
+|`requestedUnsupportedGhostscriptOptions`|fn|pub|777-784|def requestedUnsupportedGhostscriptOptions(self)|
+|`primarySelectionCropValue`|fn|pub|785-798|def primarySelectionCropValue(self, page_indexes)|
+|`buildGhostscriptCropPlan`|fn|pub|799-833|def buildGhostscriptCropPlan(self, inputFileName, outputF...|
+|`createConversionProgressDialog`|fn|pub|834-856|def createConversionProgressDialog(self, totalPages)|
+|`slotPdfFrame`|fn|pub|857-985|def slotPdfFrame(self)|
+|`mark_page_processed`|fn|pub|917-935|def mark_page_processed(page_number)|
+|`on_output_line`|fn|pub|936-950|def on_output_line(line)|
+|`slotZoomIn`|fn|pub|986-989|def slotZoomIn(self)|
+|`slotZoomOut`|fn|pub|990-993|def slotZoomOut(self)|
+|`slotFitInView`|fn|pub|994-998|def slotFitInView(self, checked)|
+|`slotSplitterMoved`|fn|pub|999-1001|def slotSplitterMoved(self, pos, idx)|
+|`slotPreviousPage`|fn|pub|1002-1005|def slotPreviousPage(self)|
+|`slotNextPage`|fn|pub|1006-1009|def slotNextPage(self)|
+|`slotFirstPage`|fn|pub|1010-1013|def slotFirstPage(self)|
+|`slotLastPage`|fn|pub|1014-1017|def slotLastPage(self)|
+|`slotCurrentPageEdited`|fn|pub|1018-1025|def slotCurrentPageEdited(self, text)|
+|`updateControls`|fn|pub|1026-1034|def updateControls(self)|
+|`slotSelectionMode`|fn|pub|1035-1038|def slotSelectionMode(self, checked)|
+|`slotSelExceptionsChanged`|fn|pub|1039-1041|def slotSelExceptionsChanged(self)|
+|`slotSelExceptionsEdited`|fn|pub|1042-1046|def slotSelExceptionsEdited(self, text)|
+|`slotSelAspectRatioChanged`|fn|pub|1047-1055|def slotSelAspectRatioChanged(self)|
+|`slotSelAspectRatioTypeChanged`|fn|pub|1056-1075|def slotSelAspectRatioTypeChanged(self, index)|
+|`distributeAspectRatioChanged`|fn|pub|1076-1078|def distributeAspectRatioChanged(self, aspectRatio)|
+|`slotDistributeAspectRatioChanged`|fn|pub|1079-1081|def slotDistributeAspectRatioChanged(self)|
+|`slotDeviceTypeChanged`|fn|pub|1082-1088|def slotDeviceTypeChanged(self, index)|
+|`slotContextMenu`|fn|pub|1089-1109|def slotContextMenu(self, pos)|
+|`slotDeleteSelection`|fn|pub|1110-1113|def slotDeleteSelection(self)|
+|`slotNewSelection`|fn|pub|1114-1116|def slotNewSelection(self)|
+|`slotNewSelectionGrid`|fn|pub|1117-1126|def slotNewSelectionGrid(self)|
+|`createSelectionGrid`|fn|pub|1127-1160|def createSelectionGrid(self, grid)|
+|`getPadding`|fn|pub|1161-1188|def getPadding(self)|
+|`slotTrimMarginsAll`|fn|pub|1189-1201|def slotTrimMarginsAll(self)|
+|`slotTrimMargins`|fn|pub|1202-1206|def slotTrimMargins(self)|
+|`trimMarginsSelection`|fn|pub|1207-1310|def trimMarginsSelection(self, sel)|
+|`resizeEvent`|fn|pub|1311-1313|def resizeEvent(self, event)|
+|`closeEvent`|fn|pub|1314-1315|def closeEvent(self, event)|
 
 
 ---
 
-# mainwindowui_qt5.py | Python | 469L | 3 symbols | 1 imports | 7 comments
+# mainwindowui_qt5.py | Python | 483L | 3 symbols | 1 imports | 7 comments
 > Path: `src/pdfframe/mainwindowui_qt5.py`
 
 ## Imports
@@ -583,19 +598,19 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 ### fn `def setupUi(self, MainWindow)` (L15-214)
 
-### fn `def retranslateUi(self, MainWindow)` (L377-390)
+### fn `def retranslateUi(self, MainWindow)` (L388-401)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
 |`Ui_MainWindow`|class|pub|14-213|class Ui_MainWindow(object)|
 |`setupUi`|fn|pub|15-214|def setupUi(self, MainWindow)|
-|`retranslateUi`|fn|pub|377-390|def retranslateUi(self, MainWindow)|
+|`retranslateUi`|fn|pub|388-401|def retranslateUi(self, MainWindow)|
 
 
 ---
 
-# mainwindowui_qt6.py | Python | 467L | 3 symbols | 1 imports | 6 comments
+# mainwindowui_qt6.py | Python | 481L | 3 symbols | 1 imports | 6 comments
 > Path: `src/pdfframe/mainwindowui_qt6.py`
 
 ## Imports
@@ -609,14 +624,14 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 ### fn `def setupUi(self, MainWindow)` (L13-212)
 
-### fn `def retranslateUi(self, MainWindow)` (L375-388)
+### fn `def retranslateUi(self, MainWindow)` (L386-399)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
 |`Ui_MainWindow`|class|pub|12-211|class Ui_MainWindow(object)|
 |`setupUi`|fn|pub|13-212|def setupUi(self, MainWindow)|
-|`retranslateUi`|fn|pub|375-388|def retranslateUi(self, MainWindow)|
+|`retranslateUi`|fn|pub|386-399|def retranslateUi(self, MainWindow)|
 
 
 ---
