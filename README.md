@@ -28,13 +28,17 @@ TODO: fill with description.
 
 
 ## Feature Highlights
-- TODO: fill features
+- Toolbar actions `Trim Margins`, `Save Margins`, and `Go!` use dedicated bundled icons for consistent appearance.
+- `Save Margins` is placed next to `Trim Margins`, and `Go!` is placed at the far right of the toolbar.
 
 
 
 ## Quick Start
 
-TODO: fill quik start.
+1. Open a PDF file.
+2. Use `Trim Margins` to auto-trim the current page/selected range.
+3. Use `Save Margins` to store the current crop/frame setup as a preset.
+4. Click `Go!` to generate the output PDF.
 
 
 ## Acknowledgments
