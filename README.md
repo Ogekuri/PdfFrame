@@ -39,4 +39,4 @@ TODO: fill quik start.
 
 ## Acknowledgments
 
-TODO: fill acknowledgments
+- Thanks to Prof. Armin Straub for developing [Krop](https://arminstraub.com/software/krop).
