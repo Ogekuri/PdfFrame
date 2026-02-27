@@ -94,6 +94,8 @@ class _FakeSelection:
         self.rect = mainwindow_module.QRectF(0, 0, 10, 10)
         self.aspectRatio = None
         self.updated = False
+        self.last_top_left = None
+        self.last_bottom_right = None
 
     def mapRectToImage(self, rect):
         del rect
@@ -103,7 +105,8 @@ class _FakeSelection:
         return rect
 
     def setBoundingRect(self, top_left, bottom_right):
-        del top_left, bottom_right
+        self.last_top_left = (top_left.x(), top_left.y())
+        self.last_bottom_right = (bottom_right.x(), bottom_right.y())
         self.updated = True
 
     def selectionVisibleOnPage(self, pageIndex):
@@ -223,3 +226,50 @@ def test_trim_uses_all_pages_when_checkbox_checked(monkeypatch):
     monkeypatch.setattr(mainwindow_module, "autoTrimMargins", _fake_auto_trim)
     MainWindow.trimMarginsSelection(fake, selection)
     assert len(page_indices_seen) == 3
+
+
+def test_trim_padding_expands_final_highlighted_area(monkeypatch):
+    """Arrange/Act/Assert: padding expands final trim rectangle beyond trimmed box."""
+
+    class _FakeImage:
+        def width(self):
+            return 20
+
+        def height(self):
+            return 20
+
+    class _FakeViewer:
+        currentPageIndex = 0
+
+        def numPages(self):
+            return 1
+
+        def getImage(self, idx):
+            del idx
+            return _FakeImage()
+
+    class _InsetSelection(_FakeSelection):
+        def __init__(self):
+            super().__init__()
+            self.rect = mainwindow_module.QRectF(2, 2, 4, 4)
+
+        def mapRectToImage(self, rect):
+            del rect
+            return mainwindow_module.QRectF(2, 2, 4, 4)
+
+    def _fake_auto_trim(img, orect, nrect, sensitivity, allowedchanges):
+        del img, sensitivity, allowedchanges
+        return orect if nrect is None else nrect
+
+    fake = _FakeTrimWindow(padding="1")
+    fake.viewer = _FakeViewer()
+    fake.getPadding = lambda: MainWindow.getPadding(fake)
+    selection = _InsetSelection()
+
+    monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
+    monkeypatch.setattr(mainwindow_module, "autoTrimMargins", _fake_auto_trim)
+
+    MainWindow.trimMarginsSelection(fake, selection)
+
+    assert selection.last_top_left == (1.0, 1.0)
+    assert selection.last_bottom_right == (7.0, 7.0)

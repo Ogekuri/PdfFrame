@@ -884,8 +884,22 @@ class MainWindow(QMainWindow):
             # adjust for padding ...
             dtop, dright, dbottom, dleft = self.getPadding()
             nrect.adjust(-dleft, -dtop, dright, dbottom)
-            # ... but don't overadjust
-            nrect = nrect.intersected(orect)
+            # ... but don't overadjust beyond page bounds
+            page_image = self.viewer.getImage(self.viewer.currentPageIndex)
+            if (
+                page_image is not None
+                and hasattr(page_image, "width")
+                and hasattr(page_image, "height")
+            ):
+                page_rect = QRectF(
+                    0.0,
+                    0.0,
+                    float(page_image.width()),
+                    float(page_image.height()),
+                )
+                nrect = nrect.intersected(page_rect)
+            else:
+                nrect = nrect.intersected(orect)
 
             # take fixed aspect ratio into account
             if sel.aspectRatio:

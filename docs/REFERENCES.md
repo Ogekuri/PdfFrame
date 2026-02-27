@@ -1,9 +1,6 @@
 # Files Structure
 ```
 .
-├── com.ogekuri.pdfframe.desktop
-├── com.ogekuri.pdfframe.metainfo.xml
-├── com.ogekuri.pdfframe.svg
 └── src
     └── pdfframe
         ├── __init__.py
@@ -21,21 +18,6 @@
         ├── vieweritem.py
         └── viewerselections.py
 ```
-
-# com.ogekuri.pdfframe.desktop | Desktop Entry
-> Path: `com.ogekuri.pdfframe.desktop`
-
-- Keys: `Type=Application`, `Name=PdfFrame`, `TryExec=pdfframe`, `Exec=pdfframe %F`, `Icon=com.ogekuri.pdfframe`.
-
----
-
-# com.ogekuri.pdfframe.metainfo.xml | AppStream Metadata
-> Path: `com.ogekuri.pdfframe.metainfo.xml`
-
-- IDs: `<id>com.ogekuri.pdfframe</id>`, `<launchable type="desktop-id">com.ogekuri.pdfframe.desktop</launchable>`.
-- Display name: `<name>PdfFrame</name>`.
-
----
 
 # __init__.py | Python | 0L | 0 symbols | 0 imports | 0 comments
 > Path: `src/pdfframe/__init__.py`
@@ -129,7 +111,7 @@ from PyQt5 import QtCore
 
 ---
 
-# mainwindow.py | Python | 921L | 68 symbols | 11 imports | 46 comments
+# mainwindow.py | Python | 935L | 68 symbols | 11 imports | 46 comments
 > Path: `src/pdfframe/mainwindow.py`
 
 ## Imports
@@ -302,15 +284,15 @@ from pdfframe.autotrim import autoTrimMargins
 
 ### fn `def slotTrimMargins(self)` (L833-837)
 
-### fn `def trimMarginsSelection(self, sel)` (L838-916)
+### fn `def trimMarginsSelection(self, sel)` (L838-930)
 - Brief: Computes auto-trim rectangle for a selection using configured thresholds.
 - Details: Reads sensitivity/allowed-changes from Basic-tab controls, selects page scope based on "Use all pages" checkbox (current page only when unchecked, all visible pages when checked), and applies auto-trim with padding and aspect-ratio adjustments.
 - Param: sel {ViewerSelectionItem} Selection item to trim.
 - Return: {None} Mutates selection bounding rectangle.
 
-### fn `def resizeEvent(self, event)` (L917-919)
+### fn `def resizeEvent(self, event)` (L931-933)
 
-### fn `def closeEvent(self, event)` (L920-921)
+### fn `def closeEvent(self, event)` (L934-935)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
@@ -380,9 +362,9 @@ from pdfframe.autotrim import autoTrimMargins
 |`getPadding`|fn|pub|792-819|def getPadding(self)|
 |`slotTrimMarginsAll`|fn|pub|820-832|def slotTrimMarginsAll(self)|
 |`slotTrimMargins`|fn|pub|833-837|def slotTrimMargins(self)|
-|`trimMarginsSelection`|fn|pub|838-916|def trimMarginsSelection(self, sel)|
-|`resizeEvent`|fn|pub|917-919|def resizeEvent(self, event)|
-|`closeEvent`|fn|pub|920-921|def closeEvent(self, event)|
+|`trimMarginsSelection`|fn|pub|838-930|def trimMarginsSelection(self, sel)|
+|`resizeEvent`|fn|pub|931-933|def resizeEvent(self, event)|
+|`closeEvent`|fn|pub|934-935|def closeEvent(self, event)|
 
 
 ---
@@ -1108,3 +1090,4 @@ from pdfframe.qt import *
 |`SelectionCornerHandleItem.mouseMoveEvent`|fn|pub|633-638|def mouseMoveEvent(self, event)|
 |`SelectionCornerHandleItem.mouseReleaseEvent`|fn|pub|639-642|def mouseReleaseEvent(self, event)|
 |`aspectRatioFromStr`|fn|pub|643-654|def aspectRatioFromStr(s)|
+
