@@ -204,3 +204,21 @@ def test_toolbar_places_go_after_save_margins_at_right_edge():
     assert source.index("self.ui.toolBar.insertAction(insert_before, self.actionSaveMargins)") < source.index(
         "self.ui.toolBar.addAction(self.ui.actionPdfFrame)"
     )
+
+
+def test_toolbar_icon_assets_exist_for_trim_save_and_go():
+    """Arrange/Act/Assert: dedicated icon assets exist for Trim Margins, Save Margins, and Go."""
+    icons_dir = Path(__file__).resolve().parents[1] / "src" / "pdfframe" / "icons"
+    assert (icons_dir / "trim-margins.svg").is_file()
+    assert (icons_dir / "save-margins.svg").is_file()
+    assert (icons_dir / "go.svg").is_file()
+
+
+def test_toolbar_actions_bind_dedicated_icon_assets():
+    """Arrange/Act/Assert: toolbar actions bind generated icon assets with theme fallbacks."""
+    source_path = Path(__file__).resolve().parents[1] / "src" / "pdfframe" / "mainwindow.py"
+    source = source_path.read_text(encoding="iso-8859-1")
+    assert 'self.ui.actionPdfFrame.setIcon(self._toolbarIconFromAsset("go.svg", "face-smile"))' in source
+    assert 'self.ui.actionTrimMargins.setIcon(self._toolbarIconFromAsset("trim-margins.svg", "transform-crop"))' in source
+    assert 'self.ui.actionTrimMarginsAll.setIcon(self._toolbarIconFromAsset("trim-margins.svg", "transform-crop"))' in source
+    assert 'self.actionSaveMargins.setIcon(self._toolbarIconFromAsset("save-margins.svg", "document-save"))' in source

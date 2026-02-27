@@ -16,6 +16,7 @@ the Free Software Foundation; either version 3 of the License, or
 import sys
 import re
 from datetime import datetime
+from pathlib import Path
 from os.path import splitext
 from shutil import which
 
@@ -161,7 +162,7 @@ class MainWindow(QMainWindow):
         # http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
         self.setWindowIcon(QIcon.fromTheme('edit-cut'))
         self.ui.actionOpenFile.setIcon(QIcon.fromTheme('document-open'))
-        self.ui.actionPdfFrame.setIcon(QIcon.fromTheme('face-smile'))
+        self.ui.actionPdfFrame.setIcon(self._toolbarIconFromAsset("go.svg", "face-smile"))
         self.ui.actionZoomIn.setIcon(QIcon.fromTheme('zoom-in'))
         self.ui.actionZoomOut.setIcon(QIcon.fromTheme('zoom-out'))
         self.ui.actionFitInView.setIcon(QIcon.fromTheme('zoom-fit-best'))
@@ -169,8 +170,8 @@ class MainWindow(QMainWindow):
         self.ui.actionNextPage.setIcon(QIcon.fromTheme('go-next'))
         self.ui.actionFirstPage.setIcon(QIcon.fromTheme('go-first'))
         self.ui.actionLastPage.setIcon(QIcon.fromTheme('go-last'))
-        self.ui.actionTrimMargins.setIcon(QIcon.fromTheme('transform-crop'))
-        self.ui.actionTrimMarginsAll.setIcon(QIcon.fromTheme('transform-crop'))
+        self.ui.actionTrimMargins.setIcon(self._toolbarIconFromAsset("trim-margins.svg", "transform-crop"))
+        self.ui.actionTrimMarginsAll.setIcon(self._toolbarIconFromAsset("trim-margins.svg", "transform-crop"))
         # self.ui.actionTrimMarginsAll.setIcon(QIcon.fromTheme('select-rectangular'))
         # self.ui.actionTrimMarginsAll.setIcon(QIcon.fromTheme('edit-guides'))
         self.ui.actionNewSelection.setIcon(QIcon.fromTheme('select-rectangular'))
@@ -253,6 +254,19 @@ class MainWindow(QMainWindow):
     def selections(self):
         return self.viewer.selections
 
+    def _toolbarIconFromAsset(self, filename, fallbackTheme):
+        """
+        @brief Resolves toolbar icon from bundled asset with fallback theme icon.
+        @details Loads icon from `src/pdfframe/icons/<filename>` when available; otherwise returns `QIcon.fromTheme(<fallbackTheme>)`.
+        @param filename {str} Bundled icon filename.
+        @param fallbackTheme {str} Freedesktop theme-icon token.
+        @return {QIcon} Toolbar icon object.
+        """
+        icon_path = Path(__file__).resolve().parent / "icons" / filename
+        if icon_path.is_file():
+            return QIcon(str(icon_path))
+        return QIcon.fromTheme(fallbackTheme)
+
     def _setupConversionModeControls(self):
         """
         @brief Adds conversion mode controls to the basic tab.
@@ -322,11 +336,12 @@ class MainWindow(QMainWindow):
     def _setupTrimPresetAction(self):
         """
         @brief Adds the `Save Margins` toolbar action next to trim action.
-        @details Inserts a dedicated action directly to the right of `Trim Margins`, then moves `Go!` to the far-right position immediately after `Save Margins`, and keeps preset-save action disabled until a PDF is loaded.
+        @details Inserts a dedicated action directly to the right of `Trim Margins`, applies the dedicated `Save Margins` icon, then moves `Go!` to the far-right position immediately after `Save Margins`, and keeps preset-save action disabled until a PDF is loaded.
         @return {None} Applies UI side effects.
         """
         self.actionSaveMargins = QAction(self)
         self.actionSaveMargins.setText(self.tr("Save Margins"))
+        self.actionSaveMargins.setIcon(self._toolbarIconFromAsset("save-margins.svg", "document-save"))
         self.actionSaveMargins.setEnabled(False)
         self.actionSaveMargins.triggered.connect(self.slotSaveMarginsPreset)
         toolbar_actions = self.ui.toolBar.actions()
