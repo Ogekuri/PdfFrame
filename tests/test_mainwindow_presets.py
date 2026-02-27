@@ -193,3 +193,14 @@ def test_presets_columns_disable_stretch_last_section_for_full_name_width():
     source_path = Path(__file__).resolve().parents[1] / "src" / "pdfframe" / "mainwindow.py"
     source = source_path.read_text(encoding="iso-8859-1")
     assert "header.setStretchLastSection(False)" in source
+
+
+def test_toolbar_places_go_after_save_margins_at_right_edge():
+    """Arrange/Act/Assert: toolbar moves Go after Save Margins at the right edge."""
+    source_path = Path(__file__).resolve().parents[1] / "src" / "pdfframe" / "mainwindow.py"
+    source = source_path.read_text(encoding="iso-8859-1")
+    assert "self.ui.toolBar.removeAction(self.ui.actionPdfFrame)" in source
+    assert "self.ui.toolBar.addAction(self.ui.actionPdfFrame)" in source
+    assert source.index("self.ui.toolBar.insertAction(insert_before, self.actionSaveMargins)") < source.index(
+        "self.ui.toolBar.addAction(self.ui.actionPdfFrame)"
+    )

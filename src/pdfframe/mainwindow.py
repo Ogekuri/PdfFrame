@@ -322,7 +322,7 @@ class MainWindow(QMainWindow):
     def _setupTrimPresetAction(self):
         """
         @brief Adds the `Save Margins` toolbar action next to trim action.
-        @details Inserts a dedicated action directly to the right of `Trim Margins`, then binds it to preset creation and keeps it disabled until a PDF is loaded.
+        @details Inserts a dedicated action directly to the right of `Trim Margins`, then moves `Go!` to the far-right position immediately after `Save Margins`, and keeps preset-save action disabled until a PDF is loaded.
         @return {None} Applies UI side effects.
         """
         self.actionSaveMargins = QAction(self)
@@ -336,6 +336,9 @@ class MainWindow(QMainWindow):
             if index + 1 < len(toolbar_actions):
                 insert_before = toolbar_actions[index + 1]
         self.ui.toolBar.insertAction(insert_before, self.actionSaveMargins)
+        if self.ui.actionPdfFrame in self.ui.toolBar.actions():
+            self.ui.toolBar.removeAction(self.ui.actionPdfFrame)
+        self.ui.toolBar.addAction(self.ui.actionPdfFrame)
 
     def _trimPresetEditableFlag(self):
         if PYQT6:
