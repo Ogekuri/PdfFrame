@@ -37,7 +37,7 @@
   - `pdfframe.application.main(...)` [`src/pdfframe/application.py`]
   - module guard `if __name__ == "__main__": main()` [`src/pdfframe/__main__.py`]
 - Lifecycle/trigger:
-  - Starts when `pdfframe`/`pdfframe` launcher invokes Python entrypoint.
+  - Starts when the `pdfframe` CLI or desktop launcher (`com.ogekuri.pdfframe.desktop`) invokes the Python entrypoint.
   - Initializes `QApplication`, constructs `MainWindow`, applies CLI-derived UI state, then enters Qt event loop via `app.exec()`.
   - Emits renderer-selection stderr diagnostics only when `--verbose` is present in CLI arguments.
   - Stops when window closes or `--go` schedules immediate crop+close using Qt timers.
@@ -89,6 +89,7 @@
 - External Boundaries:
   - Qt framework event loop, signals/slots, widgets, scene rendering (`PyQt6`/`PyQt5`).
   - PDF metadata/render backends (`fitz`, `popplerqt5`) used for GUI page visualization and geometry.
+  - Desktop/AppStream integration metadata (`com.ogekuri.pdfframe.desktop`, `com.ogekuri.pdfframe.metainfo.xml`) consumed by desktop environments.
   - Ghostscript executable subprocess boundary (`gs` with pdfwrite and BeginPage clipping commands).
   - pypdf read/write boundary used to assemble output PDF from processed selected cropped pages.
   - OS filesystem reads/writes for input and output files.

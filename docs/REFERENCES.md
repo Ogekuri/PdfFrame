@@ -1,6 +1,9 @@
 # Files Structure
 ```
 .
+├── com.ogekuri.pdfframe.desktop
+├── com.ogekuri.pdfframe.metainfo.xml
+├── com.ogekuri.pdfframe.svg
 └── src
     └── pdfframe
         ├── __init__.py
@@ -18,6 +21,21 @@
         ├── vieweritem.py
         └── viewerselections.py
 ```
+
+# com.ogekuri.pdfframe.desktop | Desktop Entry
+> Path: `com.ogekuri.pdfframe.desktop`
+
+- Keys: `Type=Application`, `Name=PdfFrame`, `TryExec=pdfframe`, `Exec=pdfframe %F`, `Icon=com.ogekuri.pdfframe`.
+
+---
+
+# com.ogekuri.pdfframe.metainfo.xml | AppStream Metadata
+> Path: `com.ogekuri.pdfframe.metainfo.xml`
+
+- IDs: `<id>com.ogekuri.pdfframe</id>`, `<launchable type="desktop-id">com.ogekuri.pdfframe.desktop</launchable>`.
+- Display name: `<name>PdfFrame</name>`.
+
+---
 
 # __init__.py | Python | 0L | 0 symbols | 0 imports | 0 comments
 > Path: `src/pdfframe/__init__.py`
@@ -1090,4 +1108,3 @@ from pdfframe.qt import *
 |`SelectionCornerHandleItem.mouseMoveEvent`|fn|pub|633-638|def mouseMoveEvent(self, event)|
 |`SelectionCornerHandleItem.mouseReleaseEvent`|fn|pub|639-642|def mouseReleaseEvent(self, event)|
 |`aspectRatioFromStr`|fn|pub|643-654|def aspectRatioFromStr(s)|
-

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=PdfFrame
+GenericName=Crop PDF files
+Comment=A tool to crop PDF files
+TryExec=pdfframe
+Exec=pdfframe %F
+Icon=com.ogekuri.pdfframe
+MimeType=application/pdf;
+Categories=Utility;
+Keywords=pdf;crop;rotate;ereader;

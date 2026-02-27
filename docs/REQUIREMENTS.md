@@ -1,15 +1,18 @@
 ---
 title: "PdfFrame Requirements"
 description: Software requirements specification
-version: "0.2.0"
-date: "2026-02-26"
-author: "req-create"
+version: "0.2.1"
+date: "2026-02-27"
+author: "req-change"
 scope:
   paths:
     - "src/pdfframe/**/*.py"
     - "src/pdfframe/mainwindow.ui"
-    - "requirements.txt"
-    - "pdfframe.sh"
+   - "requirements.txt"
+   - "pdfframe.sh"
+    - "com.ogekuri.pdfframe.desktop"
+    - "com.ogekuri.pdfframe.metainfo.xml"
+    - "com.ogekuri.pdfframe.svg"
     - ".github/workflows/release-uvx.yml"
     - "tests.sh"
   excludes:
@@ -58,6 +61,9 @@ PdfFrame implements PDF page-region cropping through a Qt GUI with optional comm
 │       └── version.py
 ├── tests/
 │   └── .place-holder
+├── com.ogekuri.pdfframe.desktop
+├── com.ogekuri.pdfframe.metainfo.xml
+├── com.ogekuri.pdfframe.svg
 └── tests.sh
 ```
 
@@ -68,14 +74,14 @@ PdfFrame implements PDF page-region cropping through a Qt GUI with optional comm
 | Rendering backends (PyMuPDF/PopplerQt5) | `src/pdfframe/vieweritem.py` imports `fitz` and optionally `popplerqt5.Poppler`. |
 | External crop engine (Ghostscript) | `src/pdfframe/mainwindow.py` builds and executes `gs` command lines that apply page crop boxes. |
 | GUI metadata/render backends | `src/pdfframe/vieweritem.py` imports `fitz` and optionally `popplerqt5.Poppler` for page rendering and geometry used by GUI. |
-| Desktop command name | `com.ogekuri.pdfframe.desktop` uses `TryExec=pdfframe` and `Exec=pdfframe %F`. |
+| Desktop/AppStream branding | `com.ogekuri.pdfframe.desktop` and `com.ogekuri.pdfframe.metainfo.xml` use `pdfframe` executable/name and `com.ogekuri.pdfframe` IDs; `com.ogekuri.pdfframe.svg` provides matching icon asset. |
 | Release automation | `.github/workflows/release-uvx.yml` defines `check-branch` and `build-release` jobs. |
 
 ## 2. Project Requirements
 
 ### 2.1 Project Functions
 - **PRJ-001**: MUST provide an interactive Qt GUI that loads a PDF, displays pages, allows selection editing, writes a cropped output PDF, and shows conversion progress with user-initiated cancellation.
-- **PRJ-002**: MUST expose a CLI entrypoint with program name `pdfframe` and optional input-file and output-file arguments.
+- **PRJ-002**: MUST expose a CLI entrypoint with program name `pdfframe`, optional input-file and output-file arguments, and desktop integration metadata rooted at application ID `com.ogekuri.pdfframe`.
 - **PRJ-003**: MUST map CLI options to GUI state before execution, including selection construction controls, optional `--whichpages` page filtering, crop-parameter controls used to derive Ghostscript crop arguments, and runtime logging flags.
 - **PRJ-004**: MUST support non-interactive mode `--go` that schedules cropping and closes the window immediately after startup.
 - **PRJ-005**: MUST support automatic initial selection grid creation from `--grid` and optional automatic margin trimming from `--trim`.
@@ -139,14 +145,14 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-003**: MUST include unit tests that validate Ghostscript script-style command argument construction for `frame` and `crop` modes from GUI-derived crop data.
 - **TST-004**: MUST include unit tests that validate failure diagnostics omit captured subprocess payload from user-visible warnings when Ghostscript execution fails and that captured page-output lines (including multiple page tokens in one chunk) drive progress updates from parsed processed page numbers.
 - **TST-005**: MUST include unit tests that validate large page-index support, allowed single-range `--whichpages` formats, and primary-selection-only crop planning for one-command range conversion.
-- **TST-006**: MUST include unit tests that validate Ghostscript command logging/output toggles (`--verbose`, `--debug`) and Ghostscript range command argument assembly.
+- **TST-006**: MUST include unit tests that validate Ghostscript command logging/output toggles (`--verbose`, `--debug`), Ghostscript range command argument assembly, and desktop integration branding identifiers (`pdfframe` / `com.ogekuri.pdfframe`).
 
 ## 5. Evidence Matrix
 
 | ID | Evidence (file + symbol + excerpt) |
 | --- | --- |
 | PRJ-001 | `src/pdfframe/mainwindow.py::slotPdfFrame` creates and updates a progress dialog while `run_ghostscript_command(...)` executes conversion. |
-| PRJ-002 | `src/pdfframe/application.py::main` — `ArgumentParser(prog='pdfframe')`, `parser.add_argument('file', nargs='?')`, `parser.add_argument('-o', '--output', ...)`. |
+| PRJ-002 | `src/pdfframe/application.py::main` — `ArgumentParser(prog='pdfframe')`, `parser.add_argument('file', nargs='?')`, `parser.add_argument('-o', '--output', ...)`; `com.ogekuri.pdfframe.desktop` and `com.ogekuri.pdfframe.metainfo.xml` use `pdfframe` and `com.ogekuri.pdfframe`. |
 | PRJ-003 | `src/pdfframe/application.py::main` — CLI values set UI fields (`editWhichPages`, mode, output), startup actions, and runtime logging flags (`window.verbose`, `window.debug`). |
 | PRJ-004 | `src/pdfframe/application.py::main` — `if args.go: QTimer.singleShot(0, window.slotPdfFrame); QTimer.singleShot(0, window.close)`. |
 | PRJ-005 | `src/pdfframe/application.py::main` — `if args.grid: window.createSelectionGrid(args.grid)` and `if args.trim: window.slotTrimMarginsAll()`. |
@@ -195,7 +201,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-003 | `tests/test_pdfframecmd.py` validates script-style Ghostscript command generation for `frame` and `crop` modes. |
 | TST-004 | `tests/test_mainwindow_conversion_errors.py`, `tests/test_pdfframecmd.py`, and `tests/test_mainwindow_progress_updates.py` validate warning payload redaction and captured page-output callbacks (including multi-token chunks) that drive progress updates from parsed page numbers. |
 | TST-005 | `tests/test_mainwindow_whichpages.py` verifies accepted/rejected `--whichpages` single-range formats, primary-selection-only planning, and large page-index range behavior. |
-| TST-006 | `tests/test_pdfframecmd.py` and `tests/test_mainwindow_progress_updates.py` validate command/output logging toggles and Ghostscript range-argument command assembly. |
+| TST-006 | `tests/test_pdfframecmd.py` and `tests/test_mainwindow_progress_updates.py` validate command/output logging toggles and Ghostscript range-argument command assembly; `tests/test_desktop_metadata_branding.py` validates desktop/AppStream branding identifiers. |
 
 ## 6. Test Coverage Summary
 
