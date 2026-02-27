@@ -10,7 +10,7 @@
 
 <p align="center">
 <strong>The <u>PdfFrame</u> crop pdf files with ghostscript.</strong><br>
-TODO: fill with description.
+PdfFrame is a desktop tool to crop or frame PDF pages with Ghostscript, including visual selection, margin trimming, and reusable margin presets.
 </p>
 
 <p align="center">
