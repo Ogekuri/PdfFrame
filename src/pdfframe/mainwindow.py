@@ -284,11 +284,11 @@ class MainWindow(QMainWindow):
 
     def _setupTrimPresetControls(self):
         """
-        @brief Adds trim preset controls under trim settings.
-        @details Creates a `Presets` section with editable list rows and per-row remove buttons, then wires click/double-click/item-change signals for apply/rename flows.
+        @brief Adds dedicated Basic-tab trim preset controls.
+        @details Creates a standalone `Presets` group placed immediately after `Trim settings`, configures stretch/fixed columns so preset names fill row width up to the right-edge remove button, and wires apply/rename/delete flows.
         @return {None} Applies UI side effects.
         """
-        self.groupTrimPresets = QGroupBox(self.ui.groupTrimMargins)
+        self.groupTrimPresets = QGroupBox(self.ui.tabBasic)
         self.groupTrimPresets.setTitle(self.tr("Presets"))
         group_layout = QVBoxLayout(self.groupTrimPresets)
         self.treeTrimPresets = QTreeWidget(self.groupTrimPresets)
@@ -296,6 +296,7 @@ class MainWindow(QMainWindow):
         self.treeTrimPresets.setHeaderHidden(True)
         self.treeTrimPresets.setRootIsDecorated(False)
         self.treeTrimPresets.setUniformRowHeights(True)
+        self.treeTrimPresets.setMinimumHeight(140)
         if PYQT6:
             self.treeTrimPresets.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         else:
@@ -303,12 +304,16 @@ class MainWindow(QMainWindow):
         header = self.treeTrimPresets.header()
         if PYQT6:
             header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-            header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         else:
             header.setSectionResizeMode(0, QHeaderView.Stretch)
-            header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(1, QHeaderView.Fixed)
+        self.treeTrimPresets.setColumnWidth(1, 28)
         group_layout.addWidget(self.treeTrimPresets)
-        self.ui.gridLayout_3.addWidget(self.groupTrimPresets, 6, 0, 1, 2)
+        trim_index = self.ui.verticalLayout_4.indexOf(self.ui.groupTrimMargins)
+        if trim_index < 0:
+            trim_index = self.ui.verticalLayout_4.count() - 1
+        self.ui.verticalLayout_4.insertWidget(trim_index + 1, self.groupTrimPresets)
         self.treeTrimPresets.itemClicked.connect(self.slotTrimPresetClicked)
         self.treeTrimPresets.itemDoubleClicked.connect(self.slotTrimPresetDoubleClicked)
         self.treeTrimPresets.itemChanged.connect(self.slotTrimPresetChanged)

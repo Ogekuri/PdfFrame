@@ -138,9 +138,9 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-023**: MUST use `~/.pdfframe/config.json` as persistent configuration storage with top-level objects `config` and `presets`.
 - **REQ-024**: MUST create `~/.pdfframe/config.json` with default hardcoded parameter values under `config` when the file is missing at startup.
 - **REQ-025**: MUST load `config` values from `~/.pdfframe/config.json` at startup and prioritize them over hardcoded defaults when keys are present.
-- **REQ-026**: MUST expose a `Presets` section under Basic-tab trim settings listing crop presets, where selecting a preset applies its saved crop/frame margins to the current crop controls.
+- **REQ-026**: MUST expose a dedicated `Presets` group in the Basic tab, positioned immediately after `Trim settings`, listing crop presets, where selecting a preset applies its saved crop/frame margins to current crop controls.
 - **REQ-027**: MUST expose a `Save Margins` button adjacent to `Trim Margins` that saves current crop/frame margins as a new preset named by default with `%Y/%m/%d %H:%M:%S`.
-- **REQ-028**: MUST support preset deletion via a `-` control anchored at the right edge of each preset-list row and preset rename via double-click inline editing, persisting the modified preset name.
+- **REQ-028**: MUST support preset deletion via a `-` control anchored at the right edge of each preset-list row, with preset-name text stretched to the available row width up to the `-` control, and support persisted double-click inline rename.
 - **REQ-029**: MUST persist the full `presets` array to `~/.pdfframe/config.json` after preset add, rename, update, or delete operations.
 - **REQ-030**: MUST label the trim threshold field as `Grayscale sensitivity` and provide tooltip/help text that defines it as tolerated grayscale transitions used by margin auto-trimming.
 - **REQ-031**: MUST expose `Trim pages range` and an immediate `Pages range:` field below it, where the field defaults to `1-1`, is enabled only when the toggle is enabled, and is separated from `Padding:` by a horizontal line.
@@ -158,7 +158,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-005**: MUST include unit tests that validate large page-index support, allowed single-range `--whichpages` formats, and primary-selection-only crop planning for one-command range conversion.
 - **TST-006**: MUST include unit tests that validate Ghostscript command logging/output toggles (`--verbose`, `--debug`), Ghostscript range command argument assembly, and desktop integration branding identifiers (`pdfframe` / `com.ogekuri.pdfframe`).
 - **TST-007**: MUST include unit tests that validate startup config bootstrap at `~/.pdfframe/config.json`, including missing-file creation with `config` defaults and startup override precedence for persisted `config` keys.
-- **TST-008**: MUST include unit tests that validate preset list CRUD interactions (save/apply/rename/delete), right-edge alignment behavior of per-row delete controls, and persistence of the `presets` array in `~/.pdfframe/config.json`.
+- **TST-008**: MUST include unit tests that validate preset list CRUD interactions (save/apply/rename/delete), dedicated Basic-tab `Presets` group placement after `Trim settings`, preset-name stretch-to-delete-button row layout, and persistence of the `presets` array in `~/.pdfframe/config.json`.
 - **TST-009**: MUST include unit tests that validate `Grayscale sensitivity` nomenclature across trim UI labels/tooltips/help text and runtime persistence keys used by trim settings and presets.
 - **TST-010**: MUST include unit tests that validate `Trim pages range` / `Pages range:` enablement-default UI behavior, required `N-M` validation, and trim execution limited to the configured visible-page range.
 - **TST-011**: MUST include unit tests that validate `Preserve fields` default/UI placement and `-dPreserveAnnots=true/false` command emission in both `frame` and `crop` modes.
@@ -216,9 +216,9 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-023 | `src/pdfframe/jsonconfig.py::default_config_path/default_config_document/JsonConfigStore._normalize_document` and `src/pdfframe/mainwindow.py::MainWindow.__init__` define and consume JSON storage at `~/.pdfframe/config.json` with `config` and `presets`. |
 | REQ-024 | `src/pdfframe/jsonconfig.py::JsonConfigStore.load_or_initialize` creates missing `~/.pdfframe/config.json` using `default_config_document()` values. |
 | REQ-025 | `src/pdfframe/mainwindow.py::readSettings` loads `config` values via `JsonConfigStore.load_or_initialize` and applies them to runtime controls instead of hardcoded defaults. |
-| REQ-026 | `src/pdfframe/mainwindow.py::_setupTrimPresetControls/slotTrimPresetClicked/_applyTrimPreset` adds `Presets` section under trim settings and applies selected preset values to crop controls/selection. |
+| REQ-026 | `src/pdfframe/mainwindow.py::_setupTrimPresetControls/slotTrimPresetClicked/_applyTrimPreset` places dedicated Basic-tab `Presets` group after `Trim settings` and applies selected preset values to crop controls/selection. |
 | REQ-027 | `src/pdfframe/mainwindow.py::_setupTrimPresetAction/slotSaveMarginsPreset/_defaultTrimPresetName` adds `Save Margins` button adjacent to trim action and creates timestamp-named presets `%Y/%m/%d %H:%M:%S`. |
-| REQ-028 | `src/pdfframe/mainwindow.py::_refreshTrimPresetList/slotDeleteTrimPreset/slotTrimPresetDoubleClicked/slotTrimPresetChanged` implements per-entry `-` deletion anchored at row right edge and double-click rename with persisted names. |
+| REQ-028 | `src/pdfframe/mainwindow.py::_refreshTrimPresetList/slotDeleteTrimPreset/slotTrimPresetDoubleClicked/slotTrimPresetChanged` implements right-edge `-` deletion with stretch-filled preset-name row text and persisted double-click rename. |
 | REQ-029 | `src/pdfframe/mainwindow.py::_persistTrimPresetDocument` plus calls in `slotSaveMarginsPreset`, `slotTrimPresetChanged`, `slotDeleteTrimPreset`, and `writeSettings` persist updated `presets` arrays to JSON config. |
 | REQ-030 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindowui_qt5.py`, and `src/pdfframe/mainwindowui_qt6.py` label trim threshold as `Grayscale sensitivity` and define tooltip/help semantics for tolerated grayscale transitions. |
 | REQ-031 | `src/pdfframe/mainwindow.py::_setupTrimSettingsControls/readSettings/writeSettings` and `src/pdfframe/mainwindow.ui` expose `Trim pages range` and `Pages range:` with default `1-1`, toggle-gated enablement, and separator placement before `Padding:`. |
@@ -231,7 +231,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-005 | `tests/test_mainwindow_whichpages.py` verifies accepted/rejected `--whichpages` single-range formats, primary-selection-only planning, and large page-index range behavior. |
 | TST-006 | `tests/test_pdfframecmd.py` and `tests/test_mainwindow_progress_updates.py` validate command/output logging toggles and Ghostscript range-argument command assembly; `tests/test_desktop_metadata_branding.py` validates desktop/AppStream branding identifiers. |
 | TST-007 | `tests/test_jsonconfig.py` validates JSON bootstrap default creation and persisted-config override precedence with default-key backfill. |
-| TST-008 | `tests/test_mainwindow_presets.py` validates preset snapshot/apply/rename/delete/save behavior, right-edge delete-control row layout, and persistence trigger paths. |
+| TST-008 | `tests/test_mainwindow_presets.py` validates preset CRUD plus dedicated `Presets` placement after trim settings, stretch-to-delete row layout, and persistence trigger paths. |
 | TST-009 | `tests/test_mainwindow_trim_settings.py` and `tests/test_mainwindow_presets.py` validate `grayscale_sensitivity` runtime/preset keys; `tests/test_mainwindow_trim_nomenclature.py` validates renamed UI labels/tooltips/help semantics. |
 | TST-010 | `tests/test_mainwindow_trim_pages_range.py` validates `Trim pages range` UI defaults, `Pages range` validation, and range-bounded page selection in `trimMarginsSelection`. |
 | TST-011 | `tests/test_mainwindow_preserve_fields.py` and `tests/test_pdfframecmd.py` validate default unchecked placement and Ghostscript `-dPreserveAnnots=true/false` emission in both conversion modes. |

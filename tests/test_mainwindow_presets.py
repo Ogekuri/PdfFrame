@@ -174,3 +174,15 @@ def test_preset_delete_button_is_right_aligned_in_row_container():
     assert "row_layout = QHBoxLayout(row_widget)" in source
     assert "row_layout.addStretch(1)" in source
     assert "self.treeTrimPresets.setItemWidget(item, 1, row_widget)" in source
+    assert "header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)" in source
+    assert "header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)" in source
+    assert "self.treeTrimPresets.setColumnWidth(1, 28)" in source
+
+
+def test_presets_group_is_inserted_after_trim_settings_in_basic_layout():
+    """Arrange/Act/Assert: presets panel is inserted after Trim settings in Basic layout."""
+    source_path = Path(__file__).resolve().parents[1] / "src" / "pdfframe" / "mainwindow.py"
+    source = source_path.read_text(encoding="iso-8859-1")
+    assert "self.groupTrimPresets = QGroupBox(self.ui.tabBasic)" in source
+    assert "trim_index = self.ui.verticalLayout_4.indexOf(self.ui.groupTrimMargins)" in source
+    assert "self.ui.verticalLayout_4.insertWidget(trim_index + 1, self.groupTrimPresets)" in source
