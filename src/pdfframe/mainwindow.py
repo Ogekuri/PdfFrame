@@ -14,11 +14,13 @@ the Free Software Foundation; either version 3 of the License, or
 """
 
 import sys
+from datetime import datetime
 from os.path import splitext
 from shutil import which
 
 from pdfframe.qt import *
 from pdfframe.config import PYQT6
+from pdfframe.jsonconfig import DEFAULT_CONFIG_VALUES, JsonConfigStore
 
 if PYQT6:
     from pdfframe.mainwindowui_qt6 import Ui_MainWindow
@@ -132,6 +134,9 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.verbose = False
         self.debug = False
+        self.configStore = JsonConfigStore()
+        self.trimPresets = []
+        self._updatingTrimPresetList = False
 
         self.selAspectRatioTypes = SelAspectRatioTypeManager()
         self.deviceTypes = DeviceTypeManager()
@@ -143,6 +148,8 @@ class MainWindow(QMainWindow):
 
         self._setupConversionModeControls()
         self._setupTrimSettingsControls()
+        self._setupTrimPresetControls()
+        self._setupTrimPresetAction()
         advanced_index = self.ui.tabWidget.indexOf(self.ui.tabAdvanced)
         if advanced_index >= 0:
             self.ui.tabWidget.removeTab(advanced_index)
@@ -280,6 +287,294 @@ class MainWindow(QMainWindow):
         self.ui.groupTrimMargins.setTitle(self.tr("Trim settings"))
         self.ui.verticalLayout_4.insertWidget(self.ui.verticalLayout_4.count() - 1, self.ui.groupTrimMargins)
 
+    def _setupTrimPresetControls(self):
+        """
+        @brief Adds trim preset controls under trim settings.
+        @details Creates a `Presets` section with editable list rows and per-row remove buttons, then wires click/double-click/item-change signals for apply/rename flows.
+        @return {None} Applies UI side effects.
+        """
+        self.groupTrimPresets = QGroupBox(self.ui.groupTrimMargins)
+        self.groupTrimPresets.setTitle(self.tr("Presets"))
+        group_layout = QVBoxLayout(self.groupTrimPresets)
+        self.treeTrimPresets = QTreeWidget(self.groupTrimPresets)
+        self.treeTrimPresets.setColumnCount(2)
+        self.treeTrimPresets.setHeaderHidden(True)
+        self.treeTrimPresets.setRootIsDecorated(False)
+        self.treeTrimPresets.setUniformRowHeights(True)
+        if PYQT6:
+            self.treeTrimPresets.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        else:
+            self.treeTrimPresets.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        header = self.treeTrimPresets.header()
+        if PYQT6:
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        else:
+            header.setSectionResizeMode(0, QHeaderView.Stretch)
+            header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        group_layout.addWidget(self.treeTrimPresets)
+        self.ui.gridLayout_3.addWidget(self.groupTrimPresets, 4, 0, 1, 2)
+        self.treeTrimPresets.itemClicked.connect(self.slotTrimPresetClicked)
+        self.treeTrimPresets.itemDoubleClicked.connect(self.slotTrimPresetDoubleClicked)
+        self.treeTrimPresets.itemChanged.connect(self.slotTrimPresetChanged)
+
+    def _setupTrimPresetAction(self):
+        """
+        @brief Adds the `Save Margins` toolbar action next to trim action.
+        @details Inserts a dedicated action directly to the right of `Trim Margins`, then binds it to preset creation and keeps it disabled until a PDF is loaded.
+        @return {None} Applies UI side effects.
+        """
+        self.actionSaveMargins = QAction(self)
+        self.actionSaveMargins.setText(self.tr("Save Margins"))
+        self.actionSaveMargins.setEnabled(False)
+        self.actionSaveMargins.triggered.connect(self.slotSaveMarginsPreset)
+        toolbar_actions = self.ui.toolBar.actions()
+        insert_before = None
+        if self.ui.actionTrimMarginsAll in toolbar_actions:
+            index = toolbar_actions.index(self.ui.actionTrimMarginsAll)
+            if index + 1 < len(toolbar_actions):
+                insert_before = toolbar_actions[index + 1]
+        self.ui.toolBar.insertAction(insert_before, self.actionSaveMargins)
+
+    def _trimPresetEditableFlag(self):
+        if PYQT6:
+            return Qt.ItemFlag.ItemIsEditable
+        return Qt.ItemIsEditable
+
+    def _trimPresetRole(self):
+        if PYQT6:
+            return Qt.ItemDataRole.UserRole
+        return Qt.UserRole
+
+    def _defaultTrimPresetName(self):
+        """
+        @brief Returns default trim preset name.
+        @details Generates timestamp name in `%Y/%m/%d %H:%M:%S` format.
+        @return {str} Default preset display label.
+        """
+        return datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+
+    def _toBool(self, value):
+        """
+        @brief Normalizes persisted boolean-like values.
+        @details Accepts bools and common string tokens produced by historical settings writers.
+        @param value {object} Input value from settings/config source.
+        @return {bool} Parsed boolean result.
+        """
+        if isinstance(value, bool):
+            return value
+        return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+    def _collectRuntimeConfigValues(self):
+        """
+        @brief Collects runtime config values mapped to JSON `config` keys.
+        @details Converts current UI control state into serializable values for `~/.pdfframe/config.json`.
+        @return {dict[str,object]} Persistable runtime config key/value mapping.
+        """
+        return {
+            "PDF/Optimize": "gs" if self.ui.checkGhostscript.isChecked() else "no",
+            "PDF/Mode": self.selectedConversionMode(),
+            "Trim/Padding": self.ui.editPadding.text(),
+            "Trim/AllowedChanges": self.ui.editAllowedChanges.text(),
+            "Trim/Sensitivity": self.ui.editSensitivity.text(),
+            "Trim/UseAllPages": self.ui.checkTrimUseAllPages.isChecked(),
+        }
+
+    def _trimPresetFromCurrentSelection(self):
+        """
+        @brief Creates a trim preset payload from current UI state.
+        @details Captures mode and trim parameters plus the primary current-page crop tuple when available.
+        @return {dict[str,object]} New preset payload ready for persistence.
+        """
+        preset = {
+            "name": self._defaultTrimPresetName(),
+            "mode": self.selectedConversionMode(),
+            "padding": self.ui.editPadding.text(),
+            "allowed_changes": self.ui.editAllowedChanges.text(),
+            "sensitivity": self.ui.editSensitivity.text(),
+            "use_all_pages": self.ui.checkTrimUseAllPages.isChecked(),
+        }
+        crop_values = self.viewer.cropValues(self.viewer.currentPageIndex)
+        if crop_values:
+            preset["crop"] = [float(value) for value in crop_values[0]]
+        return preset
+
+    def _refreshTrimPresetList(self):
+        """
+        @brief Rebuilds trim preset tree rows from in-memory presets.
+        @details Clears the list, creates editable name rows, and attaches one remove button per row mapped to preset index.
+        @return {None} Applies UI side effects.
+        """
+        self._updatingTrimPresetList = True
+        try:
+            self.treeTrimPresets.clear()
+            for index, preset in enumerate(self.trimPresets):
+                name = str(preset.get("name") or self._defaultTrimPresetName())
+                item = QTreeWidgetItem([name, ""])
+                item.setFlags(item.flags() | self._trimPresetEditableFlag())
+                item.setData(0, self._trimPresetRole(), index)
+                self.treeTrimPresets.addTopLevelItem(item)
+                remove_button = QPushButton("-", self.treeTrimPresets)
+                remove_button.setMaximumWidth(24)
+                remove_button.setProperty("preset_index", index)
+                remove_button.clicked.connect(self.slotDeleteTrimPreset)
+                self.treeTrimPresets.setItemWidget(item, 1, remove_button)
+        finally:
+            self._updatingTrimPresetList = False
+
+    def _persistTrimPresetDocument(self):
+        """
+        @brief Persists runtime config and preset list to JSON config file.
+        @details Writes both `config` values and `presets` array through JsonConfigStore, surfacing warning on I/O failures.
+        @return {None} Writes `~/.pdfframe/config.json`.
+        """
+        document = {
+            "config": self._collectRuntimeConfigValues(),
+            "presets": self.trimPresets,
+        }
+        try:
+            self.configStore.save(document)
+        except (OSError, ValueError, TypeError) as err:
+            self.showWarning(
+                self.tr("Could not write config file"),
+                self.tr("Failed to save ~/.pdfframe/config.json:\n\n{0}").format(err),
+            )
+
+    def _applyCropPreset(self, crop_values):
+        """
+        @brief Applies normalized crop tuple to current selection.
+        @details Maps `[left,top,right,bottom]` normalized margins to viewer coordinates and updates (or creates) the current selection.
+        @param crop_values {list[float]} Normalized crop tuple values.
+        @return {None} Mutates current selection geometry.
+        """
+        if self.viewer.isEmpty():
+            return
+        if not isinstance(crop_values, (list, tuple)) or len(crop_values) != 4:
+            return
+        left, top, right, bottom = [float(value) for value in crop_values]
+        left = min(1.0, max(0.0, left))
+        top = min(1.0, max(0.0, top))
+        right = min(1.0, max(0.0, right))
+        bottom = min(1.0, max(0.0, bottom))
+        if left + right >= 1.0 or top + bottom >= 1.0:
+            return
+
+        page_rect = self.viewer.irect
+        rect_left = page_rect.left() + left * page_rect.width()
+        rect_top = page_rect.top() + top * page_rect.height()
+        rect_right = page_rect.right() - right * page_rect.width()
+        rect_bottom = page_rect.bottom() - bottom * page_rect.height()
+        target_rect = QRectF(QPointF(rect_left, rect_top), QPointF(rect_right, rect_bottom)).normalized()
+        if target_rect.isEmpty():
+            return
+        selection = self.selections.currentSelection or self.selections.addSelection()
+        local_rect = selection.mapRectFromParent(target_rect)
+        selection.setBoundingRect(local_rect.topLeft(), local_rect.bottomRight())
+        self.pdfScene.update()
+
+    def _applyTrimPreset(self, index):
+        """
+        @brief Applies one stored preset to current runtime controls.
+        @details Restores mode and trim values, then applies saved crop tuple when present.
+        @param index {int} Preset list index.
+        @return {None} Applies UI and selection updates.
+        """
+        if index < 0 or index >= len(self.trimPresets):
+            return
+        preset = self.trimPresets[index]
+        mode = str(preset.get("mode", self.selectedConversionMode()))
+        self.radioModeFrame.setChecked(mode != "crop")
+        self.radioModeCrop.setChecked(mode == "crop")
+        self.ui.editPadding.setText(str(preset.get("padding", self.ui.editPadding.text())))
+        self.ui.editAllowedChanges.setText(
+            str(preset.get("allowed_changes", self.ui.editAllowedChanges.text()))
+        )
+        self.ui.editSensitivity.setText(str(preset.get("sensitivity", self.ui.editSensitivity.text())))
+        self.ui.checkTrimUseAllPages.setChecked(
+            self._toBool(preset.get("use_all_pages", self.ui.checkTrimUseAllPages.isChecked()))
+        )
+        if "crop" in preset:
+            self._applyCropPreset(preset.get("crop"))
+
+    def slotTrimPresetClicked(self, item, column):
+        """
+        @brief Applies a preset when the preset name cell is clicked.
+        @details Ignores delete-button column and list rebuild events.
+        @param item {QTreeWidgetItem} Clicked row item.
+        @param column {int} Clicked column index.
+        @return {None} Applies preset side effects.
+        """
+        if self._updatingTrimPresetList or column != 0:
+            return
+        index = self.treeTrimPresets.indexOfTopLevelItem(item)
+        self._applyTrimPreset(index)
+
+    def slotTrimPresetDoubleClicked(self, item, column):
+        """
+        @brief Starts inline rename for preset names.
+        @details Enables user-driven preset rename on double-click of first column.
+        @param item {QTreeWidgetItem} Double-clicked row item.
+        @param column {int} Double-clicked column index.
+        @return {None} Opens in-place editor.
+        """
+        if column == 0:
+            self.treeTrimPresets.editItem(item, 0)
+
+    def slotTrimPresetChanged(self, item, column):
+        """
+        @brief Persists preset rename changes from inline editing.
+        @details Normalizes empty labels to timestamp defaults and rewrites JSON config after updates.
+        @param item {QTreeWidgetItem} Changed row item.
+        @param column {int} Changed column index.
+        @return {None} Persists preset list updates.
+        """
+        if self._updatingTrimPresetList or column != 0:
+            return
+        index = self.treeTrimPresets.indexOfTopLevelItem(item)
+        if index < 0 or index >= len(self.trimPresets):
+            return
+        name = item.text(0).strip()
+        if not name:
+            name = self._defaultTrimPresetName()
+            self._updatingTrimPresetList = True
+            try:
+                item.setText(0, name)
+            finally:
+                self._updatingTrimPresetList = False
+        self.trimPresets[index]["name"] = name
+        self._persistTrimPresetDocument()
+
+    def slotDeleteTrimPreset(self):
+        """
+        @brief Deletes one preset from remove-button click.
+        @details Resolves row index from sender button metadata, updates in-memory list, refreshes UI, and persists JSON state.
+        @return {None} Applies preset delete side effects.
+        """
+        button = self.sender()
+        if button is None:
+            return
+        preset_index = button.property("preset_index")
+        if preset_index is None:
+            return
+        index = int(preset_index)
+        if index < 0 or index >= len(self.trimPresets):
+            return
+        del self.trimPresets[index]
+        self._refreshTrimPresetList()
+        self._persistTrimPresetDocument()
+
+    def slotSaveMarginsPreset(self):
+        """
+        @brief Saves current crop/trim state as a new preset.
+        @details Captures active control values, appends new preset with timestamp default name, refreshes list, and persists JSON state.
+        @return {None} Applies preset creation side effects.
+        """
+        if self.viewer.isEmpty():
+            return
+        self.trimPresets.append(self._trimPresetFromCurrentSelection())
+        self._refreshTrimPresetList()
+        self._persistTrimPresetDocument()
+
     def selectedConversionMode(self):
         """
         @brief Returns selected conversion mode for Ghostscript execution.
@@ -305,6 +600,11 @@ class MainWindow(QMainWindow):
             self.ui.groupCurrentSel.setEnabled(False)
 
     def readSettings(self):
+        """
+        @brief Reads persisted runtime settings from QSettings and JSON config.
+        @details Restores window geometry from QSettings, loads trim/runtime defaults from `~/.pdfframe/config.json`, and refreshes preset UI entries.
+        @return {None} Applies UI state restoration side effects.
+        """
         settings = QSettings()
         geometry = settings.value("Window/Geometry", "")
         if geometry:
@@ -313,20 +613,44 @@ class MainWindow(QMainWindow):
         if splitter:
             self.ui.splitter.restoreState(splitter)
         self.ui.actionFitInView.setChecked(settings.value("Window/FitInView", "") == "true")
-        self.ui.checkGhostscript.setChecked(settings.value("PDF/Optimize", "gs") == "gs")
+        config_document = None
+        try:
+            config_document = self.configStore.load_or_initialize()
+        except (OSError, ValueError, TypeError) as err:
+            self.showWarning(
+                self.tr("Could not read config file"),
+                self.tr("Failed to load ~/.pdfframe/config.json:\n\n{0}").format(err),
+            )
+        config_values = dict(DEFAULT_CONFIG_VALUES)
+        if config_document is not None:
+            config_values.update(config_document.get("config", {}))
+            self.trimPresets = list(config_document.get("presets", []))
+        else:
+            self.trimPresets = []
+
+        optimize = str(config_values.get("PDF/Optimize", "gs"))
+        self.ui.checkGhostscript.setChecked(optimize == "gs")
         mode = settings.value("PDF/Mode", "frame")
+        mode = str(config_values.get("PDF/Mode", mode) or mode)
         self.radioModeFrame.setChecked(mode != "crop")
         self.radioModeCrop.setChecked(mode == "crop")
-        self.ui.editPadding.setText(str(settings.value("Trim/Padding", "0") or "0"))
-        self.ui.editAllowedChanges.setText(str(settings.value("Trim/AllowedChanges", "0") or "0"))
-        self.ui.editSensitivity.setText(str(settings.value("Trim/Sensitivity", "5") or "5"))
+        self.ui.editPadding.setText(str(config_values.get("Trim/Padding", "0") or "0"))
+        self.ui.editAllowedChanges.setText(str(config_values.get("Trim/AllowedChanges", "0") or "0"))
+        self.ui.editSensitivity.setText(str(config_values.get("Trim/Sensitivity", "5") or "5"))
         self.ui.checkTrimUseAllPages.setChecked(
-            settings.value("Trim/UseAllPages", "false") == "true")
+            self._toBool(config_values.get("Trim/UseAllPages", False))
+        )
 
         self.selAspectRatioTypes.loadTypes(settings)
         self.deviceTypes.loadTypes(settings)
+        self._refreshTrimPresetList()
 
     def writeSettings(self):
+        """
+        @brief Persists runtime settings to legacy and JSON backends.
+        @details Writes window/session metadata to QSettings and writes trim/runtime config plus presets to `~/.pdfframe/config.json`.
+        @return {None} Persists runtime state.
+        """
         settings = QSettings()
         settings.setValue("Window/Geometry", self.saveGeometry())
         settings.setValue("Window/Splitter", self.ui.splitter.saveState())
@@ -343,6 +667,7 @@ class MainWindow(QMainWindow):
 
         self.selAspectRatioTypes.saveTypes(settings)
         self.deviceTypes.saveTypes(settings)
+        self._persistTrimPresetDocument()
 
     def openFile(self, fileName):
         if fileName:
@@ -360,6 +685,7 @@ class MainWindow(QMainWindow):
             self.setWindowFilePath(self.fileName)
             self.ui.actionPdfFrame.setEnabled(not self.viewer.isEmpty())
             self.ui.actionTrimMarginsAll.setEnabled(not self.viewer.isEmpty())
+            self.actionSaveMargins.setEnabled(not self.viewer.isEmpty())
             self.ui.editFile.setText(outputFileName)
             self.updateControls()
 

@@ -9,6 +9,7 @@
     - `src/pdfframe/__main__.py`
     - `src/pdfframe/application.py`
     - `src/pdfframe/mainwindow.py`
+    - `src/pdfframe/jsonconfig.py`
     - `src/pdfframe/vieweritem.py`
     - `src/pdfframe/viewerselections.py`
     - `src/pdfframe/pdfframecmd.py`
@@ -48,11 +49,16 @@
     - `MainWindow.__init__(...)`: wire UI actions, construct scene/viewer, and load persisted settings [`src/pdfframe/mainwindow.py`]
       - `_setupConversionModeControls(...)`: create `Frame`/`Crop` mode controls and set `Frame` as startup default [`src/pdfframe/mainwindow.py`]
       - `_setupTrimSettingsControls(...)`: relocate trim-controls group into Basic tab with all controls visible [`src/pdfframe/mainwindow.py`]
-      - `readSettings(...)`: load geometry, conversion mode, PDF optimization flag, and trim setting values bound to Basic-tab controls [`src/pdfframe/mainwindow.py`]
+      - `_setupTrimPresetControls(...)`: create Basic-tab `Presets` section with clickable/editable rows and per-row delete buttons [`src/pdfframe/mainwindow.py`]
+      - `_setupTrimPresetAction(...)`: add toolbar `Save Margins` action adjacent to `Trim Margins` and connect preset-save slot [`src/pdfframe/mainwindow.py`]
+      - `readSettings(...)`: load geometry from QSettings, load runtime `config` and `presets` from `~/.pdfframe/config.json`, and bind values to Basic-tab controls [`src/pdfframe/mainwindow.py`]
+        - `JsonConfigStore.load_or_initialize(...)`: create missing JSON config and normalize existing config/preset sections [`src/pdfframe/jsonconfig.py`]
+          - `default_config_document(...)`: provide default `config` values and empty `presets` list [`src/pdfframe/jsonconfig.py`]
+          - `JsonConfigStore.save(...)`: persist normalized JSON config payload [`src/pdfframe/jsonconfig.py`]
       - `SelAspectRatioTypeManager.loadTypes(...)`: load selection aspect-ratio presets or defaults [`src/pdfframe/mainwindow.py`]
       - `DeviceTypeManager.loadTypes(...)`: load device presets or defaults [`src/pdfframe/mainwindow.py`]
       - `slotFitInView(...)`: apply fit mode when enabled [`src/pdfframe/mainwindow.py`]
-    - `MainWindow.openFile(...)`: load initial input PDF and prime output defaults [`src/pdfframe/mainwindow.py`]
+    - `MainWindow.openFile(...)`: load initial input PDF, prime output defaults, and enable `Save Margins` when a document is available [`src/pdfframe/mainwindow.py`]
       - `AbstractViewerItem.load(...)`: reset viewer state and load document-specific backend data [`src/pdfframe/vieweritem.py`]
         - `MuPDFViewerItem.doLoad(...)`: open PDF via PyMuPDF backend [`src/pdfframe/vieweritem.py`]
         - `PopplerViewerItem.doLoad(...)`: open PDF via Poppler backend [`src/pdfframe/vieweritem.py`]
@@ -61,6 +67,11 @@
             - `AbstractViewerItem.getImage(...)`: lazy-load/render page image cache entry [`src/pdfframe/vieweritem.py`]
             - `ViewerSelections.updateSelectionVisibility(...)`: update page-scoped selection visibility [`src/pdfframe/viewerselections.py`]
               - `ViewerSelections.autoSetCurrentSelection(...)`: choose active selection for visible page and delegate scene-safe focus updates [`src/pdfframe/viewerselections.py`]
+    - `MainWindow.slotSaveMarginsPreset(...)`: snapshot current mode/trim/crop state into a new timestamp-named preset and persist JSON [`src/pdfframe/mainwindow.py`]
+      - `MainWindow._trimPresetFromCurrentSelection(...)`: collect mode, trim settings, and primary crop tuple [`src/pdfframe/mainwindow.py`]
+      - `MainWindow._refreshTrimPresetList(...)`: rebuild preset rows and per-row delete controls [`src/pdfframe/mainwindow.py`]
+      - `MainWindow._persistTrimPresetDocument(...)`: write current runtime config plus presets array [`src/pdfframe/mainwindow.py`]
+        - `JsonConfigStore.save(...)`: persist normalized JSON config payload [`src/pdfframe/jsonconfig.py`]
     - `MainWindow.createSelectionGrid(...)`: optionally create startup grid from `--grid` [`src/pdfframe/mainwindow.py`]
       - `ViewerSelections.addSelection(...)`: create a selection item and set focus/current [`src/pdfframe/viewerselections.py`]
       - `ViewerSelectionItem.setBoundingRect(...)`: apply grid cell bounds to each selection [`src/pdfframe/viewerselections.py`]
@@ -91,6 +102,7 @@
   - PDF metadata/render backends (`fitz`, `popplerqt5`) used for GUI page visualization and geometry.
   - Desktop/AppStream integration metadata (`com.ogekuri.pdfframe.desktop`, `com.ogekuri.pdfframe.metainfo.xml`) consumed by desktop environments.
   - Ghostscript executable subprocess boundary (`gs` with pdfwrite and BeginPage clipping commands).
+  - User-home JSON configuration file boundary (`~/.pdfframe/config.json`) read/write through `JsonConfigStore`.
   - pypdf read/write boundary used to assemble output PDF from processed selected cropped pages.
   - OS filesystem reads/writes for input and output files.
   - OS signal integration (`signal.SIGINT` default handling).

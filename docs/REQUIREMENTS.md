@@ -135,6 +135,13 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-020**: MUST remove the Advanced tab and expose trim configuration parameters in a dedicated section at the bottom of the Basic tab.
 - **REQ-021**: MUST label the main conversion trigger button as `Go!`.
 - **REQ-022**: MUST expose CLI flags `--verbose` and `--debug`; `--verbose` enables Python-side console progress/status output including renderer-selection diagnostics, and `--verbose --debug` additionally prints Ghostscript command and captured Ghostscript output while preserving progress capture.
+- **REQ-023**: MUST use `~/.pdfframe/config.json` as persistent configuration storage with top-level objects `config` and `presets`.
+- **REQ-024**: MUST create `~/.pdfframe/config.json` with default hardcoded parameter values under `config` when the file is missing at startup.
+- **REQ-025**: MUST load `config` values from `~/.pdfframe/config.json` at startup and prioritize them over hardcoded defaults when keys are present.
+- **REQ-026**: MUST expose a `Presets` section under Basic-tab trim settings listing crop presets, where selecting a preset applies its saved crop/frame margins to the current crop controls.
+- **REQ-027**: MUST expose a `Save Margins` button adjacent to `Trim Margins` that saves current crop/frame margins as a new preset named by default with `%Y/%m/%d %H:%M:%S`.
+- **REQ-028**: MUST support preset deletion via a `-` control on each preset entry and preset rename via double-click inline editing, persisting the modified preset name.
+- **REQ-029**: MUST persist the full `presets` array to `~/.pdfframe/config.json` after preset add, rename, update, or delete operations.
 
 ## 4. Test Requirements
 
@@ -146,6 +153,8 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-004**: MUST include unit tests that validate failure diagnostics omit captured subprocess payload from user-visible warnings when Ghostscript execution fails and that captured page-output lines (including multiple page tokens in one chunk) drive progress updates from parsed processed page numbers.
 - **TST-005**: MUST include unit tests that validate large page-index support, allowed single-range `--whichpages` formats, and primary-selection-only crop planning for one-command range conversion.
 - **TST-006**: MUST include unit tests that validate Ghostscript command logging/output toggles (`--verbose`, `--debug`), Ghostscript range command argument assembly, and desktop integration branding identifiers (`pdfframe` / `com.ogekuri.pdfframe`).
+- **TST-007**: MUST include unit tests that validate startup config bootstrap at `~/.pdfframe/config.json`, including missing-file creation with `config` defaults and startup override precedence for persisted `config` keys.
+- **TST-008**: MUST include unit tests that validate preset list CRUD interactions (save/apply/rename/delete) and persistence of the `presets` array in `~/.pdfframe/config.json`.
 
 ## 5. Evidence Matrix
 
@@ -196,12 +205,21 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-020 | `src/pdfframe/mainwindow.py` relocates trim settings to the Basic tab and removes the Advanced tab from the interactive workflow. |
 | REQ-021 | `src/pdfframe/mainwindow.py` and `src/pdfframe/mainwindow.ui` define the conversion trigger label as `Go!`. |
 | REQ-022 | `src/pdfframe/application.py::main` defines `--verbose`/`--debug`; `src/pdfframe/vieweritem.py` gates renderer-selection diagnostics by `--verbose`; `src/pdfframe/mainwindow.py::slotPdfFrame` and `src/pdfframe/pdfframecmd.py::run_ghostscript_command` enforce verbose/debug Ghostscript logging behavior. |
+| REQ-023 | `src/pdfframe/jsonconfig.py::default_config_path/default_config_document/JsonConfigStore._normalize_document` and `src/pdfframe/mainwindow.py::MainWindow.__init__` define and consume JSON storage at `~/.pdfframe/config.json` with `config` and `presets`. |
+| REQ-024 | `src/pdfframe/jsonconfig.py::JsonConfigStore.load_or_initialize` creates missing `~/.pdfframe/config.json` using `default_config_document()` values. |
+| REQ-025 | `src/pdfframe/mainwindow.py::readSettings` loads `config` values via `JsonConfigStore.load_or_initialize` and applies them to runtime controls instead of hardcoded defaults. |
+| REQ-026 | `src/pdfframe/mainwindow.py::_setupTrimPresetControls/slotTrimPresetClicked/_applyTrimPreset` adds `Presets` section under trim settings and applies selected preset values to crop controls/selection. |
+| REQ-027 | `src/pdfframe/mainwindow.py::_setupTrimPresetAction/slotSaveMarginsPreset/_defaultTrimPresetName` adds `Save Margins` button adjacent to trim action and creates timestamp-named presets `%Y/%m/%d %H:%M:%S`. |
+| REQ-028 | `src/pdfframe/mainwindow.py::_refreshTrimPresetList/slotDeleteTrimPreset/slotTrimPresetDoubleClicked/slotTrimPresetChanged` implements per-entry `-` deletion and double-click rename with persisted names. |
+| REQ-029 | `src/pdfframe/mainwindow.py::_persistTrimPresetDocument` plus calls in `slotSaveMarginsPreset`, `slotTrimPresetChanged`, `slotDeleteTrimPreset`, and `writeSettings` persist updated `presets` arrays to JSON config. |
 | TST-001 | `tests.sh` — creates `.venv` when missing and installs `requirements.txt` before invoking pytest. |
 | TST-002 | `tests.sh` — default `set -- tests` and runs `PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" ${VENVDIR}/bin/python3 -m 'pytest' "$@"`. |
 | TST-003 | `tests/test_pdfframecmd.py` validates script-style Ghostscript command generation for `frame` and `crop` modes. |
 | TST-004 | `tests/test_mainwindow_conversion_errors.py`, `tests/test_pdfframecmd.py`, and `tests/test_mainwindow_progress_updates.py` validate warning payload redaction and captured page-output callbacks (including multi-token chunks) that drive progress updates from parsed page numbers. |
 | TST-005 | `tests/test_mainwindow_whichpages.py` verifies accepted/rejected `--whichpages` single-range formats, primary-selection-only planning, and large page-index range behavior. |
 | TST-006 | `tests/test_pdfframecmd.py` and `tests/test_mainwindow_progress_updates.py` validate command/output logging toggles and Ghostscript range-argument command assembly; `tests/test_desktop_metadata_branding.py` validates desktop/AppStream branding identifiers. |
+| TST-007 | `tests/test_jsonconfig.py` validates JSON bootstrap default creation and persisted-config override precedence with default-key backfill. |
+| TST-008 | `tests/test_mainwindow_presets.py` validates preset snapshot/apply/rename/delete/save behavior and persistence trigger paths. |
 
 ## 6. Test Coverage Summary
 
