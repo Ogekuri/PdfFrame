@@ -1,6 +1,7 @@
 """Unit tests for trim preset behavior in MainWindow."""
 
 from types import SimpleNamespace
+from pathlib import Path
 
 from pdfframe.mainwindow import MainWindow
 
@@ -155,3 +156,12 @@ def test_save_margins_appends_new_preset_and_persists():
     assert fake.trimPresets == [{"name": "Preset New"}]
     assert fake.refreshed is True
     assert fake.persisted is True
+
+
+def test_preset_delete_button_is_right_aligned_in_row_container():
+    """Arrange/Act/Assert: delete button is placed in a right-aligned row widget."""
+    source_path = Path(__file__).resolve().parents[1] / "src" / "pdfframe" / "mainwindow.py"
+    source = source_path.read_text(encoding="iso-8859-1")
+    assert "row_layout = QHBoxLayout(row_widget)" in source
+    assert "row_layout.addStretch(1)" in source
+    assert "self.treeTrimPresets.setItemWidget(item, 1, row_widget)" in source

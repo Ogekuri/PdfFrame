@@ -140,7 +140,7 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-025**: MUST load `config` values from `~/.pdfframe/config.json` at startup and prioritize them over hardcoded defaults when keys are present.
 - **REQ-026**: MUST expose a `Presets` section under Basic-tab trim settings listing crop presets, where selecting a preset applies its saved crop/frame margins to the current crop controls.
 - **REQ-027**: MUST expose a `Save Margins` button adjacent to `Trim Margins` that saves current crop/frame margins as a new preset named by default with `%Y/%m/%d %H:%M:%S`.
-- **REQ-028**: MUST support preset deletion via a `-` control on each preset entry and preset rename via double-click inline editing, persisting the modified preset name.
+- **REQ-028**: MUST support preset deletion via a `-` control anchored at the right edge of each preset-list row and preset rename via double-click inline editing, persisting the modified preset name.
 - **REQ-029**: MUST persist the full `presets` array to `~/.pdfframe/config.json` after preset add, rename, update, or delete operations.
 
 ## 4. Test Requirements
@@ -154,7 +154,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-005**: MUST include unit tests that validate large page-index support, allowed single-range `--whichpages` formats, and primary-selection-only crop planning for one-command range conversion.
 - **TST-006**: MUST include unit tests that validate Ghostscript command logging/output toggles (`--verbose`, `--debug`), Ghostscript range command argument assembly, and desktop integration branding identifiers (`pdfframe` / `com.ogekuri.pdfframe`).
 - **TST-007**: MUST include unit tests that validate startup config bootstrap at `~/.pdfframe/config.json`, including missing-file creation with `config` defaults and startup override precedence for persisted `config` keys.
-- **TST-008**: MUST include unit tests that validate preset list CRUD interactions (save/apply/rename/delete) and persistence of the `presets` array in `~/.pdfframe/config.json`.
+- **TST-008**: MUST include unit tests that validate preset list CRUD interactions (save/apply/rename/delete), right-edge alignment behavior of per-row delete controls, and persistence of the `presets` array in `~/.pdfframe/config.json`.
 
 ## 5. Evidence Matrix
 
@@ -210,7 +210,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-025 | `src/pdfframe/mainwindow.py::readSettings` loads `config` values via `JsonConfigStore.load_or_initialize` and applies them to runtime controls instead of hardcoded defaults. |
 | REQ-026 | `src/pdfframe/mainwindow.py::_setupTrimPresetControls/slotTrimPresetClicked/_applyTrimPreset` adds `Presets` section under trim settings and applies selected preset values to crop controls/selection. |
 | REQ-027 | `src/pdfframe/mainwindow.py::_setupTrimPresetAction/slotSaveMarginsPreset/_defaultTrimPresetName` adds `Save Margins` button adjacent to trim action and creates timestamp-named presets `%Y/%m/%d %H:%M:%S`. |
-| REQ-028 | `src/pdfframe/mainwindow.py::_refreshTrimPresetList/slotDeleteTrimPreset/slotTrimPresetDoubleClicked/slotTrimPresetChanged` implements per-entry `-` deletion and double-click rename with persisted names. |
+| REQ-028 | `src/pdfframe/mainwindow.py::_refreshTrimPresetList/slotDeleteTrimPreset/slotTrimPresetDoubleClicked/slotTrimPresetChanged` implements per-entry `-` deletion anchored at row right edge and double-click rename with persisted names. |
 | REQ-029 | `src/pdfframe/mainwindow.py::_persistTrimPresetDocument` plus calls in `slotSaveMarginsPreset`, `slotTrimPresetChanged`, `slotDeleteTrimPreset`, and `writeSettings` persist updated `presets` arrays to JSON config. |
 | TST-001 | `tests.sh` — creates `.venv` when missing and installs `requirements.txt` before invoking pytest. |
 | TST-002 | `tests.sh` — default `set -- tests` and runs `PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" ${VENVDIR}/bin/python3 -m 'pytest' "$@"`. |
@@ -219,7 +219,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-005 | `tests/test_mainwindow_whichpages.py` verifies accepted/rejected `--whichpages` single-range formats, primary-selection-only planning, and large page-index range behavior. |
 | TST-006 | `tests/test_pdfframecmd.py` and `tests/test_mainwindow_progress_updates.py` validate command/output logging toggles and Ghostscript range-argument command assembly; `tests/test_desktop_metadata_branding.py` validates desktop/AppStream branding identifiers. |
 | TST-007 | `tests/test_jsonconfig.py` validates JSON bootstrap default creation and persisted-config override precedence with default-key backfill. |
-| TST-008 | `tests/test_mainwindow_presets.py` validates preset snapshot/apply/rename/delete/save behavior and persistence trigger paths. |
+| TST-008 | `tests/test_mainwindow_presets.py` validates preset snapshot/apply/rename/delete/save behavior, right-edge delete-control row layout, and persistence trigger paths. |
 
 ## 6. Test Coverage Summary
 

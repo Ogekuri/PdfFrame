@@ -402,7 +402,7 @@ class MainWindow(QMainWindow):
     def _refreshTrimPresetList(self):
         """
         @brief Rebuilds trim preset tree rows from in-memory presets.
-        @details Clears the list, creates editable name rows, and attaches one remove button per row mapped to preset index.
+        @details Clears the list, creates editable name rows, and attaches one remove button per row mapped to preset index inside a right-aligned cell container.
         @return {None} Applies UI side effects.
         """
         self._updatingTrimPresetList = True
@@ -418,7 +418,13 @@ class MainWindow(QMainWindow):
                 remove_button.setMaximumWidth(24)
                 remove_button.setProperty("preset_index", index)
                 remove_button.clicked.connect(self.slotDeleteTrimPreset)
-                self.treeTrimPresets.setItemWidget(item, 1, remove_button)
+                row_widget = QWidget(self.treeTrimPresets)
+                row_layout = QHBoxLayout(row_widget)
+                row_layout.setContentsMargins(0, 0, 0, 0)
+                row_layout.setSpacing(0)
+                row_layout.addStretch(1)
+                row_layout.addWidget(remove_button)
+                self.treeTrimPresets.setItemWidget(item, 1, row_widget)
         finally:
             self._updatingTrimPresetList = False
 
