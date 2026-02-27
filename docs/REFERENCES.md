@@ -197,7 +197,7 @@ from pathlib import Path
 
 ---
 
-# mainwindow.py | Python | 1334L | 88 symbols | 15 imports | 65 comments
+# mainwindow.py | Python | 1379L | 89 symbols | 15 imports | 68 comments
 > Path: `src/pdfframe/mainwindow.py`
 
 ## Imports
@@ -243,163 +243,168 @@ from pdfframe.autotrim import autoTrimMargins
 - fn `def addDefaults(self)` (L123-130)
 
 ### class `class MainWindow(QMainWindow)` : QMainWindow (L131-330)
-- fn `def __init__(self)` `priv` (L135-248)
-- fn `def viewer(self)` (L250-252)
-- fn `def selections(self)` (L254-256)
-- fn `def _toolbarIconFromAsset(self, filename, fallbackTheme)` `priv` (L257-269)
+- fn `def __init__(self)` `priv` (L135-249)
+- fn `def viewer(self)` (L251-253)
+- fn `def selections(self)` (L255-257)
+- fn `def _toolbarIconFromAsset(self, filename, fallbackTheme)` `priv` (L258-270)
   - Brief: Resolves toolbar icon from bundled asset with fallback theme icon.
   - Details: Loads icon from `src/pdfframe/icons/<filename>` when available; otherwise returns `QIcon.fromTheme(<fallbackTheme>)`.
   - Param: filename {str} Bundled icon filename.
   - Param: fallbackTheme {str} Freedesktop theme-icon token.
   - Return: {QIcon} Toolbar icon object.
-- fn `def _setupConversionModeControls(self)` `priv` (L270-287)
+- fn `def _setupConversionModeControls(self)` `priv` (L271-288)
   - Brief: Adds conversion mode controls to the basic tab.
   - Details: Creates `Mode` group with `Frame` and `Crop` radio buttons, defaults to `Frame`, and inserts it into the basic-tab layout.
   - Return: {None} Applies UI side effects.
-- fn `def _setupTrimSettingsControls(self)` `priv` (L288-298)
+- fn `def _setupTrimSettingsControls(self)` `priv` (L289-299)
   - Brief: Relocates trim configuration controls into the Basic tab.
   - Details: Reuses the existing trim-settings group from the advanced UI definition, moves it to the bottom of the basic layout with all controls visible.
   - Return: {None} Applies UI side effects.
 
-### fn `def _setupTrimPresetControls(self)` `priv` (L299-335)
+### fn `def _setupTrimPresetControls(self)` `priv` (L300-336)
 - Brief: Adds dedicated Basic-tab trim preset controls.
 - Details: Creates a standalone `Presets` group placed immediately after `Trim settings`, configures stretch/fixed columns so preset names fill row width up to the right-edge remove button, and wires apply/rename/delete flows.
 - Return: {None} Applies UI side effects.
 
-### fn `def _setupTrimPresetAction(self)` `priv` (L336-357)
+### fn `def _setupTrimPresetAction(self)` `priv` (L337-358)
 - Brief: Adds the `Save Margins` toolbar action next to trim action.
 - Details: Inserts a dedicated action directly to the right of `Trim Margins`, applies the dedicated `Save Margins` icon, then moves `Go!` to the far-right position immediately after `Save Margins`, and keeps preset-save action disabled until a PDF is loaded.
 - Return: {None} Applies UI side effects.
 
-### fn `def _trimPresetEditableFlag(self)` `priv` (L358-362)
+### fn `def _trimPresetEditableFlag(self)` `priv` (L359-363)
 
-### fn `def _trimPresetRole(self)` `priv` (L363-367)
+### fn `def _trimPresetRole(self)` `priv` (L364-368)
 
-### fn `def _defaultTrimPresetName(self)` `priv` (L368-375)
+### fn `def _defaultTrimPresetName(self)` `priv` (L369-376)
 - Brief: Returns default trim preset name.
 - Details: Generates timestamp name in `%Y/%m/%d %H:%M:%S` format.
 - Return: {str} Default preset display label.
 
-### fn `def _toBool(self, value)` `priv` (L376-386)
+### fn `def _toBool(self, value)` `priv` (L377-387)
 - Brief: Normalizes persisted boolean-like values.
 - Details: Accepts bools and common string tokens produced by historical settings writers.
 - Param: value {object} Input value from settings/config source.
 - Return: {bool} Parsed boolean result.
 
-### fn `def _updateTrimPagesRangeControls(self, enabled)` `priv` (L387-397)
+### fn `def _updateTrimPagesRangeControls(self, enabled)` `priv` (L388-398)
 - Brief: Updates `Pages range` control enabled state.
 - Details: Enables range input only when trim-range mode is active and ensures default text `1-1` when empty.
 - Param: enabled {bool} State propagated from trim-range toggle.
 - Return: {None} Applies UI side effects.
 
-### fn `def _parseTrimPagesRange(self)` `priv` (L398-414)
+### fn `def _parseTrimPagesRange(self)` `priv` (L399-415)
 - Brief: Parses and validates the trim pages range expression.
 - Details: Accepts only `N-M` one-based inclusive format, validates positive ordered bounds, and converts to zero-based bounds.
 - Return: {tuple[int,int]} `(start_index, end_index)` inclusive zero-based page bounds.
 - Throws: {ValueError} If the range is missing or syntactically/semantically invalid.
 
-### fn `def _collectRuntimeConfigValues(self)` `priv` (L415-430)
+### fn `def _collectRuntimeConfigValues(self)` `priv` (L416-431)
 - Brief: Collects runtime config values mapped to JSON `config` keys.
 - Details: Converts current UI control state into serializable values for `~/.pdfframe/config.json`.
 - Return: {dict[str,object]} Persistable runtime config key/value mapping.
 
-### fn `def _preserveFieldsEnabled(self)` `priv` (L431-444)
+### fn `def _preserveFieldsEnabled(self)` `priv` (L432-445)
 - Brief: Returns Preserve fields option state.
 - Details: Reads `checkPreserveFields` when available and normalizes truthy values for compatibility with test stubs.
 - Return: {bool} True when `-dPreserveAnnots=true` must be emitted.
 
-### fn `def _trimPresetFromCurrentSelection(self)` `priv` (L445-464)
+### fn `def _trimPresetFromCurrentSelection(self)` `priv` (L446-465)
 - Brief: Creates a trim preset payload from current UI state.
 - Details: Captures mode and trim parameters plus the primary current-page crop tuple when available.
 - Return: {dict[str,object]} New preset payload ready for persistence.
 
-### fn `def _refreshTrimPresetList(self)` `priv` (L465-493)
+### fn `def _refreshTrimPresetList(self)` `priv` (L466-494)
 - Brief: Rebuilds trim preset tree rows from in-memory presets.
 - Details: Clears the list, creates editable name rows, and attaches one remove button per row mapped to preset index inside a right-aligned cell container.
 - Return: {None} Applies UI side effects.
 
-### fn `def _persistTrimPresetDocument(self)` `priv` (L494-511)
+### fn `def _persistTrimPresetDocument(self)` `priv` (L495-512)
 - Brief: Persists runtime config and preset list to JSON config file.
 - Details: Writes both `config` values and `presets` array through JsonConfigStore, surfacing warning on I/O failures.
 - Return: {None} Writes `~/.pdfframe/config.json`.
 
-### fn `def _applyCropPreset(self, crop_values)` `priv` (L512-543)
+### fn `def _applyCropPreset(self, crop_values)` `priv` (L513-544)
 - Brief: Applies normalized crop tuple to current selection.
 - Details: Maps `[left,top,right,bottom]` normalized margins to viewer coordinates and updates (or creates) the current selection.
 - Param: crop_values {list[float]} Normalized crop tuple values.
 - Return: {None} Mutates current selection geometry.
 
-### fn `def _applyTrimPreset(self, index)` `priv` (L544-569)
+### fn `def _applyTrimPreset(self, index)` `priv` (L545-570)
 - Brief: Applies one stored preset to current runtime controls.
 - Details: Restores mode and trim values, then applies saved crop tuple when present.
 - Param: index {int} Preset list index.
 - Return: {None} Applies UI and selection updates.
 
-### fn `def slotTrimPresetClicked(self, item, column)` (L570-582)
+### fn `def slotTrimPresetClicked(self, item, column)` (L571-583)
 - Brief: Applies a preset when the preset name cell is clicked.
 - Details: Ignores delete-button column and list rebuild events.
 - Param: item {QTreeWidgetItem} Clicked row item.
 - Param: column {int} Clicked column index.
 - Return: {None} Applies preset side effects.
 
-### fn `def slotTrimPresetDoubleClicked(self, item, column)` (L583-593)
+### fn `def slotTrimPresetDoubleClicked(self, item, column)` (L584-594)
 - Brief: Starts inline rename for preset names.
 - Details: Enables user-driven preset rename on double-click of first column.
 - Param: item {QTreeWidgetItem} Double-clicked row item.
 - Param: column {int} Double-clicked column index.
 - Return: {None} Opens in-place editor.
 
-### fn `def slotTrimPresetChanged(self, item, column)` (L594-617)
+### fn `def slotTrimPresetChanged(self, item, column)` (L595-618)
 - Brief: Persists preset rename changes from inline editing.
 - Details: Normalizes empty labels to timestamp defaults and rewrites JSON config after updates.
 - Param: item {QTreeWidgetItem} Changed row item.
 - Param: column {int} Changed column index.
 - Return: {None} Persists preset list updates.
 
-### fn `def slotDeleteTrimPreset(self)` (L618-636)
+### fn `def slotDeleteTrimPreset(self)` (L619-637)
 - Brief: Deletes one preset from remove-button click.
 - Details: Resolves row index from sender button metadata, updates in-memory list, refreshes UI, and persists JSON state.
 - Return: {None} Applies preset delete side effects.
 
-### fn `def slotSaveMarginsPreset(self)` (L637-648)
+### fn `def slotSaveMarginsPreset(self)` (L638-649)
 - Brief: Saves current crop/trim state as a new preset.
 - Details: Captures active control values, appends new preset with timestamp default name, refreshes list, and persists JSON state.
 - Return: {None} Applies preset creation side effects.
 
-### fn `def selectedConversionMode(self)` (L649-656)
+### fn `def selectedConversionMode(self)` (L650-657)
 - Brief: Returns selected conversion mode for Ghostscript execution.
 - Details: Maps GUI mode controls to backend mode tokens expected by command generation.
 - Return: {str} Conversion mode token (`frame` or `crop`).
 
-### fn `def currentSelectionUpdated(self)` (L657-672)
+### fn `def currentSelectionUpdated(self)` (L658-674)
 
-### fn `def readSettings(self)` (L673-721)
+### fn `def _updateSelectionCreationActions(self)` `priv` (L675-684)
+- Brief: Updates enablement of selection-creation actions.
+- Details: Allows creating a selection only when the viewer has a document and no selection exists; keeps creation actions disabled once one selection area is present.
+- Return: {None} Applies action-enable side effects.
+
+### fn `def readSettings(self)` (L685-733)
 - Brief: Reads persisted runtime settings from QSettings and JSON config.
 - Details: Restores window geometry from QSettings, loads trim/runtime defaults from `~/.pdfframe/config.json`, and refreshes preset UI entries.
 - Return: {None} Applies UI state restoration side effects.
 
-### fn `def writeSettings(self)` (L722-746)
+### fn `def writeSettings(self)` (L734-758)
 - Brief: Persists runtime settings to legacy and JSON backends.
 - Details: Writes window/session metadata to QSettings and writes trim/runtime config plus presets to `~/.pdfframe/config.json`.
 - Return: {None} Persists runtime state.
 
-### fn `def openFile(self, fileName)` (L747-766)
+### fn `def openFile(self, fileName)` (L759-779)
 
-### fn `def slotOpenFile(self)` (L767-772)
+### fn `def slotOpenFile(self)` (L780-785)
 
-### fn `def slotSelectFile(self)` (L773-782)
+### fn `def slotSelectFile(self)` (L786-795)
 
-### fn `def showWarning(self, title, text)` (L783-790)
+### fn `def showWarning(self, title, text)` (L796-803)
 
-### fn `def str2pages(self, s)` (L791-808)
+### fn `def str2pages(self, s)` (L804-821)
 
-### fn `def primarySelectionCropValue(self, page_indexes)` (L809-822)
+### fn `def primarySelectionCropValue(self, page_indexes)` (L822-835)
 - Brief: Gets primary selection crop tuple for conversion planning.
 - Details: Resolves first available normalized crop tuple from current page first, then requested pages, and returns only the primary tuple used for all output pages.
 - Param: page_indexes {list[int]} Ordered page indexes selected for processing.
 - Return: {tuple[float,float,float,float]|None} Primary normalized crop tuple or None when no selections are available.
 
-### fn `def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None)` (L823-858)
+### fn `def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None)` (L836-871)
 - Brief: Builds single Ghostscript crop plan from GUI-derived parameters.
 - Details: Iterates only requested pages (or all pages when omitted), derives geometry from the primary GUI selection tuple, computes crop bbox from page-size metadata, and emits one Ghostscript command for the full selected range using `-dFirstPage/-dLastPage` plus preserve-fields flag state.
 - Param: inputFileName {str} Source PDF path.
@@ -407,18 +412,18 @@ from pdfframe.autotrim import autoTrimMargins
 - Param: requestedPageIndexes {set[int]|None} Optional zero-based page-index filter derived from `--whichpages`.
 - Return: {dict[str,object]|None} Crop plan containing selected page indexes and one Ghostscript command vector.
 
-### fn `def createConversionProgressDialog(self, totalPages)` (L859-881)
+### fn `def createConversionProgressDialog(self, totalPages)` (L872-894)
 - Brief: Creates modal conversion progress dialog for crop execution.
 - Details: Configures progress dialog with deterministic page range and cancellable stop action used during long-running conversion command execution.
 - Param: totalPages {int} Number of selected pages to process.
 - Return: {QProgressDialog} Configured progress dialog instance.
 
-### fn `def slotPdfFrame(self)` (L882-1004)
+### fn `def slotPdfFrame(self)` (L895-1017)
 - Brief: Executes PDF crop action using Ghostscript command backend.
 - Details: Verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
 - Return: {None} Triggers output PDF generation side effect.
 
-### fn `def mark_page_processed(page_number)` (L936-954)
+### fn `def mark_page_processed(page_number)` (L949-967)
 - Brief: Executes PDF crop action using Ghostscript command backend.
 - Brief: Marks one selected page as processed for progress updates.
 - Details: Verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
@@ -427,76 +432,83 @@ from pdfframe.autotrim import autoTrimMargins
 - Return: {None} Triggers output PDF generation side effect.
 - Return: {None} Applies progress side effects.
 
-### fn `def on_output_line(line)` (L955-969)
+### fn `def on_output_line(line)` (L968-982)
 - Brief: Processes streamed Ghostscript output lines during conversion.
 - Details: Uses parsed Ghostscript page numbers from captured output to advance conversion progress without forwarding captured command output to user-visible UI messages.
 - Param: line {str} Single output line emitted by Ghostscript.
 - Return: {None} Applies progress side effects.
 
-### fn `def slotZoomIn(self)` (L1005-1008)
+### fn `def slotZoomIn(self)` (L1018-1021)
 
-### fn `def slotZoomOut(self)` (L1009-1012)
+### fn `def slotZoomOut(self)` (L1022-1025)
 
-### fn `def slotFitInView(self, checked)` (L1013-1017)
+### fn `def slotFitInView(self, checked)` (L1026-1030)
 
-### fn `def slotSplitterMoved(self, pos, idx)` (L1018-1020)
+### fn `def slotSplitterMoved(self, pos, idx)` (L1031-1033)
 
-### fn `def slotPreviousPage(self)` (L1021-1024)
+### fn `def slotPreviousPage(self)` (L1034-1037)
 
-### fn `def slotNextPage(self)` (L1025-1028)
+### fn `def slotNextPage(self)` (L1038-1041)
 
-### fn `def slotFirstPage(self)` (L1029-1032)
+### fn `def slotFirstPage(self)` (L1042-1045)
 
-### fn `def slotLastPage(self)` (L1033-1036)
+### fn `def slotLastPage(self)` (L1046-1049)
 
-### fn `def slotCurrentPageEdited(self, text)` (L1037-1044)
+### fn `def slotCurrentPageEdited(self, text)` (L1050-1057)
 
-### fn `def updateControls(self)` (L1045-1053)
+### fn `def updateControls(self)` (L1058-1066)
 
-### fn `def slotSelectionMode(self, checked)` (L1054-1057)
+### fn `def slotSelectionMode(self, checked)` (L1067-1070)
 
-### fn `def slotSelExceptionsChanged(self)` (L1058-1060)
+### fn `def slotSelExceptionsChanged(self)` (L1071-1073)
 
-### fn `def slotSelExceptionsEdited(self, text)` (L1061-1065)
+### fn `def slotSelExceptionsEdited(self, text)` (L1074-1078)
 
-### fn `def slotSelAspectRatioChanged(self)` (L1066-1074)
+### fn `def slotSelAspectRatioChanged(self)` (L1079-1087)
 
-### fn `def slotSelAspectRatioTypeChanged(self, index)` (L1075-1094)
+### fn `def slotSelAspectRatioTypeChanged(self, index)` (L1088-1107)
 
-### fn `def distributeAspectRatioChanged(self, aspectRatio)` (L1095-1097)
+### fn `def distributeAspectRatioChanged(self, aspectRatio)` (L1108-1110)
 
-### fn `def slotDistributeAspectRatioChanged(self)` (L1098-1100)
+### fn `def slotDistributeAspectRatioChanged(self)` (L1111-1113)
 
-### fn `def slotDeviceTypeChanged(self, index)` (L1101-1107)
+### fn `def slotDeviceTypeChanged(self, index)` (L1114-1120)
 
-### fn `def slotContextMenu(self, pos)` (L1108-1128)
+### fn `def slotContextMenu(self, pos)` (L1121-1141)
 
-### fn `def slotDeleteSelection(self)` (L1129-1132)
+### fn `def slotDeleteSelection(self)` (L1142-1145)
 
-### fn `def slotNewSelection(self)` (L1133-1135)
+### fn `def slotNewSelection(self)` (L1146-1148)
 
-### fn `def slotNewSelectionGrid(self)` (L1136-1145)
+### fn `def slotNewSelectionGrid(self)` (L1149-1167)
+- Brief: Requests one new trim/selection area from user grid input.
+- Details: Prompts only when no selection area exists; in single-selection mode the request is rejected while an area is already present.
+- Return: {None} Applies selection-creation side effects.
 
-### fn `def createSelectionGrid(self, grid)` (L1146-1179)
+### fn `def createSelectionGrid(self, grid)` (L1168-1224)
+- Brief: Creates the initial trim/selection area from grid input.
+- Details: Parses `grid` input, enforces single-selection mode by reducing multi-cell requests to one area, and prevents creation when an area already exists.
+- Param: grid {str} Grid expression entered by CLI or UI.
+- Return: {None} Applies selection-creation side effects.
 
-### fn `def getPadding(self)` (L1180-1207)
+### fn `def getPadding(self)` (L1225-1252)
 - Brief: Returns trim padding in CSS-expanded order.
 - Details: Reads trim padding text from the dedicated Basic-tab controls and expands one-to-four comma-separated values to `[top,right,bottom,left]`.
 - Return: {list[float]} Padding tuple in top,right,bottom,left order.
 
-### fn `def slotTrimMarginsAll(self)` (L1208-1220)
+### fn `def slotTrimMarginsAll(self)` (L1253-1265)
 
-### fn `def slotTrimMargins(self)` (L1221-1225)
+### fn `def slotTrimMargins(self)` (L1266-1270)
 
-### fn `def trimMarginsSelection(self, sel)` (L1226-1329)
+### fn `def trimMarginsSelection(self, sel)` (L1271-1374)
 - Brief: Computes auto-trim rectangle for a selection using configured thresholds.
 - Details: Reads color-sensitivity and grayscale-sensitivity values from Basic-tab controls, selects page scope using current page by default or a validated `Pages range` slice of visible pages when range mode is enabled, and applies auto-trim with padding and aspect-ratio adjustments.
 - Param: sel {ViewerSelectionItem} Selection item to trim.
 - Return: {None} Mutates selection bounding rectangle.
 
-### fn `def resizeEvent(self, event)` (L1330-1332)
+### fn `def resizeEvent(self, event)` (L1375-1377)
 
-### fn `def closeEvent(self, event)` (L1333-1334)
+### fn `def closeEvent(self, event)` (L1378-1379)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
@@ -519,76 +531,77 @@ from pdfframe.autotrim import autoTrimMargins
 |`DeviceTypeManager.settingsCaption`|fn|pub|120-122|def settingsCaption(self)|
 |`DeviceTypeManager.addDefaults`|fn|pub|123-130|def addDefaults(self)|
 |`MainWindow`|class|pub|131-330|class MainWindow(QMainWindow)|
-|`MainWindow.__init__`|fn|priv|135-248|def __init__(self)|
-|`MainWindow.viewer`|fn|pub|250-252|def viewer(self)|
-|`MainWindow.selections`|fn|pub|254-256|def selections(self)|
-|`MainWindow._toolbarIconFromAsset`|fn|priv|257-269|def _toolbarIconFromAsset(self, filename, fallbackTheme)|
-|`MainWindow._setupConversionModeControls`|fn|priv|270-287|def _setupConversionModeControls(self)|
-|`MainWindow._setupTrimSettingsControls`|fn|priv|288-298|def _setupTrimSettingsControls(self)|
-|`_setupTrimPresetControls`|fn|priv|299-335|def _setupTrimPresetControls(self)|
-|`_setupTrimPresetAction`|fn|priv|336-357|def _setupTrimPresetAction(self)|
-|`_trimPresetEditableFlag`|fn|priv|358-362|def _trimPresetEditableFlag(self)|
-|`_trimPresetRole`|fn|priv|363-367|def _trimPresetRole(self)|
-|`_defaultTrimPresetName`|fn|priv|368-375|def _defaultTrimPresetName(self)|
-|`_toBool`|fn|priv|376-386|def _toBool(self, value)|
-|`_updateTrimPagesRangeControls`|fn|priv|387-397|def _updateTrimPagesRangeControls(self, enabled)|
-|`_parseTrimPagesRange`|fn|priv|398-414|def _parseTrimPagesRange(self)|
-|`_collectRuntimeConfigValues`|fn|priv|415-430|def _collectRuntimeConfigValues(self)|
-|`_preserveFieldsEnabled`|fn|priv|431-444|def _preserveFieldsEnabled(self)|
-|`_trimPresetFromCurrentSelection`|fn|priv|445-464|def _trimPresetFromCurrentSelection(self)|
-|`_refreshTrimPresetList`|fn|priv|465-493|def _refreshTrimPresetList(self)|
-|`_persistTrimPresetDocument`|fn|priv|494-511|def _persistTrimPresetDocument(self)|
-|`_applyCropPreset`|fn|priv|512-543|def _applyCropPreset(self, crop_values)|
-|`_applyTrimPreset`|fn|priv|544-569|def _applyTrimPreset(self, index)|
-|`slotTrimPresetClicked`|fn|pub|570-582|def slotTrimPresetClicked(self, item, column)|
-|`slotTrimPresetDoubleClicked`|fn|pub|583-593|def slotTrimPresetDoubleClicked(self, item, column)|
-|`slotTrimPresetChanged`|fn|pub|594-617|def slotTrimPresetChanged(self, item, column)|
-|`slotDeleteTrimPreset`|fn|pub|618-636|def slotDeleteTrimPreset(self)|
-|`slotSaveMarginsPreset`|fn|pub|637-648|def slotSaveMarginsPreset(self)|
-|`selectedConversionMode`|fn|pub|649-656|def selectedConversionMode(self)|
-|`currentSelectionUpdated`|fn|pub|657-672|def currentSelectionUpdated(self)|
-|`readSettings`|fn|pub|673-721|def readSettings(self)|
-|`writeSettings`|fn|pub|722-746|def writeSettings(self)|
-|`openFile`|fn|pub|747-766|def openFile(self, fileName)|
-|`slotOpenFile`|fn|pub|767-772|def slotOpenFile(self)|
-|`slotSelectFile`|fn|pub|773-782|def slotSelectFile(self)|
-|`showWarning`|fn|pub|783-790|def showWarning(self, title, text)|
-|`str2pages`|fn|pub|791-808|def str2pages(self, s)|
-|`primarySelectionCropValue`|fn|pub|809-822|def primarySelectionCropValue(self, page_indexes)|
-|`buildGhostscriptCropPlan`|fn|pub|823-858|def buildGhostscriptCropPlan(self, inputFileName, outputF...|
-|`createConversionProgressDialog`|fn|pub|859-881|def createConversionProgressDialog(self, totalPages)|
-|`slotPdfFrame`|fn|pub|882-1004|def slotPdfFrame(self)|
-|`mark_page_processed`|fn|pub|936-954|def mark_page_processed(page_number)|
-|`on_output_line`|fn|pub|955-969|def on_output_line(line)|
-|`slotZoomIn`|fn|pub|1005-1008|def slotZoomIn(self)|
-|`slotZoomOut`|fn|pub|1009-1012|def slotZoomOut(self)|
-|`slotFitInView`|fn|pub|1013-1017|def slotFitInView(self, checked)|
-|`slotSplitterMoved`|fn|pub|1018-1020|def slotSplitterMoved(self, pos, idx)|
-|`slotPreviousPage`|fn|pub|1021-1024|def slotPreviousPage(self)|
-|`slotNextPage`|fn|pub|1025-1028|def slotNextPage(self)|
-|`slotFirstPage`|fn|pub|1029-1032|def slotFirstPage(self)|
-|`slotLastPage`|fn|pub|1033-1036|def slotLastPage(self)|
-|`slotCurrentPageEdited`|fn|pub|1037-1044|def slotCurrentPageEdited(self, text)|
-|`updateControls`|fn|pub|1045-1053|def updateControls(self)|
-|`slotSelectionMode`|fn|pub|1054-1057|def slotSelectionMode(self, checked)|
-|`slotSelExceptionsChanged`|fn|pub|1058-1060|def slotSelExceptionsChanged(self)|
-|`slotSelExceptionsEdited`|fn|pub|1061-1065|def slotSelExceptionsEdited(self, text)|
-|`slotSelAspectRatioChanged`|fn|pub|1066-1074|def slotSelAspectRatioChanged(self)|
-|`slotSelAspectRatioTypeChanged`|fn|pub|1075-1094|def slotSelAspectRatioTypeChanged(self, index)|
-|`distributeAspectRatioChanged`|fn|pub|1095-1097|def distributeAspectRatioChanged(self, aspectRatio)|
-|`slotDistributeAspectRatioChanged`|fn|pub|1098-1100|def slotDistributeAspectRatioChanged(self)|
-|`slotDeviceTypeChanged`|fn|pub|1101-1107|def slotDeviceTypeChanged(self, index)|
-|`slotContextMenu`|fn|pub|1108-1128|def slotContextMenu(self, pos)|
-|`slotDeleteSelection`|fn|pub|1129-1132|def slotDeleteSelection(self)|
-|`slotNewSelection`|fn|pub|1133-1135|def slotNewSelection(self)|
-|`slotNewSelectionGrid`|fn|pub|1136-1145|def slotNewSelectionGrid(self)|
-|`createSelectionGrid`|fn|pub|1146-1179|def createSelectionGrid(self, grid)|
-|`getPadding`|fn|pub|1180-1207|def getPadding(self)|
-|`slotTrimMarginsAll`|fn|pub|1208-1220|def slotTrimMarginsAll(self)|
-|`slotTrimMargins`|fn|pub|1221-1225|def slotTrimMargins(self)|
-|`trimMarginsSelection`|fn|pub|1226-1329|def trimMarginsSelection(self, sel)|
-|`resizeEvent`|fn|pub|1330-1332|def resizeEvent(self, event)|
-|`closeEvent`|fn|pub|1333-1334|def closeEvent(self, event)|
+|`MainWindow.__init__`|fn|priv|135-249|def __init__(self)|
+|`MainWindow.viewer`|fn|pub|251-253|def viewer(self)|
+|`MainWindow.selections`|fn|pub|255-257|def selections(self)|
+|`MainWindow._toolbarIconFromAsset`|fn|priv|258-270|def _toolbarIconFromAsset(self, filename, fallbackTheme)|
+|`MainWindow._setupConversionModeControls`|fn|priv|271-288|def _setupConversionModeControls(self)|
+|`MainWindow._setupTrimSettingsControls`|fn|priv|289-299|def _setupTrimSettingsControls(self)|
+|`_setupTrimPresetControls`|fn|priv|300-336|def _setupTrimPresetControls(self)|
+|`_setupTrimPresetAction`|fn|priv|337-358|def _setupTrimPresetAction(self)|
+|`_trimPresetEditableFlag`|fn|priv|359-363|def _trimPresetEditableFlag(self)|
+|`_trimPresetRole`|fn|priv|364-368|def _trimPresetRole(self)|
+|`_defaultTrimPresetName`|fn|priv|369-376|def _defaultTrimPresetName(self)|
+|`_toBool`|fn|priv|377-387|def _toBool(self, value)|
+|`_updateTrimPagesRangeControls`|fn|priv|388-398|def _updateTrimPagesRangeControls(self, enabled)|
+|`_parseTrimPagesRange`|fn|priv|399-415|def _parseTrimPagesRange(self)|
+|`_collectRuntimeConfigValues`|fn|priv|416-431|def _collectRuntimeConfigValues(self)|
+|`_preserveFieldsEnabled`|fn|priv|432-445|def _preserveFieldsEnabled(self)|
+|`_trimPresetFromCurrentSelection`|fn|priv|446-465|def _trimPresetFromCurrentSelection(self)|
+|`_refreshTrimPresetList`|fn|priv|466-494|def _refreshTrimPresetList(self)|
+|`_persistTrimPresetDocument`|fn|priv|495-512|def _persistTrimPresetDocument(self)|
+|`_applyCropPreset`|fn|priv|513-544|def _applyCropPreset(self, crop_values)|
+|`_applyTrimPreset`|fn|priv|545-570|def _applyTrimPreset(self, index)|
+|`slotTrimPresetClicked`|fn|pub|571-583|def slotTrimPresetClicked(self, item, column)|
+|`slotTrimPresetDoubleClicked`|fn|pub|584-594|def slotTrimPresetDoubleClicked(self, item, column)|
+|`slotTrimPresetChanged`|fn|pub|595-618|def slotTrimPresetChanged(self, item, column)|
+|`slotDeleteTrimPreset`|fn|pub|619-637|def slotDeleteTrimPreset(self)|
+|`slotSaveMarginsPreset`|fn|pub|638-649|def slotSaveMarginsPreset(self)|
+|`selectedConversionMode`|fn|pub|650-657|def selectedConversionMode(self)|
+|`currentSelectionUpdated`|fn|pub|658-674|def currentSelectionUpdated(self)|
+|`_updateSelectionCreationActions`|fn|priv|675-684|def _updateSelectionCreationActions(self)|
+|`readSettings`|fn|pub|685-733|def readSettings(self)|
+|`writeSettings`|fn|pub|734-758|def writeSettings(self)|
+|`openFile`|fn|pub|759-779|def openFile(self, fileName)|
+|`slotOpenFile`|fn|pub|780-785|def slotOpenFile(self)|
+|`slotSelectFile`|fn|pub|786-795|def slotSelectFile(self)|
+|`showWarning`|fn|pub|796-803|def showWarning(self, title, text)|
+|`str2pages`|fn|pub|804-821|def str2pages(self, s)|
+|`primarySelectionCropValue`|fn|pub|822-835|def primarySelectionCropValue(self, page_indexes)|
+|`buildGhostscriptCropPlan`|fn|pub|836-871|def buildGhostscriptCropPlan(self, inputFileName, outputF...|
+|`createConversionProgressDialog`|fn|pub|872-894|def createConversionProgressDialog(self, totalPages)|
+|`slotPdfFrame`|fn|pub|895-1017|def slotPdfFrame(self)|
+|`mark_page_processed`|fn|pub|949-967|def mark_page_processed(page_number)|
+|`on_output_line`|fn|pub|968-982|def on_output_line(line)|
+|`slotZoomIn`|fn|pub|1018-1021|def slotZoomIn(self)|
+|`slotZoomOut`|fn|pub|1022-1025|def slotZoomOut(self)|
+|`slotFitInView`|fn|pub|1026-1030|def slotFitInView(self, checked)|
+|`slotSplitterMoved`|fn|pub|1031-1033|def slotSplitterMoved(self, pos, idx)|
+|`slotPreviousPage`|fn|pub|1034-1037|def slotPreviousPage(self)|
+|`slotNextPage`|fn|pub|1038-1041|def slotNextPage(self)|
+|`slotFirstPage`|fn|pub|1042-1045|def slotFirstPage(self)|
+|`slotLastPage`|fn|pub|1046-1049|def slotLastPage(self)|
+|`slotCurrentPageEdited`|fn|pub|1050-1057|def slotCurrentPageEdited(self, text)|
+|`updateControls`|fn|pub|1058-1066|def updateControls(self)|
+|`slotSelectionMode`|fn|pub|1067-1070|def slotSelectionMode(self, checked)|
+|`slotSelExceptionsChanged`|fn|pub|1071-1073|def slotSelExceptionsChanged(self)|
+|`slotSelExceptionsEdited`|fn|pub|1074-1078|def slotSelExceptionsEdited(self, text)|
+|`slotSelAspectRatioChanged`|fn|pub|1079-1087|def slotSelAspectRatioChanged(self)|
+|`slotSelAspectRatioTypeChanged`|fn|pub|1088-1107|def slotSelAspectRatioTypeChanged(self, index)|
+|`distributeAspectRatioChanged`|fn|pub|1108-1110|def distributeAspectRatioChanged(self, aspectRatio)|
+|`slotDistributeAspectRatioChanged`|fn|pub|1111-1113|def slotDistributeAspectRatioChanged(self)|
+|`slotDeviceTypeChanged`|fn|pub|1114-1120|def slotDeviceTypeChanged(self, index)|
+|`slotContextMenu`|fn|pub|1121-1141|def slotContextMenu(self, pos)|
+|`slotDeleteSelection`|fn|pub|1142-1145|def slotDeleteSelection(self)|
+|`slotNewSelection`|fn|pub|1146-1148|def slotNewSelection(self)|
+|`slotNewSelectionGrid`|fn|pub|1149-1167|def slotNewSelectionGrid(self)|
+|`createSelectionGrid`|fn|pub|1168-1224|def createSelectionGrid(self, grid)|
+|`getPadding`|fn|pub|1225-1252|def getPadding(self)|
+|`slotTrimMarginsAll`|fn|pub|1253-1265|def slotTrimMarginsAll(self)|
+|`slotTrimMargins`|fn|pub|1266-1270|def slotTrimMargins(self)|
+|`trimMarginsSelection`|fn|pub|1271-1374|def trimMarginsSelection(self, sel)|
+|`resizeEvent`|fn|pub|1375-1377|def resizeEvent(self, event)|
+|`closeEvent`|fn|pub|1378-1379|def closeEvent(self, event)|
 
 
 ---
@@ -1128,7 +1141,7 @@ from popplerqt5 import Poppler
 
 ---
 
-# viewerselections.py | Python | 654L | 71 symbols | 2 imports | 40 comments
+# viewerselections.py | Python | 666L | 71 symbols | 2 imports | 41 comments
 > Path: `src/pdfframe/viewerselections.py`
 
 ## Imports
@@ -1139,166 +1152,174 @@ from pdfframe.qt import *
 
 ## Definitions
 
-### class `class ViewerSelections(object)` : object (L21-150)
+### class `class ViewerSelections(object)` : object (L21-170)
 - fn `def __init__(self, viewer)` `priv` (L29-37)
 - fn `def items(self)` (L39-46)
-- fn `def addSelection(self, rect=None)` (L47-52)
-- fn `def deleteSelection(self, s)` (L53-59)
-- fn `def deleteSelections(self)` (L60-63)
-- fn `def getCurrentSelection(self)` (L64-66)
-- fn `def setCurrentSelection(self, currentSelection)` (L67-78)
-- fn `def autoSetCurrentSelection(self)` (L81-94)
-- fn `def currentSelectionUpdated(self)` (L95-97)
-- fn `def getDistributeAspectRatio(self)` (L98-100)
-- fn `def setDistributeAspectRatio(self, distributeAspectRatio)` (L101-104)
-- fn `def getSelectionMode(self)` (L107-109)
-- fn `def setSelectionMode(self, mode)` (L110-113)
-- fn `def getSelectionExceptions(self)` (L116-118)
-- fn `def setSelectionExceptions(self, exceptions)` (L119-122)
-- fn `def updateSelectionVisibility(self)` (L125-130)
-- fn `def cropValues(self, idx)` (L131-134)
-- fn `def mousePressEvent(self, event)` (L135-141)
-- fn `def mouseMoveEvent(self, event)` (L142-146)
-- fn `def mouseReleaseEvent(self, event)` (L147-150)
+- fn `def addSelection(self, rect=None)` (L47-62)
+  - Brief: Creates the selection area when absent.
+  - Details: Enforces single-selection mode by returning the existing area when one is already present.
+  - Param: rect {QRectF|None} Optional initial rectangle for first creation.
+  - Return: {ViewerSelectionItem} Current selection area.
+- fn `def deleteSelection(self, s)` (L63-69)
+- fn `def deleteSelections(self)` (L70-73)
+- fn `def getCurrentSelection(self)` (L74-76)
+- fn `def setCurrentSelection(self, currentSelection)` (L77-88)
+- fn `def autoSetCurrentSelection(self)` (L91-104)
+- fn `def currentSelectionUpdated(self)` (L105-107)
+- fn `def getDistributeAspectRatio(self)` (L108-110)
+- fn `def setDistributeAspectRatio(self, distributeAspectRatio)` (L111-114)
+- fn `def getSelectionMode(self)` (L117-119)
+- fn `def setSelectionMode(self, mode)` (L120-123)
+- fn `def getSelectionExceptions(self)` (L126-128)
+- fn `def setSelectionExceptions(self, exceptions)` (L129-132)
+- fn `def updateSelectionVisibility(self)` (L135-140)
+- fn `def cropValues(self, idx)` (L141-144)
+- fn `def mousePressEvent(self, event)` (L145-161)
+  - Brief: Starts scene-level selection creation gesture.
+  - Details: Creates a first selection on left click only when no selection exists; otherwise keeps the existing area current.
+  - Param: event {QGraphicsSceneMouseEvent} Mouse event object.
+  - Return: {None} Applies selection creation side effects.
+- fn `def mouseMoveEvent(self, event)` (L162-166)
+- fn `def mouseReleaseEvent(self, event)` (L167-170)
 
-### class `class ViewerSelectionItem(QGraphicsItem)` : QGraphicsItem (L151-350)
-- fn `def __init__(self, parent, rect=None)` `priv` (L157-183)
-- fn `def selection(self)` (L185-188)
-- fn `def viewer(self)` (L190-192)
-- fn `def selections(self)` (L194-197)
-- fn `def isCurrent(self)` (L198-200)
-- fn `def setAsCurrent(self)` (L201-204)
-- fn `def orderIndex(self)` (L206-214)
-- fn `def aspectRatio(self)` (L216-218)
-- fn `def getAspectRatioData(self)` (L219-221)
-- fn `def setAspectRatioData(self, data)` (L222-235)
-- fn `def distributeAspectRatio(self)` (L240-243)
-- fn `def selectionVisibleOnPage(self, pageIndex)` (L244-249)
-- fn `def boundingRect(self)` (L250-252)
-- fn `def setBoundingRect(self, pt1, pt2)` (L253-262)
-- fn `def adjustBoundingRect(self, dx1=0, dy1=0, dx2=0, dy2=0)` (L263-334)
-- fn `def moveBoundingRect(self, dx, dy)` (L335-349)
+### class `class ViewerSelectionItem(QGraphicsItem)` : QGraphicsItem (L171-370)
+- fn `def __init__(self, parent, rect=None)` `priv` (L177-203)
+- fn `def selection(self)` (L205-208)
+- fn `def viewer(self)` (L210-212)
+- fn `def selections(self)` (L214-217)
+- fn `def isCurrent(self)` (L218-220)
+- fn `def setAsCurrent(self)` (L221-224)
+- fn `def orderIndex(self)` (L226-234)
+- fn `def aspectRatio(self)` (L236-238)
+- fn `def getAspectRatioData(self)` (L239-241)
+- fn `def setAspectRatioData(self, data)` (L242-255)
+- fn `def distributeAspectRatio(self)` (L260-263)
+- fn `def selectionVisibleOnPage(self, pageIndex)` (L264-269)
+- fn `def boundingRect(self)` (L270-272)
+- fn `def setBoundingRect(self, pt1, pt2)` (L273-282)
+- fn `def adjustBoundingRect(self, dx1=0, dy1=0, dx2=0, dy2=0)` (L283-354)
+- fn `def moveBoundingRect(self, dx, dy)` (L355-369)
 
-### fn `def distributeRect(self)` (L350-362)
+### fn `def distributeRect(self)` (L370-382)
 
-### fn `def cropValues(self)` (L363-379)
+### fn `def cropValues(self)` (L383-399)
 
-### fn `def clamp(v)` (L365-366)
+### fn `def clamp(v)` (L385-386)
 
-### fn `def cV(r)` (L367-377)
+### fn `def cV(r)` (L387-397)
 
-### fn `def mapRectToImage(self, r)` (L380-383)
+### fn `def mapRectToImage(self, r)` (L400-403)
 
-### fn `def mapRectFromImage(self, r)` (L384-387)
+### fn `def mapRectFromImage(self, r)` (L404-407)
 
-### fn `def paint(self, painter, option, widget)` (L388-427)
+### fn `def paint(self, painter, option, widget)` (L408-439)
 
-### fn `def drawLine(pt1, pt2)` (L399-404)
+### fn `def drawLine(pt1, pt2)` (L419-424)
 
-### fn `def mousePressEvent(self, event)` (L428-439)
+### fn `def mousePressEvent(self, event)` (L440-451)
 
-### fn `def mouseMoveEvent(self, event)` (L440-458)
+### fn `def mouseMoveEvent(self, event)` (L452-470)
 
-### fn `def mouseReleaseEvent(self, event)` (L459-462)
+### fn `def mouseReleaseEvent(self, event)` (L471-474)
 
-### fn `def keyPressEvent(self, event)` (L463-482)
+### fn `def keyPressEvent(self, event)` (L475-494)
 
-### class `class SelectionHandleItem(QGraphicsItem)` : QGraphicsItem (L483-582)
-- fn `def __init__(self, parent, role)` `priv` (L490-505)
-- fn `def selection(self)` (L507-509)
-- fn `def handleColor(self)` (L511-515)
-- fn `def boundingRect(self)` (L516-535)
-- fn `def paint(self, painter, option, widget)` (L536-554)
-- fn `def mousePressEvent(self, event)` (L555-560)
-- fn `def mouseMoveEvent(self, event)` (L561-578)
-- fn `def mouseReleaseEvent(self, event)` (L579-582)
+### class `class SelectionHandleItem(QGraphicsItem)` : QGraphicsItem (L495-594)
+- fn `def __init__(self, parent, role)` `priv` (L502-517)
+- fn `def selection(self)` (L519-521)
+- fn `def handleColor(self)` (L523-527)
+- fn `def boundingRect(self)` (L528-547)
+- fn `def paint(self, painter, option, widget)` (L548-566)
+- fn `def mousePressEvent(self, event)` (L567-572)
+- fn `def mouseMoveEvent(self, event)` (L573-590)
+- fn `def mouseReleaseEvent(self, event)` (L591-594)
 
-### class `class SelectionCornerHandleItem(QGraphicsItem)` : QGraphicsItem (L583-642)
-- fn `def __init__(self, parent, lr, tb)` `priv` (L584-594)
-- fn `def selection(self)` (L596-598)
-- fn `def handleColor(self)` (L600-604)
-- fn `def corner(self, rect)` (L605-608)
-- fn `def direction(self, pt)` (L609-614)
-- fn `def boundingRect(self)` (L615-620)
-- fn `def paint(self, painter, option, widget)` (L621-626)
-- fn `def mousePressEvent(self, event)` (L627-632)
-- fn `def mouseMoveEvent(self, event)` (L633-638)
-- fn `def mouseReleaseEvent(self, event)` (L639-642)
+### class `class SelectionCornerHandleItem(QGraphicsItem)` : QGraphicsItem (L595-654)
+- fn `def __init__(self, parent, lr, tb)` `priv` (L596-606)
+- fn `def selection(self)` (L608-610)
+- fn `def handleColor(self)` (L612-616)
+- fn `def corner(self, rect)` (L617-620)
+- fn `def direction(self, pt)` (L621-626)
+- fn `def boundingRect(self)` (L627-632)
+- fn `def paint(self, painter, option, widget)` (L633-638)
+- fn `def mousePressEvent(self, event)` (L639-644)
+- fn `def mouseMoveEvent(self, event)` (L645-650)
+- fn `def mouseReleaseEvent(self, event)` (L651-654)
 
-### fn `def aspectRatioFromStr(s)` (L643-654)
+### fn `def aspectRatioFromStr(s)` (L655-666)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`ViewerSelections`|class|pub|21-150|class ViewerSelections(object)|
+|`ViewerSelections`|class|pub|21-170|class ViewerSelections(object)|
 |`ViewerSelections.__init__`|fn|priv|29-37|def __init__(self, viewer)|
 |`ViewerSelections.items`|fn|pub|39-46|def items(self)|
-|`ViewerSelections.addSelection`|fn|pub|47-52|def addSelection(self, rect=None)|
-|`ViewerSelections.deleteSelection`|fn|pub|53-59|def deleteSelection(self, s)|
-|`ViewerSelections.deleteSelections`|fn|pub|60-63|def deleteSelections(self)|
-|`ViewerSelections.getCurrentSelection`|fn|pub|64-66|def getCurrentSelection(self)|
-|`ViewerSelections.setCurrentSelection`|fn|pub|67-78|def setCurrentSelection(self, currentSelection)|
-|`ViewerSelections.autoSetCurrentSelection`|fn|pub|81-94|def autoSetCurrentSelection(self)|
-|`ViewerSelections.currentSelectionUpdated`|fn|pub|95-97|def currentSelectionUpdated(self)|
-|`ViewerSelections.getDistributeAspectRatio`|fn|pub|98-100|def getDistributeAspectRatio(self)|
-|`ViewerSelections.setDistributeAspectRatio`|fn|pub|101-104|def setDistributeAspectRatio(self, distributeAspectRatio)|
-|`ViewerSelections.getSelectionMode`|fn|pub|107-109|def getSelectionMode(self)|
-|`ViewerSelections.setSelectionMode`|fn|pub|110-113|def setSelectionMode(self, mode)|
-|`ViewerSelections.getSelectionExceptions`|fn|pub|116-118|def getSelectionExceptions(self)|
-|`ViewerSelections.setSelectionExceptions`|fn|pub|119-122|def setSelectionExceptions(self, exceptions)|
-|`ViewerSelections.updateSelectionVisibility`|fn|pub|125-130|def updateSelectionVisibility(self)|
-|`ViewerSelections.cropValues`|fn|pub|131-134|def cropValues(self, idx)|
-|`ViewerSelections.mousePressEvent`|fn|pub|135-141|def mousePressEvent(self, event)|
-|`ViewerSelections.mouseMoveEvent`|fn|pub|142-146|def mouseMoveEvent(self, event)|
-|`ViewerSelections.mouseReleaseEvent`|fn|pub|147-150|def mouseReleaseEvent(self, event)|
-|`ViewerSelectionItem`|class|pub|151-350|class ViewerSelectionItem(QGraphicsItem)|
-|`ViewerSelectionItem.__init__`|fn|priv|157-183|def __init__(self, parent, rect=None)|
-|`ViewerSelectionItem.selection`|fn|pub|185-188|def selection(self)|
-|`ViewerSelectionItem.viewer`|fn|pub|190-192|def viewer(self)|
-|`ViewerSelectionItem.selections`|fn|pub|194-197|def selections(self)|
-|`ViewerSelectionItem.isCurrent`|fn|pub|198-200|def isCurrent(self)|
-|`ViewerSelectionItem.setAsCurrent`|fn|pub|201-204|def setAsCurrent(self)|
-|`ViewerSelectionItem.orderIndex`|fn|pub|206-214|def orderIndex(self)|
-|`ViewerSelectionItem.aspectRatio`|fn|pub|216-218|def aspectRatio(self)|
-|`ViewerSelectionItem.getAspectRatioData`|fn|pub|219-221|def getAspectRatioData(self)|
-|`ViewerSelectionItem.setAspectRatioData`|fn|pub|222-235|def setAspectRatioData(self, data)|
-|`ViewerSelectionItem.distributeAspectRatio`|fn|pub|240-243|def distributeAspectRatio(self)|
-|`ViewerSelectionItem.selectionVisibleOnPage`|fn|pub|244-249|def selectionVisibleOnPage(self, pageIndex)|
-|`ViewerSelectionItem.boundingRect`|fn|pub|250-252|def boundingRect(self)|
-|`ViewerSelectionItem.setBoundingRect`|fn|pub|253-262|def setBoundingRect(self, pt1, pt2)|
-|`ViewerSelectionItem.adjustBoundingRect`|fn|pub|263-334|def adjustBoundingRect(self, dx1=0, dy1=0, dx2=0, dy2=0)|
-|`ViewerSelectionItem.moveBoundingRect`|fn|pub|335-349|def moveBoundingRect(self, dx, dy)|
-|`distributeRect`|fn|pub|350-362|def distributeRect(self)|
-|`cropValues`|fn|pub|363-379|def cropValues(self)|
-|`clamp`|fn|pub|365-366|def clamp(v)|
-|`cV`|fn|pub|367-377|def cV(r)|
-|`mapRectToImage`|fn|pub|380-383|def mapRectToImage(self, r)|
-|`mapRectFromImage`|fn|pub|384-387|def mapRectFromImage(self, r)|
-|`paint`|fn|pub|388-427|def paint(self, painter, option, widget)|
-|`drawLine`|fn|pub|399-404|def drawLine(pt1, pt2)|
-|`mousePressEvent`|fn|pub|428-439|def mousePressEvent(self, event)|
-|`mouseMoveEvent`|fn|pub|440-458|def mouseMoveEvent(self, event)|
-|`mouseReleaseEvent`|fn|pub|459-462|def mouseReleaseEvent(self, event)|
-|`keyPressEvent`|fn|pub|463-482|def keyPressEvent(self, event)|
-|`SelectionHandleItem`|class|pub|483-582|class SelectionHandleItem(QGraphicsItem)|
-|`SelectionHandleItem.__init__`|fn|priv|490-505|def __init__(self, parent, role)|
-|`SelectionHandleItem.selection`|fn|pub|507-509|def selection(self)|
-|`SelectionHandleItem.handleColor`|fn|pub|511-515|def handleColor(self)|
-|`SelectionHandleItem.boundingRect`|fn|pub|516-535|def boundingRect(self)|
-|`SelectionHandleItem.paint`|fn|pub|536-554|def paint(self, painter, option, widget)|
-|`SelectionHandleItem.mousePressEvent`|fn|pub|555-560|def mousePressEvent(self, event)|
-|`SelectionHandleItem.mouseMoveEvent`|fn|pub|561-578|def mouseMoveEvent(self, event)|
-|`SelectionHandleItem.mouseReleaseEvent`|fn|pub|579-582|def mouseReleaseEvent(self, event)|
-|`SelectionCornerHandleItem`|class|pub|583-642|class SelectionCornerHandleItem(QGraphicsItem)|
-|`SelectionCornerHandleItem.__init__`|fn|priv|584-594|def __init__(self, parent, lr, tb)|
-|`SelectionCornerHandleItem.selection`|fn|pub|596-598|def selection(self)|
-|`SelectionCornerHandleItem.handleColor`|fn|pub|600-604|def handleColor(self)|
-|`SelectionCornerHandleItem.corner`|fn|pub|605-608|def corner(self, rect)|
-|`SelectionCornerHandleItem.direction`|fn|pub|609-614|def direction(self, pt)|
-|`SelectionCornerHandleItem.boundingRect`|fn|pub|615-620|def boundingRect(self)|
-|`SelectionCornerHandleItem.paint`|fn|pub|621-626|def paint(self, painter, option, widget)|
-|`SelectionCornerHandleItem.mousePressEvent`|fn|pub|627-632|def mousePressEvent(self, event)|
-|`SelectionCornerHandleItem.mouseMoveEvent`|fn|pub|633-638|def mouseMoveEvent(self, event)|
-|`SelectionCornerHandleItem.mouseReleaseEvent`|fn|pub|639-642|def mouseReleaseEvent(self, event)|
-|`aspectRatioFromStr`|fn|pub|643-654|def aspectRatioFromStr(s)|
+|`ViewerSelections.addSelection`|fn|pub|47-62|def addSelection(self, rect=None)|
+|`ViewerSelections.deleteSelection`|fn|pub|63-69|def deleteSelection(self, s)|
+|`ViewerSelections.deleteSelections`|fn|pub|70-73|def deleteSelections(self)|
+|`ViewerSelections.getCurrentSelection`|fn|pub|74-76|def getCurrentSelection(self)|
+|`ViewerSelections.setCurrentSelection`|fn|pub|77-88|def setCurrentSelection(self, currentSelection)|
+|`ViewerSelections.autoSetCurrentSelection`|fn|pub|91-104|def autoSetCurrentSelection(self)|
+|`ViewerSelections.currentSelectionUpdated`|fn|pub|105-107|def currentSelectionUpdated(self)|
+|`ViewerSelections.getDistributeAspectRatio`|fn|pub|108-110|def getDistributeAspectRatio(self)|
+|`ViewerSelections.setDistributeAspectRatio`|fn|pub|111-114|def setDistributeAspectRatio(self, distributeAspectRatio)|
+|`ViewerSelections.getSelectionMode`|fn|pub|117-119|def getSelectionMode(self)|
+|`ViewerSelections.setSelectionMode`|fn|pub|120-123|def setSelectionMode(self, mode)|
+|`ViewerSelections.getSelectionExceptions`|fn|pub|126-128|def getSelectionExceptions(self)|
+|`ViewerSelections.setSelectionExceptions`|fn|pub|129-132|def setSelectionExceptions(self, exceptions)|
+|`ViewerSelections.updateSelectionVisibility`|fn|pub|135-140|def updateSelectionVisibility(self)|
+|`ViewerSelections.cropValues`|fn|pub|141-144|def cropValues(self, idx)|
+|`ViewerSelections.mousePressEvent`|fn|pub|145-161|def mousePressEvent(self, event)|
+|`ViewerSelections.mouseMoveEvent`|fn|pub|162-166|def mouseMoveEvent(self, event)|
+|`ViewerSelections.mouseReleaseEvent`|fn|pub|167-170|def mouseReleaseEvent(self, event)|
+|`ViewerSelectionItem`|class|pub|171-370|class ViewerSelectionItem(QGraphicsItem)|
+|`ViewerSelectionItem.__init__`|fn|priv|177-203|def __init__(self, parent, rect=None)|
+|`ViewerSelectionItem.selection`|fn|pub|205-208|def selection(self)|
+|`ViewerSelectionItem.viewer`|fn|pub|210-212|def viewer(self)|
+|`ViewerSelectionItem.selections`|fn|pub|214-217|def selections(self)|
+|`ViewerSelectionItem.isCurrent`|fn|pub|218-220|def isCurrent(self)|
+|`ViewerSelectionItem.setAsCurrent`|fn|pub|221-224|def setAsCurrent(self)|
+|`ViewerSelectionItem.orderIndex`|fn|pub|226-234|def orderIndex(self)|
+|`ViewerSelectionItem.aspectRatio`|fn|pub|236-238|def aspectRatio(self)|
+|`ViewerSelectionItem.getAspectRatioData`|fn|pub|239-241|def getAspectRatioData(self)|
+|`ViewerSelectionItem.setAspectRatioData`|fn|pub|242-255|def setAspectRatioData(self, data)|
+|`ViewerSelectionItem.distributeAspectRatio`|fn|pub|260-263|def distributeAspectRatio(self)|
+|`ViewerSelectionItem.selectionVisibleOnPage`|fn|pub|264-269|def selectionVisibleOnPage(self, pageIndex)|
+|`ViewerSelectionItem.boundingRect`|fn|pub|270-272|def boundingRect(self)|
+|`ViewerSelectionItem.setBoundingRect`|fn|pub|273-282|def setBoundingRect(self, pt1, pt2)|
+|`ViewerSelectionItem.adjustBoundingRect`|fn|pub|283-354|def adjustBoundingRect(self, dx1=0, dy1=0, dx2=0, dy2=0)|
+|`ViewerSelectionItem.moveBoundingRect`|fn|pub|355-369|def moveBoundingRect(self, dx, dy)|
+|`distributeRect`|fn|pub|370-382|def distributeRect(self)|
+|`cropValues`|fn|pub|383-399|def cropValues(self)|
+|`clamp`|fn|pub|385-386|def clamp(v)|
+|`cV`|fn|pub|387-397|def cV(r)|
+|`mapRectToImage`|fn|pub|400-403|def mapRectToImage(self, r)|
+|`mapRectFromImage`|fn|pub|404-407|def mapRectFromImage(self, r)|
+|`paint`|fn|pub|408-439|def paint(self, painter, option, widget)|
+|`drawLine`|fn|pub|419-424|def drawLine(pt1, pt2)|
+|`mousePressEvent`|fn|pub|440-451|def mousePressEvent(self, event)|
+|`mouseMoveEvent`|fn|pub|452-470|def mouseMoveEvent(self, event)|
+|`mouseReleaseEvent`|fn|pub|471-474|def mouseReleaseEvent(self, event)|
+|`keyPressEvent`|fn|pub|475-494|def keyPressEvent(self, event)|
+|`SelectionHandleItem`|class|pub|495-594|class SelectionHandleItem(QGraphicsItem)|
+|`SelectionHandleItem.__init__`|fn|priv|502-517|def __init__(self, parent, role)|
+|`SelectionHandleItem.selection`|fn|pub|519-521|def selection(self)|
+|`SelectionHandleItem.handleColor`|fn|pub|523-527|def handleColor(self)|
+|`SelectionHandleItem.boundingRect`|fn|pub|528-547|def boundingRect(self)|
+|`SelectionHandleItem.paint`|fn|pub|548-566|def paint(self, painter, option, widget)|
+|`SelectionHandleItem.mousePressEvent`|fn|pub|567-572|def mousePressEvent(self, event)|
+|`SelectionHandleItem.mouseMoveEvent`|fn|pub|573-590|def mouseMoveEvent(self, event)|
+|`SelectionHandleItem.mouseReleaseEvent`|fn|pub|591-594|def mouseReleaseEvent(self, event)|
+|`SelectionCornerHandleItem`|class|pub|595-654|class SelectionCornerHandleItem(QGraphicsItem)|
+|`SelectionCornerHandleItem.__init__`|fn|priv|596-606|def __init__(self, parent, lr, tb)|
+|`SelectionCornerHandleItem.selection`|fn|pub|608-610|def selection(self)|
+|`SelectionCornerHandleItem.handleColor`|fn|pub|612-616|def handleColor(self)|
+|`SelectionCornerHandleItem.corner`|fn|pub|617-620|def corner(self, rect)|
+|`SelectionCornerHandleItem.direction`|fn|pub|621-626|def direction(self, pt)|
+|`SelectionCornerHandleItem.boundingRect`|fn|pub|627-632|def boundingRect(self)|
+|`SelectionCornerHandleItem.paint`|fn|pub|633-638|def paint(self, painter, option, widget)|
+|`SelectionCornerHandleItem.mousePressEvent`|fn|pub|639-644|def mousePressEvent(self, event)|
+|`SelectionCornerHandleItem.mouseMoveEvent`|fn|pub|645-650|def mouseMoveEvent(self, event)|
+|`SelectionCornerHandleItem.mouseReleaseEvent`|fn|pub|651-654|def mouseReleaseEvent(self, event)|
+|`aspectRatioFromStr`|fn|pub|655-666|def aspectRatioFromStr(s)|
 

@@ -244,6 +244,7 @@ class MainWindow(QMainWindow):
 
         self.ui.documentView.setScene(self.pdfScene)
         self.ui.documentView.setFocus()
+        self._updateSelectionCreationActions()
 
 
     @property
@@ -669,6 +670,17 @@ class MainWindow(QMainWindow):
             self.ui.comboSelAspectRatioType.setCurrentIndex(0)
             self.ui.editSelAspectRatio.setText("")
             self.ui.groupCurrentSel.setEnabled(False)
+        self._updateSelectionCreationActions()
+
+    def _updateSelectionCreationActions(self):
+        """
+        @brief Updates enablement of selection-creation actions.
+        @details Allows creating a selection only when the viewer has a document and no selection exists; keeps creation actions disabled once one selection area is present.
+        @return {None} Applies action-enable side effects.
+        """
+        can_create = (not self.viewer.isEmpty()) and len(self.selections.items) == 0
+        self.ui.actionNewSelection.setEnabled(can_create)
+        self.ui.actionNewSelectionGrid.setEnabled(can_create)
 
     def readSettings(self):
         """
@@ -763,6 +775,7 @@ class MainWindow(QMainWindow):
             self.actionSaveMargins.setEnabled(not self.viewer.isEmpty())
             self.ui.editFile.setText(outputFileName)
             self.updateControls()
+            self._updateSelectionCreationActions()
 
     def slotOpenFile(self):
         fileName = QFileDialog.getOpenFileName(self,
@@ -1134,17 +1147,37 @@ class MainWindow(QMainWindow):
         self.createSelectionGrid("1")
 
     def slotNewSelectionGrid(self):
+        """
+        @brief Requests one new trim/selection area from user grid input.
+        @details Prompts only when no selection area exists; in single-selection mode the request is rejected while an area is already present.
+        @return {None} Applies selection-creation side effects.
+        """
         if not self.viewer.isEmpty():
-            default = "2x1"
-            if self.viewer.isPortrait():
-                default = "1x2"
+            if self.selections.items:
+                self.showWarning(
+                    self.tr("Single selection mode"),
+                    self.tr("Only one trim/selection area is supported. Delete the current area before creating a new one."),
+                )
+                return
+            default = "1"
             grid, ok = QInputDialog.getText(self, self.tr('New Selection Grid...'),
                     self.tr('Enter the dimensions of the grid:'), text=default)
             if ok:
                 self.createSelectionGrid(grid)
 
     def createSelectionGrid(self, grid):
+        """
+        @brief Creates the initial trim/selection area from grid input.
+        @details Parses `grid` input, enforces single-selection mode by reducing multi-cell requests to one area, and prevents creation when an area already exists.
+        @param grid {str} Grid expression entered by CLI or UI.
+        @return {None} Applies selection-creation side effects.
+        """
         if self.viewer.isEmpty():
+            return
+        if self.selections.items:
+            self.selections.currentSelection = self.selections.items[0]
+            self.pdfScene.update()
+            self._updateSelectionCreationActions()
             return
 
         try:
@@ -1167,6 +1200,17 @@ class MainWindow(QMainWindow):
                 "determined according to whether the page is landscape or portrait."))
             return
 
+        if cols <= 0 or rows <= 0:
+            self.showWarning(self.tr("Bad value for grid parameter"), self.tr("Selection grid dimensions must be positive integers."))
+            return
+        if cols * rows != 1:
+            self.showWarning(
+                self.tr("Single selection mode"),
+                self.tr("Only one trim/selection area is supported. Value '{0}' is reduced to one area.").format(grid),
+            )
+            cols = 1
+            rows = 1
+
         for j in range(rows):
             for i in range(cols):
                 sel = self.selections.addSelection()
@@ -1176,6 +1220,7 @@ class MainWindow(QMainWindow):
                 p0 = QPointF(r.left()+i*w, r.top()+j*h)
                 sel.setBoundingRect(p0, p0 + QPointF(w, h))
         self.pdfScene.update()
+        self._updateSelectionCreationActions()
 
     def getPadding(self):
         """

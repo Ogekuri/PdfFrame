@@ -5,8 +5,8 @@ pdfframe: A tool to crop PDF files
 
 You can use command line arguments in addition to (or, to a degree, instead of) the graphical interface.
 
-For instance, to automatically undo 4 pages print onto a single page:
-    pdfframe --go --grid=2x2 file.pdf
+For instance, to run conversion with a predefined single selection area:
+    pdfframe --go --grid=1 file.pdf
 Omit the --go to further edit the selections in the graphical interface before cropping.
 
 Copyright (C) 2010-2025 ogekuri, http://ogekuri.com
@@ -36,7 +36,7 @@ def main():
     parser.add_argument('--whichpages', help='requested page range to process (accepted forms: "5", "5-", "-5", "5-9")')
     parser.add_argument('--mode', type=str, choices=['frame', 'crop'], help='conversion mode: frame keeps original page size, crop shrinks output page to selection bounds')
 
-    parser.add_argument('--grid', help='if set to 2x3, for instance, creates a 2x3 grid of selections on initial page; if only one number is specified, the number of columns/rows is determined according to whether the page is landscape or portrait')
+    parser.add_argument('--grid', help='creates the initial trim/selection area; single-area mode is enforced and values larger than 1 area are reduced to one area')
 
     parser.add_argument('--initialpage', help='which page to open initially (default: 1)')
     parser.add_argument('--verbose', action='store_true', help='enable verbose console output from the Python program')

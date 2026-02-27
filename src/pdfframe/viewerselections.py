@@ -45,6 +45,16 @@ class ViewerSelections(object):
         return self._selections
 
     def addSelection(self, rect=None):
+        """
+        @brief Creates the selection area when absent.
+        @details Enforces single-selection mode by returning the existing area when one is already present.
+        @param rect {QRectF|None} Optional initial rectangle for first creation.
+        @return {ViewerSelectionItem} Current selection area.
+        """
+        if self._selections:
+            s = self._selections[0]
+            s.setAsCurrent()
+            return s
         s = ViewerSelectionItem(self.viewer, rect)
         self._selections.append(s)
         s.setAsCurrent()
@@ -133,7 +143,17 @@ class ViewerSelections(object):
                 for c in s.cropValues() ]
 
     def mousePressEvent(self, event):
+        """
+        @brief Starts scene-level selection creation gesture.
+        @details Creates a first selection on left click only when no selection exists; otherwise keeps the existing area current.
+        @param event {QGraphicsSceneMouseEvent} Mouse event object.
+        @return {None} Applies selection creation side effects.
+        """
         if event.button() == Qt.MouseButton.LeftButton:
+            if self._selections:
+                self.currentSelection = self._selections[0]
+                self.lastPos = None
+                return
             pos = event.pos()
             rect = QRectF(pos, QSizeF())
             self.currentSelection = self.addSelection(rect)
@@ -416,14 +436,6 @@ class ViewerSelectionItem(QGraphicsItem):
             if r.bottom() < self.rect.bottom():
                 drawLine(r.bottomLeft(),r.bottomRight())
             even = not even
-
-        # inner number
-        font = QFont()
-        font.setPointSize(20)
-        font.setWeight(700)
-        painter.setPen(QColor(0,0,0,155))
-        painter.setFont(font)
-        painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, str(self.orderIndex))
 
     def mousePressEvent(self, event):
         # happens after right-click (trim margins) and then clicking
