@@ -1,0 +1,11 @@
+# GUI runtime
+PyQt6>=6.6
+PyQt5>=5.15
+
+# GUI metadata/render sources
+PyMuPDF>=1.23
+pypdf>=4.0
+pikepdf>=8.0
+
+# Test runtime
+pytest>=8.0
