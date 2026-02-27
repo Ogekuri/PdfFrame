@@ -28,8 +28,7 @@ def test_preserve_fields_checkbox_exists_before_other_pdf_operations():
     assert checked is not None
     assert checked.text == "false"
     source = ui_path.read_text(encoding="iso-8859-1")
-    assert source.index('name="checkPreserveFields"') < source.index('name="comboRotation"')
-    assert source.index('name="checkPreserveFields"') < source.index('name="checkGhostscript"')
+    assert source.index('name="checkPreserveFields"') < source.index('name="groupWhichPages"')
 
 
 def test_build_crop_plan_passes_preserve_fields_flag_to_command_builder(monkeypatch):

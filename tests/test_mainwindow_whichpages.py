@@ -45,13 +45,6 @@ class _LargePageViewer:
         return 1000.0, 2000.0
 
 
-def test_requested_unsupported_options_does_not_include_whichpages():
-    """Arrange/Act/Assert: conversion flow exposes no unsupported option flags."""
-    fake = SimpleNamespace()
-    result = MainWindow.requestedUnsupportedGhostscriptOptions(fake)
-    assert result == []
-
-
 def test_build_ghostscript_crop_plan_filters_requested_pages():
     """Arrange/Act/Assert: single plan keeps requested first/last page bounds."""
     fake = SimpleNamespace(

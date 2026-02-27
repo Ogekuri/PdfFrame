@@ -93,7 +93,7 @@ PdfFrame implements PDF page-region cropping through a Qt GUI with optional comm
 - **CTN-004**: MUST raise a user-visible error when `gs` executable is unavailable or returns a non-zero exit status.
 - **CTN-005**: MUST use PyMuPDF or PopplerQt only for rendering/geometry metadata needed by GUI selection handling.
 - **CTN-006**: MUST pass `-dNOPAUSE`, `-dBATCH`, `-dFIXEDMEDIA`, `-dDEVICEWIDTHPOINTS`, `-dDEVICEHEIGHTPOINTS`, and `-dPDFFitPage` in every Ghostscript crop invocation.
-- **CTN-007**: MUST treat rotation and include-pages-without-selections as unsupported by the Ghostscript backend and MUST surface explicit warnings when they are requested.
+- **CTN-007**: MUST NOT expose `Rotation`, `Use Ghostscript to optimize`, or `Include pages without selections` in Basic-tab conversion controls, and conversion MUST execute without warning branches for those removed options.
 - **CTN-008**: MUST execute release builds only for semantic-version tags whose commit is contained in `origin/master`.
 - **CTN-009**: MUST keep GUI behavior and interaction model intact while replacing only the crop execution backend.
 
@@ -121,7 +121,7 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-006**: MUST expose conversion mode selector with `Frame` and `Crop` options and default to `Frame` at application startup.
 - **REQ-007**: MUST show warnings and use safe defaults when grid or trim-settings values (`Pages range`, padding, grayscale sensitivity, color sensitivity) are invalid.
 - **REQ-008**: MUST process only pages selected by `--whichpages` (or all pages when empty), compute crop parameters from the primary GUI selection only, and execute one Ghostscript command configured with `-dFirstPage` and `-dLastPage` for the selected range.
-- **REQ-009**: MUST remove GUI controls for include-pages-without-selections and selection-application modes so these options cannot affect conversion behavior.
+- **REQ-009**: MUST remove GUI controls for `Rotation`, `Use Ghostscript to optimize`, `Include pages without selections`, and selection-application modes so these options cannot affect conversion behavior.
 - **REQ-010**: MUST invoke Ghostscript with script-style BeginPage clipping commands, using `crop` mode for translated physical cropping and `frame` mode for original-page clipping without scaling.
 - **REQ-011**: MUST set default output filename to `<input>-cropped.pdf` after successful file load and disable crop actions when loading fails.
 - **REQ-012**: MUST show selection-context menu actions for selection clicks and page-context actions for background clicks.
@@ -145,6 +145,7 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-030**: MUST label the trim threshold field as `Grayscale sensitivity` and provide tooltip/help text that defines it as tolerated grayscale transitions used by margin auto-trimming.
 - **REQ-031**: MUST expose `Trim pages range` and an immediate `Pages range:` field below it, where the field defaults to `1-1`, is enabled only when the toggle is enabled, and is separated from `Padding:` by a horizontal line.
 - **REQ-032**: MUST expose unchecked-by-default `Preserve fields` in `Extra operations on the final PDF` before existing controls and pass `-dPreserveAnnots=true/false` in Ghostscript commands for both `frame` and `crop`.
+- **REQ-033**: MUST update Help-tab and UI explanatory text to reflect active Basic-tab controls and MUST NOT reference `Rotation`, `Use Ghostscript to optimize`, or `Include pages without selections`.
 
 ## 4. Test Requirements
 
@@ -161,6 +162,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-009**: MUST include unit tests that validate `Grayscale sensitivity` nomenclature across trim UI labels/tooltips/help text and runtime persistence keys used by trim settings and presets.
 - **TST-010**: MUST include unit tests that validate `Trim pages range` / `Pages range:` enablement-default UI behavior, required `N-M` validation, and trim execution limited to the configured visible-page range.
 - **TST-011**: MUST include unit tests that validate `Preserve fields` default/UI placement and `-dPreserveAnnots=true/false` command emission in both `frame` and `crop` modes.
+- **TST-012**: MUST include unit tests that validate removal of `Rotation`, `Use Ghostscript to optimize`, and `Include pages without selections` from Basic-tab conversion UI and removal of related runtime-option logic paths.
 
 ## 5. Evidence Matrix
 
@@ -177,7 +179,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | CTN-004 | `src/pdfframe/mainwindow.py::slotPdfFrame` — checks `which('gs')` and warns when executable is missing; command-error path handles non-zero exits. |
 | CTN-005 | `src/pdfframe/vieweritem.py` — PyQt6 branch requires `fitz`; PyQt5 branch tries `fitz` then `popplerqt5`; raises RuntimeError when unavailable. |
 | CTN-006 | `src/pdfframe/pdfframecmd.py::build_ghostscript_page_crop_command` — command vector includes fixed-media Ghostscript crop flags. |
-| CTN-007 | `src/pdfframe/mainwindow.py::requestedUnsupportedGhostscriptOptions` and `slotPdfFrame` — rotation and include-pages-without-selections trigger explicit warning and abort. |
+| CTN-007 | `src/pdfframe/mainwindow.ui` and `src/pdfframe/mainwindow.py::slotPdfFrame` show no Basic-tab controls or warning-branch handling for removed `Rotation`/`Use Ghostscript to optimize`/`Include pages without selections` options. |
 | CTN-008 | `.github/workflows/release-uvx.yml::check-branch/build-release` — `if: needs.check-branch.outputs.is_master == 'true'` with semantic tag trigger. |
 | CTN-009 | `src/pdfframe/mainwindow.py` keeps selection/edit/trim GUI flows unchanged while replacing only crop execution path inside `slotPdfFrame`. |
 | DES-001 | `src/pdfframe/mainwindow.py::MainWindow` imports/uses `ViewerItem`, `ViewerSelections`, Ghostscript command helpers, and `autoTrimMargins`. |
@@ -197,7 +199,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-006 | `src/pdfframe/mainwindow.py` creates `Mode` radio controls with default `Frame` and `Crop` alternate mode. |
 | REQ-007 | `src/pdfframe/mainwindow.py::createSelectionGrid/getPadding/trimMarginsSelection` — invalid grid or trim-settings values (`padding`, `grayscale sensitivity`, `color sensitivity`) trigger `showWarning(...)` and fallback defaults. |
 | REQ-008 | `src/pdfframe/mainwindow.py::buildGhostscriptCropPlan` processes only requested pages, derives geometry from the primary selection tuple, and emits one command using `-dFirstPage/-dLastPage`. |
-| REQ-009 | `src/pdfframe/mainwindow.py` removes include-without-selections and selection-mode controls from conversion flow. |
+| REQ-009 | `src/pdfframe/mainwindow.ui` and `src/pdfframe/mainwindow.py` remove `Rotation`, `Use Ghostscript to optimize`, and `Include pages without selections` controls and related conversion-option logic paths. |
 | REQ-010 | `src/pdfframe/pdfframecmd.py::build_ghostscript_page_crop_command` emits script-style BeginPage clipping commands for `frame` and `crop` modes with matching page bounds. |
 | REQ-011 | `src/pdfframe/mainwindow.py::openFile` — sets `"%s-cropped.pdf"` output name on success and toggles `actionPdfFrame`/`actionTrimMarginsAll` by viewer emptiness. |
 | REQ-012 | `src/pdfframe/mainwindow.py::slotContextMenu` — adds selection actions (`Delete`, `Trim Margins`) only for selection context; otherwise adds `Trim Margins All`. |
@@ -221,6 +223,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-030 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindowui_qt5.py`, and `src/pdfframe/mainwindowui_qt6.py` label trim threshold as `Grayscale sensitivity` and define tooltip/help semantics for tolerated grayscale transitions. |
 | REQ-031 | `src/pdfframe/mainwindow.py::_setupTrimSettingsControls/readSettings/writeSettings` and `src/pdfframe/mainwindow.ui` expose `Trim pages range` and `Pages range:` with default `1-1`, toggle-gated enablement, and separator placement before `Padding:`. |
 | REQ-032 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindow.py::readSettings/buildGhostscriptCropPlan`, and `src/pdfframe/pdfframecmd.py::build_ghostscript_page_crop_command` add `Preserve fields` UI and emit `-dPreserveAnnots=true/false` for `frame` and `crop`. |
+| REQ-033 | `src/pdfframe/mainwindow.ui` and `src/pdfframe/mainwindow.py` remove obsolete Basic-tab parameter labels/tooltips; `Help` text references only active conversion controls. |
 | TST-001 | `tests.sh` — creates `.venv` when missing and installs `requirements.txt` before invoking pytest. |
 | TST-002 | `tests.sh` — default `set -- tests` and runs `PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" ${VENVDIR}/bin/python3 -m 'pytest' "$@"`. |
 | TST-003 | `tests/test_pdfframecmd.py` validates script-style Ghostscript command generation for `frame` and `crop` modes. |
@@ -232,6 +235,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-009 | `tests/test_mainwindow_trim_settings.py` and `tests/test_mainwindow_presets.py` validate `grayscale_sensitivity` runtime/preset keys; `tests/test_mainwindow_trim_nomenclature.py` validates renamed UI labels/tooltips/help semantics. |
 | TST-010 | `tests/test_mainwindow_trim_pages_range.py` validates `Trim pages range` UI defaults, `Pages range` validation, and range-bounded page selection in `trimMarginsSelection`. |
 | TST-011 | `tests/test_mainwindow_preserve_fields.py` and `tests/test_pdfframecmd.py` validate default unchecked placement and Ghostscript `-dPreserveAnnots=true/false` emission in both conversion modes. |
+| TST-012 | `tests/test_mainwindow_removed_basic_controls.py` validates removed Basic-tab controls are absent and removed runtime-option logic paths are not used during conversion. |
 
 ## 6. Test Coverage Summary
 

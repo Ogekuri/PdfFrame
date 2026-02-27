@@ -56,22 +56,6 @@ class Ui_MainWindow(object):
         self.checkPreserveFields.setChecked(False)
         self.checkPreserveFields.setObjectName("checkPreserveFields")
         self.verticalLayout_8.addWidget(self.checkPreserveFields)
-        self.comboRotation = QtWidgets.QComboBox(self.groupPDFOperations)
-        self.comboRotation.setObjectName("comboRotation")
-        self.comboRotation.addItem("")
-        self.comboRotation.addItem("")
-        self.comboRotation.addItem("")
-        self.comboRotation.addItem("")
-        self.verticalLayout_8.addWidget(self.comboRotation)
-        self.checkGhostscript = QtWidgets.QCheckBox(self.groupPDFOperations)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.checkGhostscript.sizePolicy().hasHeightForWidth())
-        self.checkGhostscript.setSizePolicy(sizePolicy)
-        self.checkGhostscript.setChecked(True)
-        self.checkGhostscript.setObjectName("checkGhostscript")
-        self.verticalLayout_8.addWidget(self.checkGhostscript)
         self.verticalLayout_4.addWidget(self.groupPDFOperations)
         self.groupWhichPages = QtWidgets.QGroupBox(self.tabBasic)
         self.groupWhichPages.setObjectName("groupWhichPages")
@@ -80,10 +64,6 @@ class Ui_MainWindow(object):
         self.editWhichPages = QtWidgets.QLineEdit(self.groupWhichPages)
         self.editWhichPages.setObjectName("editWhichPages")
         self.verticalLayout.addWidget(self.editWhichPages)
-        self.checkIncludePagesWithoutSelections = QtWidgets.QCheckBox(self.groupWhichPages)
-        self.checkIncludePagesWithoutSelections.setChecked(True)
-        self.checkIncludePagesWithoutSelections.setObjectName("checkIncludePagesWithoutSelections")
-        self.verticalLayout.addWidget(self.checkIncludePagesWithoutSelections)
         self.verticalLayout_4.addWidget(self.groupWhichPages)
         self.groupSelectionMode = QtWidgets.QGroupBox(self.tabBasic)
         self.groupSelectionMode.setFlat(False)
@@ -397,18 +377,10 @@ class Ui_MainWindow(object):
         self.groupPDFOperations.setTitle(_translate("MainWindow", "Extra operations on the final PDF"))
         self.checkPreserveFields.setToolTip(_translate("MainWindow", "<p>Enable Ghostscript annotation preservation flag <i>-dPreserveAnnots</i> while generating the output PDF.</p>"))
         self.checkPreserveFields.setText(_translate("MainWindow", "Preserve fields"))
-        self.comboRotation.setItemText(0, _translate("MainWindow", "don\'t rotate"))
-        self.comboRotation.setItemText(1, _translate("MainWindow", "rotate left (90° counterclockwise)"))
-        self.comboRotation.setItemText(2, _translate("MainWindow", "rotate right (90° clockwise)"))
-        self.comboRotation.setItemText(3, _translate("MainWindow", "upside down"))
-        self.checkGhostscript.setToolTip(_translate("MainWindow", "<p>In order to use this option, Ghostscript must be installed and available as <i>gs</i>. Whether this option actually improves the file size depends on the PDF file.</p>"))
-        self.checkGhostscript.setText(_translate("MainWindow", "Use Ghostscript to optimize"))
         self.groupWhichPages.setTitle(_translate("MainWindow", "Which pages to include"))
         self.editWhichPages.setToolTip(_translate("MainWindow", "<p>Which pages to include in the output file.</p><p><i>Eg:</i> 1-5 for the first 5 pages\n"
 "<br><i>Eg:</i> 2- for all but the first page\n"
 "<br><i>Eg:</i> 1,4-5,7- to omit pages 2,3,6</p>"))
-        self.checkIncludePagesWithoutSelections.setToolTip(_translate("MainWindow", "<p>If checked, pages without selections will be included in the output unchanged. Otherwise, such pages will be removed from the output.</p>"))
-        self.checkIncludePagesWithoutSelections.setText(_translate("MainWindow", "Include pages without selections"))
         self.groupSelectionMode.setToolTip(_translate("MainWindow", "<p>Should all pages be cropped based on the same selections? Maybe you want to treat even and odd pages differently? For full control you can crop each page using individual selections.</p>"))
         self.groupSelectionMode.setTitle(_translate("MainWindow", "Selections apply to"))
         self.radioSelAll.setText(_translate("MainWindow", "all pages"))
@@ -447,7 +419,6 @@ class Ui_MainWindow(object):
 "<h3>Hints</h3>\n"
 "<p>Right-click the page to create a selection for the full page (or a grid of selections).</p>\n"
 "<p>Right-click a selection to delete it. Or simply press the Delete key.</p>\n"
-"<p>You can choose to create individual selections for each page.</p>\n"
 "<p>You can automatically trim the margins of your selections.</p>\n"
 "<p>Grayscale sensitivity controls how many grayscale transitions are accepted while trimming.</p>\n"
 "<p>Examples and more information can be found at: <a href=\'https://ogekuri.com/software/pdfframe\'>ogekuri.com</a></p>\n"

@@ -154,8 +154,6 @@ class MainWindow(QMainWindow):
         advanced_index = self.ui.tabWidget.indexOf(self.ui.tabAdvanced)
         if advanced_index >= 0:
             self.ui.tabWidget.removeTab(advanced_index)
-        self.ui.checkIncludePagesWithoutSelections.setChecked(False)
-        self.ui.checkIncludePagesWithoutSelections.hide()
         self.ui.groupSelectionMode.hide()
         self.selections.selectionMode = ViewerSelections.all
         self.selections.selectionExceptions = []
@@ -242,11 +240,6 @@ class MainWindow(QMainWindow):
         for t in self.deviceTypes:
             self.ui.comboDistributeDevice.addItem(t.name)
         self.ui.comboDistributeDevice.addItem("Custom")
-
-        # disable Ghostscript option if gs is not available
-        if not which('gs'):
-            self.ui.checkGhostscript.setChecked(False)
-            self.ui.checkGhostscript.setEnabled(False)
 
         self.ui.documentView.setScene(self.pdfScene)
         self.ui.documentView.setFocus()
@@ -402,7 +395,6 @@ class MainWindow(QMainWindow):
         @return {dict[str,object]} Persistable runtime config key/value mapping.
         """
         return {
-            "PDF/Optimize": "gs" if self.ui.checkGhostscript.isChecked() else "no",
             "PDF/PreserveFields": MainWindow._preserveFieldsEnabled(self),
             "PDF/Mode": self.selectedConversionMode(),
             "Trim/Padding": self.ui.editPadding.text(),
@@ -683,8 +675,6 @@ class MainWindow(QMainWindow):
         else:
             self.trimPresets = []
 
-        optimize = str(config_values.get("PDF/Optimize", "gs"))
-        self.ui.checkGhostscript.setChecked(optimize == "gs")
         self.ui.checkPreserveFields.setChecked(
             self._toBool(config_values.get("PDF/PreserveFields", False))
         )
@@ -716,8 +706,6 @@ class MainWindow(QMainWindow):
         settings.setValue("Window/Splitter", self.ui.splitter.saveState())
         settings.setValue("Window/FitInView", "true" if
                 self.ui.actionFitInView.isChecked() else "false")
-        settings.setValue("PDF/Optimize", "gs" if
-                self.ui.checkGhostscript.isChecked() else "no")
         settings.setValue("PDF/PreserveFields", "true" if
                 self.ui.checkPreserveFields.isChecked() else "false")
         settings.setValue("PDF/Mode", self.selectedConversionMode())
@@ -793,14 +781,6 @@ class MainWindow(QMainWindow):
         if start <= 0 or end <= 0 or start > end:
             raise ValueError("Invalid page range bounds.")
         return list(range(start - 1, end))
-
-    def requestedUnsupportedGhostscriptOptions(self):
-        """
-        @brief Lists GUI options unsupported by the Ghostscript backend.
-        @details Returns empty list because unsupported options were removed from conversion controls.
-        @return {list[str]} Unsupported option identifiers requested by the user.
-        """
-        return []
 
     def primarySelectionCropValue(self, page_indexes):
         """
@@ -878,17 +858,11 @@ class MainWindow(QMainWindow):
     def slotPdfFrame(self):
         """
         @brief Executes PDF crop action using Ghostscript command backend.
-        @details Validates unsupported GUI options, verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
+        @details Verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
         @return {None} Triggers output PDF generation side effect.
         """
         inputFileName = self.fileName
         outputFileName = self.ui.editFile.text()
-        unsupported = self.requestedUnsupportedGhostscriptOptions()
-        if unsupported:
-            self.showWarning(self.tr("Unsupported options for Ghostscript backend"),
-                    self.tr("Ghostscript backend does not support the requested options:\n\n{0}").format(
-                        ", ".join(unsupported)))
-            return
         if not which('gs'):
             self.showWarning(self.tr("Missing Ghostscript executable"),
                     self.tr("Could not find `gs` on PATH. "

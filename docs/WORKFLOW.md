@@ -77,7 +77,6 @@
       - `ViewerSelectionItem.setBoundingRect(...)`: apply grid cell bounds to each selection [`src/pdfframe/viewerselections.py`]
         - `ViewerSelectionItem.adjustBoundingRect(...)`: clamp and normalize rectangle updates [`src/pdfframe/viewerselections.py`]
     - `MainWindow.slotPdfFrame(...)`: execute crop pipeline (scheduled by `--go` or invoked by UI action) [`src/pdfframe/mainwindow.py`]
-      - `MainWindow.requestedUnsupportedGhostscriptOptions(...)`: return deterministic empty unsupported-option set after option removal [`src/pdfframe/mainwindow.py`]
       - `MainWindow.str2pages(...)`: parse optional `--whichpages` single-range forms (`N`, `N-`, `-N`, `N-M`) to zero-based page indices [`src/pdfframe/mainwindow.py`]
       - `MainWindow.createConversionProgressDialog(...)`: initialize modal progress window and stop button state [`src/pdfframe/mainwindow.py`]
       - `MainWindow.buildGhostscriptCropPlan(...)`: translate GUI selections to one Ghostscript command plan over the selected page range and propagate `Preserve fields` toggle state [`src/pdfframe/mainwindow.py`]

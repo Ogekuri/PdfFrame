@@ -87,47 +87,20 @@
               </widget>
              </item>
              <item>
-              <widget class="QComboBox" name="comboRotation">
-              <item>
-               <property name="text">
-                <string>don't rotate</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>rotate left (90° counterclockwise)</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>rotate right (90° clockwise)</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>upside down</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkGhostscript">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+             <spacer name="verticalSpacerPdfOperations">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
               </property>
-              <property name="toolTip">
-               <string>&lt;p&gt;In order to use this option, Ghostscript must be installed and available as &lt;i&gt;gs&lt;/i&gt;. Whether this option actually improves the file size depends on the PDF file.&lt;/p&gt;</string>
+              <property name="sizeType">
+               <enum>QSizePolicy::MinimumExpanding</enum>
               </property>
-              <property name="text">
-               <string>Use Ghostscript to optimize</string>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>1</height>
+               </size>
               </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -144,19 +117,6 @@
                <string>&lt;p&gt;Which pages to include in the output file.&lt;/p&gt;&lt;p&gt;&lt;i&gt;Eg:&lt;/i&gt; 1-5 for the first 5 pages
 &lt;br&gt;&lt;i&gt;Eg:&lt;/i&gt; 2- for all but the first page
 &lt;br&gt;&lt;i&gt;Eg:&lt;/i&gt; 1,4-5,7- to omit pages 2,3,6&lt;/p&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkIncludePagesWithoutSelections">
-              <property name="toolTip">
-               <string>&lt;p&gt;If checked, pages without selections will be included in the output unchanged. Otherwise, such pages will be removed from the output.&lt;/p&gt;</string>
-              </property>
-              <property name="text">
-               <string>Include pages without selections</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -478,7 +438,6 @@
 &lt;h3&gt;Hints&lt;/h3&gt;
 &lt;p&gt;Right-click the page to create a selection for the full page (or a grid of selections).&lt;/p&gt;
  &lt;p&gt;Right-click a selection to delete it. Or simply press the Delete key.&lt;/p&gt;
- &lt;p&gt;You can choose to create individual selections for each page.&lt;/p&gt;
  &lt;p&gt;You can automatically trim the margins of your selections.&lt;/p&gt;
  &lt;p&gt;Grayscale sensitivity controls how many grayscale transitions are accepted while trimming.&lt;/p&gt;
  &lt;p&gt;Examples and more information can be found at: &lt;a href='https://ogekuri.com/software/pdfframe'&gt;ogekuri.com&lt;/a&gt;&lt;/p&gt;
