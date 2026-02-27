@@ -72,9 +72,22 @@
            <property name="flat">
             <bool>false</bool>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_8">
-            <item>
-             <widget class="QComboBox" name="comboRotation">
+            <layout class="QVBoxLayout" name="verticalLayout_8">
+             <item>
+              <widget class="QCheckBox" name="checkPreserveFields">
+               <property name="toolTip">
+                <string>&lt;p&gt;Enable Ghostscript annotation preservation flag &lt;i&gt;-dPreserveAnnots&lt;/i&gt; while generating the output PDF.&lt;/p&gt;</string>
+               </property>
+               <property name="text">
+                <string>Preserve fields</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="comboRotation">
               <item>
                <property name="text">
                 <string>don't rotate</string>

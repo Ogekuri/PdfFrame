@@ -165,7 +165,8 @@ def apply_crop_offsets_to_bbox(bbox, offsets, page_width, page_height):
 
 def build_ghostscript_page_crop_command(input_path, output_path, first_page,
     last_page,
-    page_width, page_height, crop_box, mode="frame", command_name="gs"):
+    page_width, page_height, crop_box, mode="frame", preserve_annots=False,
+    command_name="gs"):
     """
     @brief Builds Ghostscript command vector for cropping a page range.
     @details Assembles script-style pdfwrite command with BeginPage clipping for selected pages, using either physical crop (`crop`) or original-size clipped output (`frame`).
@@ -177,6 +178,7 @@ def build_ghostscript_page_crop_command(input_path, output_path, first_page,
     @param page_height {float} Target media height in points.
     @param crop_box {tuple[float,float,float,float]} Crop box in left,bottom,right,top order.
     @param mode {str} Conversion mode (`frame` or `crop`).
+    @param preserve_annots {bool} When True, passes `-dPreserveAnnots=true`; otherwise `-dPreserveAnnots=false`.
     @param command_name {str} Executable name for Ghostscript binary.
     @return {list[str]} Complete subprocess command vector.
     @throws {ValueError} If mode is not supported or crop size is invalid.
@@ -220,6 +222,7 @@ def build_ghostscript_page_crop_command(input_path, output_path, first_page,
         "-dAutoRotatePages=/None",
         "-dFIXEDMEDIA",
         "-dModifiesPageSize=true",
+        f"-dPreserveAnnots={'true' if preserve_annots else 'false'}",
         f"-dFirstPage={int(first_page)}",
         f"-dLastPage={int(last_page)}",
         f"-dDEVICEWIDTHPOINTS={device_width_value}",

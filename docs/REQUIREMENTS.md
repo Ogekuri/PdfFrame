@@ -144,6 +144,7 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-029**: MUST persist the full `presets` array to `~/.pdfframe/config.json` after preset add, rename, update, or delete operations.
 - **REQ-030**: MUST label the trim threshold field as `Grayscale sensitivity` and provide tooltip/help text that defines it as tolerated grayscale transitions used by margin auto-trimming.
 - **REQ-031**: MUST expose `Trim pages range` and an immediate `Pages range:` field below it, where the field defaults to `1-1`, is enabled only when the toggle is enabled, and is separated from `Padding:` by a horizontal line.
+- **REQ-032**: MUST expose unchecked-by-default `Preserve fields` in `Extra operations on the final PDF` before existing controls and pass `-dPreserveAnnots=true/false` in Ghostscript commands for both `frame` and `crop`.
 
 ## 4. Test Requirements
 
@@ -159,6 +160,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-008**: MUST include unit tests that validate preset list CRUD interactions (save/apply/rename/delete), right-edge alignment behavior of per-row delete controls, and persistence of the `presets` array in `~/.pdfframe/config.json`.
 - **TST-009**: MUST include unit tests that validate `Grayscale sensitivity` nomenclature across trim UI labels/tooltips/help text and runtime persistence keys used by trim settings and presets.
 - **TST-010**: MUST include unit tests that validate `Trim pages range` / `Pages range:` enablement-default UI behavior, required `N-M` validation, and trim execution limited to the configured visible-page range.
+- **TST-011**: MUST include unit tests that validate `Preserve fields` default/UI placement and `-dPreserveAnnots=true/false` command emission in both `frame` and `crop` modes.
 
 ## 5. Evidence Matrix
 
@@ -218,6 +220,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-029 | `src/pdfframe/mainwindow.py::_persistTrimPresetDocument` plus calls in `slotSaveMarginsPreset`, `slotTrimPresetChanged`, `slotDeleteTrimPreset`, and `writeSettings` persist updated `presets` arrays to JSON config. |
 | REQ-030 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindowui_qt5.py`, and `src/pdfframe/mainwindowui_qt6.py` label trim threshold as `Grayscale sensitivity` and define tooltip/help semantics for tolerated grayscale transitions. |
 | REQ-031 | `src/pdfframe/mainwindow.py::_setupTrimSettingsControls/readSettings/writeSettings` and `src/pdfframe/mainwindow.ui` expose `Trim pages range` and `Pages range:` with default `1-1`, toggle-gated enablement, and separator placement before `Padding:`. |
+| REQ-032 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindow.py::readSettings/buildGhostscriptCropPlan`, and `src/pdfframe/pdfframecmd.py::build_ghostscript_page_crop_command` add `Preserve fields` UI and emit `-dPreserveAnnots=true/false` for `frame` and `crop`. |
 | TST-001 | `tests.sh` — creates `.venv` when missing and installs `requirements.txt` before invoking pytest. |
 | TST-002 | `tests.sh` — default `set -- tests` and runs `PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" ${VENVDIR}/bin/python3 -m 'pytest' "$@"`. |
 | TST-003 | `tests/test_pdfframecmd.py` validates script-style Ghostscript command generation for `frame` and `crop` modes. |
@@ -228,6 +231,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-008 | `tests/test_mainwindow_presets.py` validates preset snapshot/apply/rename/delete/save behavior, right-edge delete-control row layout, and persistence trigger paths. |
 | TST-009 | `tests/test_mainwindow_trim_settings.py` and `tests/test_mainwindow_presets.py` validate `grayscale_sensitivity` runtime/preset keys; `tests/test_mainwindow_trim_nomenclature.py` validates renamed UI labels/tooltips/help semantics. |
 | TST-010 | `tests/test_mainwindow_trim_pages_range.py` validates `Trim pages range` UI defaults, `Pages range` validation, and range-bounded page selection in `trimMarginsSelection`. |
+| TST-011 | `tests/test_mainwindow_preserve_fields.py` and `tests/test_pdfframecmd.py` validate default unchecked placement and Ghostscript `-dPreserveAnnots=true/false` emission in both conversion modes. |
 
 ## 6. Test Coverage Summary
 
