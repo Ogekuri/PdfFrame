@@ -186,3 +186,10 @@ def test_presets_group_is_inserted_after_trim_settings_in_basic_layout():
     assert "self.groupTrimPresets = QGroupBox(self.ui.tabBasic)" in source
     assert "trim_index = self.ui.verticalLayout_4.indexOf(self.ui.groupTrimMargins)" in source
     assert "self.ui.verticalLayout_4.insertWidget(trim_index + 1, self.groupTrimPresets)" in source
+
+
+def test_presets_columns_disable_stretch_last_section_for_full_name_width():
+    """Arrange/Act/Assert: tree header disables last-section stretch to avoid mid-row ellipsis."""
+    source_path = Path(__file__).resolve().parents[1] / "src" / "pdfframe" / "mainwindow.py"
+    source = source_path.read_text(encoding="iso-8859-1")
+    assert "header.setStretchLastSection(False)" in source

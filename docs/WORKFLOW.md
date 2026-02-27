@@ -49,7 +49,7 @@
     - `MainWindow.__init__(...)`: wire UI actions, construct scene/viewer, and load persisted settings [`src/pdfframe/mainwindow.py`]
       - `_setupConversionModeControls(...)`: create `Frame`/`Crop` mode controls and set `Frame` as startup default [`src/pdfframe/mainwindow.py`]
       - `_setupTrimSettingsControls(...)`: relocate trim-controls group into Basic tab with all controls visible [`src/pdfframe/mainwindow.py`]
-      - `_setupTrimPresetControls(...)`: create dedicated Basic-tab `Presets` group inserted after `Trim settings`, with stretch-filled preset-name rows and per-row right-edge delete buttons [`src/pdfframe/mainwindow.py`]
+      - `_setupTrimPresetControls(...)`: create dedicated Basic-tab `Presets` group inserted after `Trim settings`, with stretch-filled preset-name rows, disabled last-section stretch, fixed right-edge delete-button column, and per-row right-edge delete buttons [`src/pdfframe/mainwindow.py`]
       - `_setupTrimPresetAction(...)`: add toolbar `Save Margins` action adjacent to `Trim Margins` and connect preset-save slot [`src/pdfframe/mainwindow.py`]
       - `readSettings(...)`: load geometry from QSettings, load runtime `config` and `presets` from `~/.pdfframe/config.json`, and bind values to Basic-tab controls [`src/pdfframe/mainwindow.py`]
         - `JsonConfigStore.load_or_initialize(...)`: create missing JSON config and normalize existing config/preset sections [`src/pdfframe/jsonconfig.py`]

@@ -302,6 +302,7 @@ class MainWindow(QMainWindow):
         else:
             self.treeTrimPresets.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header = self.treeTrimPresets.header()
+        header.setStretchLastSection(False)
         if PYQT6:
             header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
             header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
