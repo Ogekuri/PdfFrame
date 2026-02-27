@@ -440,7 +440,6 @@
  &lt;p&gt;Right-click a selection to delete it. Or simply press the Delete key.&lt;/p&gt;
  &lt;p&gt;You can automatically trim the margins of your selections.&lt;/p&gt;
  &lt;p&gt;Grayscale sensitivity controls how many grayscale transitions are accepted while trimming.&lt;/p&gt;
- &lt;p&gt;Examples and more information can be found at: &lt;a href='https://ogekuri.com/software/pdfframe'&gt;ogekuri.com&lt;/a&gt;&lt;/p&gt;
 </string>
            </property>
            <property name="textFormat">
@@ -486,8 +485,7 @@
             <string>&lt;p&gt;This program is free software and available to you in the hope that it will be useful; but without any warranty. It is distributed under the terms of the GNU General Public License (GPLv3+). See the accompanying files for more information.&lt;/p&gt;</string>
            </property>
            <property name="text">
-            <string>&lt;p&gt;Copyright (C) 2010-2025 ogekuri
-&lt;br&gt;&lt;a href='https://ogekuri.com'&gt;https://ogekuri.com&lt;/a&gt;&lt;/p&gt;</string>
+            <string>&lt;p&gt;Copyright (C) 2010-2025 Ogekuri&lt;/p&gt;</string>
            </property>
            <property name="textFormat">
             <enum>Qt::AutoText</enum>

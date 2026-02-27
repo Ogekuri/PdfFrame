@@ -3,7 +3,7 @@
 """
 User-created selections used in ViewerItem.
 
-Copyright (C) 2010-2020 ogekuri, http://ogekuri.com
+Copyright (C) 2010-2020 ogekuri
 """
 
 """

@@ -9,7 +9,7 @@ For instance, to run conversion with a predefined single selection area:
     pdfframe --go --grid=1 file.pdf
 Omit the --go to further edit the selections in the graphical interface before cropping.
 
-Copyright (C) 2010-2025 ogekuri, http://ogekuri.com
+Copyright (C) 2010-2025 Ogekuri
 """
 
 """

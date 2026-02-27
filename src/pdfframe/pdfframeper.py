@@ -3,7 +3,7 @@
 """
 Cropping functionality for pdfframe.
 
-Copyright (C) 2010-2025 ogekuri, http://ogekuri.com
+Copyright (C) 2010-2025 Ogekuri
 """
 
 """
