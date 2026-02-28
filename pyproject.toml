@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdfframe"
+version = "0.7.0"
+description = "Desktop PDF crop/frame tool powered by Qt and Ghostscript."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "PyQt6",
+  "PyQt5",
+  "PyMuPDF",
+  "pypdf",
+  "pikepdf",
+  "pytest",
+]
+
+[project.scripts]
+pdfframe = "pdfframe.application:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pdfframe = ["icons/*.svg", "mainwindow.ui"]

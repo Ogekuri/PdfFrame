@@ -45,6 +45,35 @@ PdfFrame is a desktop tool to crop or frame PDF pages with Ghostscript, includin
 4. (Optional) In `Extra operations on the final PDF`, enable `Preserve annotations fields` and/or `Show annotations fields`.
 5. Click `Go!` to generate the output PDF.
 
+## Install with Astral uv
+
+1. Install uv (Linux/macOS):
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+2. Install PdfFrame as a local tool from this repository:
+   ```bash
+   uv tool install .
+   ```
+3. Run the installed command:
+   ```bash
+   pdfframe
+   ```
+
+## Live execution with uvx
+
+Run PdfFrame directly from the current repository checkout without prior installation:
+
+```bash
+uvx --from . pdfframe
+```
+
+You can pass CLI options as usual, for example:
+
+```bash
+uvx --from . pdfframe input.pdf -o output.pdf --go
+```
+
 
 ## Acknowledgments
 

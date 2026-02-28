@@ -1,15 +1,17 @@
 ---
 title: "PdfFrame Requirements"
 description: Software requirements specification
-version: "0.2.1"
-date: "2026-02-27"
+version: "0.2.2"
+date: "2026-02-28"
 author: "req-change"
 scope:
   paths:
     - "src/pdfframe/**/*.py"
     - "src/pdfframe/mainwindow.ui"
-   - "requirements.txt"
-   - "pdfframe.sh"
+    - "requirements.txt"
+    - "pyproject.toml"
+    - "pdfframe.sh"
+    - "README.md"
     - "com.ogekuri.pdfframe.desktop"
     - "com.ogekuri.pdfframe.metainfo.xml"
     - "com.ogekuri.pdfframe.svg"
@@ -75,6 +77,7 @@ PdfFrame implements PDF page-region cropping through a Qt GUI with optional comm
 | External crop engine (Ghostscript) | `src/pdfframe/mainwindow.py` builds and executes `gs` command lines that apply page crop boxes. |
 | GUI metadata/render backends | `src/pdfframe/vieweritem.py` imports `fitz` and optionally `popplerqt5.Poppler` for page rendering and geometry used by GUI. |
 | Desktop/AppStream branding | `com.ogekuri.pdfframe.desktop` and `com.ogekuri.pdfframe.metainfo.xml` use `pdfframe` executable/name and `com.ogekuri.pdfframe` IDs; `com.ogekuri.pdfframe.svg` provides matching icon asset. |
+| Packaging and execution tooling | `pyproject.toml`, `pdfframe.sh`, and `README.md` define Astral `uv`/`uvx` installation and execution paths for `pdfframe`. |
 | Release automation | `.github/workflows/release-uvx.yml` defines `check-branch` and `build-release` jobs. |
 
 ## 2. Project Requirements
@@ -128,7 +131,7 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-013**: MUST support Shift+Arrow keyboard movement for pixel-level adjustment of the current selection.
 - **REQ-014**: MUST reapply fit-in-view on resize and splitter movement when fit mode is enabled.
 - **REQ-015**: MUST open a progress window during conversion, capture Ghostscript output from the single conversion command, extract processed page numbers from page-output lines (including multiple page tokens in one captured chunk), and update a progress bar from `0` to total pages selected for processing.
-- **REQ-016**: MUST provide launcher script `pdfframe.sh` that executes the GUI application from project root using the project virtual environment.
+- **REQ-016**: MUST provide launcher script `pdfframe.sh` that executes the GUI application from project root through Astral `uv` using project-local dependencies.
 - **REQ-017**: MUST expose a stop button in the conversion progress window that allows users to cancel the active Ghostscript process before completion.
 - **REQ-018**: MUST support at least five-digit page numbers in GUI current-page, max-page, and page-range input controls without visual truncation.
 - **REQ-019**: MUST print the exact Ghostscript command line before conversion execution using deterministic shell-escaped formatting when both `--verbose` and `--debug` are enabled.
@@ -147,12 +150,14 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-032**: MUST expose unchecked-by-default `Preserve annotations fields` in `Extra operations on the final PDF`, expose unchecked-by-default `Show annotations fields` directly below it, and pass `-dPreserveAnnots=true/false` plus `-dShowAnnots=true/false` in Ghostscript commands for both `frame` and `crop`.
 - **REQ-033**: MUST update Help-tab and UI explanatory text to reflect active Basic-tab controls and MUST NOT reference `Rotation`, `Use Ghostscript to optimize`, or `Include pages without selections`.
 - **REQ-034**: MUST render the trim/selection area without centered ordinal labels (for example `1`, `2`, `3`).
+- **REQ-035**: MUST provide `pyproject.toml` with build metadata, runtime dependencies, and console script entrypoint `pdfframe = pdfframe.application:main`.
+- **REQ-036**: MUST document Astral `uv` installation and Astral `uvx` live execution commands for `pdfframe` in `README.md`.
 
 ## 4. Test Requirements
 
 Unit tests are implemented under `tests/` and executed through `tests.sh`.
 
-- **TST-001**: MUST execute repository tests through `tests.sh`, creating `.venv` and installing `requirements.txt` when the virtual environment is missing.
+- **TST-001**: MUST execute repository tests through `tests.sh` using Astral `uv`, creating project-local environment state from `pyproject.toml` dependencies when missing.
 - **TST-002**: MUST run `pytest` with `PYTHONPATH` prefixed by `src` and default target `tests` when no arguments are provided.
 - **TST-003**: MUST include unit tests that validate Ghostscript script-style command argument construction for `frame` and `crop` modes from GUI-derived crop data.
 - **TST-004**: MUST include unit tests that validate failure diagnostics omit captured subprocess payload from user-visible warnings when Ghostscript execution fails and that captured page-output lines (including multiple page tokens in one chunk) drive progress updates from parsed processed page numbers.
@@ -165,6 +170,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-011**: MUST include unit tests that validate `Preserve annotations fields` and `Show annotations fields` default/UI placement and Ghostscript `-dPreserveAnnots=true/false` plus `-dShowAnnots=true/false` command emission in both `frame` and `crop` modes.
 - **TST-012**: MUST include unit tests that validate removal of `Rotation`, `Use Ghostscript to optimize`, and `Include pages without selections` from Basic-tab conversion UI and removal of related runtime-option logic paths.
 - **TST-013**: MUST include unit tests that validate single-selection enforcement across creation paths and absence of centered selection-index rendering.
+- **TST-014**: MUST include unit tests that validate `pyproject.toml` defines `pdfframe` console-script mapping and mandatory Astral `uv` runtime dependencies.
 
 ## 5. Evidence Matrix
 
@@ -208,7 +214,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-013 | `src/pdfframe/viewerselections.py::ViewerSelectionItem.keyPressEvent` — Shift+Arrow calls `moveBoundingRect` with one-pixel deltas. |
 | REQ-014 | `src/pdfframe/mainwindow.py::slotSplitterMoved/resizeEvent/slotFitInView` reapply fit behavior when fit mode is checked. |
 | REQ-015 | `src/pdfframe/mainwindow.py::slotPdfFrame` captures single-command output and uses parsed processed page numbers from `src/pdfframe/pdfframecmd.py::extract_ghostscript_page_numbers` to advance progress. |
-| REQ-016 | `pdfframe.sh` creates/uses project virtual environment and starts GUI with `PYTHONPATH=<repo>/src ... -m pdfframe`. |
+| REQ-016 | `pdfframe.sh` resolves repository root and runs `uv run --project <repo> pdfframe ...` to execute the GUI through Astral `uv`. |
 | REQ-017 | `src/pdfframe/mainwindow.py::slotPdfFrame` checks progress dialog cancel state and triggers command cancellation path in `run_ghostscript_command`. |
 | REQ-018 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindowui_qt5.py`, and `src/pdfframe/mainwindowui_qt6.py` define widened page-number controls for values beyond four digits. |
 | REQ-019 | `src/pdfframe/mainwindow.py::slotPdfFrame` passes verbose/debug flags to `src/pdfframe/pdfframecmd.py::run_ghostscript_command(log_command=..., debug_output=...)`, which conditionally emits shell-escaped command lines. |
@@ -227,8 +233,10 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-032 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindow.py::readSettings/buildGhostscriptCropPlan`, and `src/pdfframe/pdfframecmd.py::build_ghostscript_page_crop_command` add `Preserve annotations fields` plus `Show annotations fields` UI and emit `-dPreserveAnnots=true/false` plus `-dShowAnnots=true/false` for `frame` and `crop`. |
 | REQ-033 | `src/pdfframe/mainwindow.ui` and `src/pdfframe/mainwindow.py` remove obsolete Basic-tab parameter labels/tooltips; `Help` text references only active conversion controls. |
 | REQ-034 | `src/pdfframe/viewerselections.py::ViewerSelectionItem.paint` omits centered ordinal text rendering inside the selection area. |
-| TST-001 | `tests.sh` — creates `.venv` when missing and installs `requirements.txt` before invoking pytest. |
-| TST-002 | `tests.sh` — default `set -- tests` and runs `PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" ${VENVDIR}/bin/python3 -m 'pytest' "$@"`. |
+| REQ-035 | `pyproject.toml` declares package build metadata, dependencies, and `[project.scripts] pdfframe = "pdfframe.application:main"`. |
+| REQ-036 | `README.md` includes Astral `uv` installation workflow and Astral `uvx --from . pdfframe ...` live-execution examples. |
+| TST-001 | `tests.sh` — executes test suite with `uv run --project <repo> pytest ...`, provisioning dependencies from `pyproject.toml`. |
+| TST-002 | `tests.sh` — defaults to `tests` target and runs `PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" uv run --project "${SCRIPT_PATH}" pytest "$@"`. |
 | TST-003 | `tests/test_pdfframecmd.py` validates script-style Ghostscript command generation for `frame` and `crop` modes. |
 | TST-004 | `tests/test_mainwindow_conversion_errors.py`, `tests/test_pdfframecmd.py`, and `tests/test_mainwindow_progress_updates.py` validate warning payload redaction and captured page-output callbacks (including multi-token chunks) that drive progress updates from parsed page numbers. |
 | TST-005 | `tests/test_mainwindow_whichpages.py` verifies accepted/rejected `--whichpages` single-range formats, primary-selection-only planning, and large page-index range behavior. |
@@ -240,6 +248,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-011 | `tests/test_mainwindow_preserve_fields.py` and `tests/test_pdfframecmd.py` validate default unchecked placement for `Preserve annotations fields`/`Show annotations fields` and Ghostscript `-dPreserveAnnots=true/false` plus `-dShowAnnots=true/false` emission in both conversion modes. |
 | TST-012 | `tests/test_mainwindow_removed_basic_controls.py` validates removed Basic-tab controls are absent and removed runtime-option logic paths are not used during conversion. |
 | TST-013 | `tests/test_mainwindow_single_selection.py` validates single-selection creation guards and absence of centered selection-index rendering code paths. |
+| TST-014 | `tests/test_packaging_pyproject.py` validates `pyproject.toml` script mapping and required dependency declarations. |
 
 ## 6. Test Coverage Summary
 

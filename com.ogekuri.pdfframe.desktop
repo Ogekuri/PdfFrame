@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=PdfFrame
+TryExec=pdfframe
+Exec=pdfframe %F
+Icon=com.ogekuri.pdfframe
+Categories=Office;Viewer;
+MimeType=application/pdf;

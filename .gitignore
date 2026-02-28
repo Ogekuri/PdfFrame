@@ -24,6 +24,9 @@
 !setup.py
 !pyproject.toml
 !requirements.txt
+!com.ogekuri.pdfframe.desktop
+!com.ogekuri.pdfframe.metainfo.xml
+!com.ogekuri.pdfframe.svg
 !.g.conf
 !/**/*.sh
 !src/
