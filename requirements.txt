@@ -1,11 +1,15 @@
+# Runtime CLI uses only the Python stdlib; the packages listed here support builds and tests.
+build
+setuptools
+wheel
+pytest
+
 # GUI runtime
-PyQt6>=6.6
-PyQt5>=5.15
+PyQt6
+PyQt5
 
 # GUI metadata/render sources
-PyMuPDF>=1.23
-pypdf>=4.0
-pikepdf>=8.0
+PyMuPDF
+pypdf
+pikepdf
 
-# Test runtime
-pytest>=8.0
