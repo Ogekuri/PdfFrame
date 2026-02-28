@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/Ogekuri/PdfFrame/compare/v0.2.0..v0.3.0) - 2026-02-28
+### 🐛  Bug Fixes
+- Fix version number in tests.sh file.
+- Remove unused files.
+
+### 🚜  Changes
+- enable uv and uvx execution workflow [useReq] *(core)*
+  - Update REQUIREMENTS.md for uv/uvx packaging behavior.
+  - Add pyproject.toml with pdfframe console script metadata.
+  - Switch pdfframe.sh and tests.sh to Astral uv-based execution.
+  - Document Astral uv install and uvx live run in README.
+  - Add pyproject metadata unit tests and required desktop metadata files.
+
 ## [0.2.0](https://github.com/Ogekuri/PdfFrame/compare/v0.1.0..v0.2.0) - 2026-02-28
 ### 🐛  Bug Fixes
 - Fix requirements.txt file.
@@ -114,6 +127,8 @@
 
 - \[0.1.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
 - \[0.2.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.2.0
+- \[0.3.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.3.0
 
 [0.1.0]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
 [0.2.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.1.0..v0.2.0
+[0.3.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.2.0..v0.3.0
