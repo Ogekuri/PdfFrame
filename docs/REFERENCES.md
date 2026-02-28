@@ -37,8 +37,15 @@ from pdfframe.application import main
 
 ---
 
-# application.py | Python | 102L | 1 symbols | 7 imports | 7 comments
+# application.py | Python | 95L | 1 symbols | 7 imports | 7 comments
 > Path: `src/pdfframe/application.py`
+- Brief: CLI entrypoint for pdfframe GUI and one-shot conversion.
+- Details: Parses command-line arguments, applies startup options on MainWindow, and launches Qt event loop.
+Copyright (C) 2010-2025 Ogekuri.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
 ## Imports
 ```
@@ -53,18 +60,25 @@ from pdfframe.qt import QTimer
 
 ## Definitions
 
-### fn `def main()` (L27-102)
+### fn `def main()` (L20-95)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`main`|fn|pub|27-102|def main()|
+|`main`|fn|pub|20-95|def main()|
 
 
 ---
 
-# autotrim.py | Python | 73L | 3 symbols | 1 imports | 6 comments
+# autotrim.py | Python | 73L | 3 symbols | 1 imports | 7 comments
 > Path: `src/pdfframe/autotrim.py`
+- Brief: Margin auto-trimming helpers for selection rectangles.
+- Details: Performs grayscale transition scanning to shrink candidate rectangles while preserving content bounds.
+Copyright (C) 2010-2020 ogekuri.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
 ## Imports
 ```
@@ -106,25 +120,26 @@ transitions remain within configured sensitivity and grayscale-sensitivity.
 
 ---
 
-# config.py | Python | 17L | 2 symbols | 3 imports | 1 comments
+# config.py | Python | 17L | 2 symbols | 2 imports | 2 comments
 > Path: `src/pdfframe/config.py`
+- Brief: Runtime backend-selection flags for pdfframe.
+- Details: Detects which Qt binding is available and exposes the `PYQT6` switch consumed by UI modules.
 
 ## Imports
 ```
+import importlib.util
 import sys
-from PyQt6 import QtCore
-from PyQt5 import QtCore
 ```
 
 ## Definitions
 
-- var `PYQT6 = False` (L3)
-- var `PYQT6 = True` (L10)
+- var `PYQT6 = False` (L11)
+- var `PYQT6 = True` (L14)
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`PYQT6`|var|pub|3||
-|`PYQT6`|var|pub|10||
+|`PYQT6`|var|pub|11||
+|`PYQT6`|var|pub|14||
 
 
 ---
@@ -197,8 +212,15 @@ from pathlib import Path
 
 ---
 
-# mainwindow.py | Python | 1379L | 89 symbols | 15 imports | 68 comments
+# mainwindow.py | Python | 1379L | 89 symbols | 15 imports | 69 comments
 > Path: `src/pdfframe/mainwindow.py`
+- Brief: Main Qt window and interactive workflow for pdfframe.
+- Details: Hosts viewer interactions, selection editing, settings persistence, and conversion orchestration.
+Copyright (C) 2010-2025 Ogekuri.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
 ## Imports
 ```
@@ -606,34 +628,46 @@ from pdfframe.autotrim import autoTrimMargins
 
 ---
 
-# mainwindowui_qt5.py | Python | 460L | 3 symbols | 1 imports | 7 comments
+# mainwindowui_qt5.py | Python | 479L | 3 symbols | 1 imports | 12 comments
 > Path: `src/pdfframe/mainwindowui_qt5.py`
+- Brief: PyQt5-generated UI bindings for `MainWindow`.
+- Details: Source generated from `mainwindow.ui`; manual edits are restricted to static-analysis metadata.
 
 ## Imports
 ```
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 ```
 
 ## Definitions
 
-### class `class Ui_MainWindow(object)` : object (L14-213)
+### class `class Ui_MainWindow(object)` : object (L21-220)
+- Brief: Contains generated widget wiring for the main application window.
 
-### fn `def setupUi(self, MainWindow)` (L15-214)
+### fn `def setupUi(self, MainWindow)` (L26-225)
+- Brief: Contains generated widget wiring for the main application window.
+- Brief: Creates widgets, layouts, and signal connections for `MainWindow`.
+- Param: MainWindow {QtWidgets.QMainWindow} Target window instance.
+- Return: {None} Applies generated UI graph.
 
-### fn `def retranslateUi(self, MainWindow)` (L372-381)
+### fn `def retranslateUi(self, MainWindow)` (L388-402)
+- Brief: Applies translatable UI strings to generated widgets.
+- Param: MainWindow {QtWidgets.QMainWindow} Target window instance.
+- Return: {None} Updates texts/tooltips/actions.
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`Ui_MainWindow`|class|pub|14-213|class Ui_MainWindow(object)|
-|`setupUi`|fn|pub|15-214|def setupUi(self, MainWindow)|
-|`retranslateUi`|fn|pub|372-381|def retranslateUi(self, MainWindow)|
+|`Ui_MainWindow`|class|pub|21-220|class Ui_MainWindow(object)|
+|`setupUi`|fn|pub|26-225|def setupUi(self, MainWindow)|
+|`retranslateUi`|fn|pub|388-402|def retranslateUi(self, MainWindow)|
 
 
 ---
 
-# mainwindowui_qt6.py | Python | 458L | 3 symbols | 1 imports | 6 comments
+# mainwindowui_qt6.py | Python | 477L | 3 symbols | 1 imports | 12 comments
 > Path: `src/pdfframe/mainwindowui_qt6.py`
+- Brief: PyQt6-generated UI bindings for `MainWindow`.
+- Details: Source generated from `mainwindow.ui`; manual edits are restricted to static-analysis metadata.
 
 ## Imports
 ```
@@ -642,18 +676,26 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 ## Definitions
 
-### class `class Ui_MainWindow(object)` : object (L12-211)
+### class `class Ui_MainWindow(object)` : object (L19-218)
+- Brief: Contains generated widget wiring for the main application window.
 
-### fn `def setupUi(self, MainWindow)` (L13-212)
+### fn `def setupUi(self, MainWindow)` (L24-223)
+- Brief: Contains generated widget wiring for the main application window.
+- Brief: Creates widgets, layouts, and signal connections for `MainWindow`.
+- Param: MainWindow {QtWidgets.QMainWindow} Target window instance.
+- Return: {None} Applies generated UI graph.
 
-### fn `def retranslateUi(self, MainWindow)` (L370-379)
+### fn `def retranslateUi(self, MainWindow)` (L386-400)
+- Brief: Applies translatable UI strings to generated widgets.
+- Param: MainWindow {QtWidgets.QMainWindow} Target window instance.
+- Return: {None} Updates texts/tooltips/actions.
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`Ui_MainWindow`|class|pub|12-211|class Ui_MainWindow(object)|
-|`setupUi`|fn|pub|13-212|def setupUi(self, MainWindow)|
-|`retranslateUi`|fn|pub|370-379|def retranslateUi(self, MainWindow)|
+|`Ui_MainWindow`|class|pub|19-218|class Ui_MainWindow(object)|
+|`setupUi`|fn|pub|24-223|def setupUi(self, MainWindow)|
+|`retranslateUi`|fn|pub|386-400|def retranslateUi(self, MainWindow)|
 
 
 ---
@@ -825,8 +867,15 @@ import time
 
 ---
 
-# pdfframeper.py | Python | 329L | 62 symbols | 10 imports | 43 comments
+# pdfframeper.py | Python | 327L | 62 symbols | 10 imports | 43 comments
 > Path: `src/pdfframe/pdfframeper.py`
+- Brief: PDF backend adapters for loading and writing cropped documents.
+- Details: Provides wrapper classes over pypdf, PyPDF2, PyMuPDF, and pikepdf for unified crop operations.
+Copyright (C) 2010-2025 Ogekuri.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
 ## Imports
 ```
@@ -844,157 +893,159 @@ from PyPDF2 import PdfReader, PdfWriter
 
 ## Definitions
 
-### class `class PdfEncryptedError(Exception)` : Exception (L22-25)
+### class `class PdfEncryptedError(Exception)` : Exception (L21-24)
 
-### class `class AbstractPdfFile` (L26-33)
-- fn `def loadFromStream(self, stream)` (L29-30)
-- fn `def loadFromFile(self, filename)` (L31-33)
+### class `class AbstractPdfFile` (L25-32)
+- fn `def loadFromStream(self, stream)` (L28-29)
+- fn `def loadFromFile(self, filename)` (L30-32)
 
-### class `class PyPdfFile(AbstractPdfFile)` : AbstractPdfFile (L34-48)
-- fn `def __init__(self)` `priv` (L36-37)
-- fn `def loadFromStream(self, stream)` (L38-45)
-- fn `def getPage(self, nr)` (L46-48)
+### class `class PyPdfFile(AbstractPdfFile)` : AbstractPdfFile (L33-47)
+- fn `def __init__(self)` `priv` (L35-36)
+- fn `def loadFromStream(self, stream)` (L37-44)
+- fn `def getPage(self, nr)` (L45-47)
 
-### class `class PyPdfOldFile(PyPdfFile)` : PyPdfFile (L49-62)
-- fn `def loadFromStream(self, stream)` (L52-59)
-- fn `def getPage(self, nr)` (L60-62)
+### class `class PyPdfOldFile(PyPdfFile)` : PyPdfFile (L48-61)
+- fn `def loadFromStream(self, stream)` (L51-58)
+- fn `def getPage(self, nr)` (L59-61)
 
-### class `class PyMuPdfFile(AbstractPdfFile)` : AbstractPdfFile (L63-73)
-- fn `def __init__(self)` `priv` (L65-66)
-- fn `def loadFromStream(self, stream)` (L67-70)
-- fn `def getPage(self, nr)` (L71-73)
+### class `class PyMuPdfFile(AbstractPdfFile)` : AbstractPdfFile (L62-72)
+- fn `def __init__(self)` `priv` (L64-65)
+- fn `def loadFromStream(self, stream)` (L66-69)
+- fn `def getPage(self, nr)` (L70-72)
 
-### class `class PikePdfFile(AbstractPdfFile)` : AbstractPdfFile (L74-85)
-- fn `def __init__(self)` `priv` (L76-77)
-- fn `def loadFromStream(self, stream)` (L78-81)
-- fn `def getPage(self, nr)` (L82-85)
+### class `class PikePdfFile(AbstractPdfFile)` : AbstractPdfFile (L73-84)
+- fn `def __init__(self)` `priv` (L75-76)
+- fn `def loadFromStream(self, stream)` (L77-80)
+- fn `def getPage(self, nr)` (L81-84)
 
-### class `class AbstractPdfFrameper` (L86-99)
-- fn `def writeToStream(self, stream)` (L89-90)
-- fn `def writeToFile(self, filename)` (L91-94)
-- fn `def addPageCropped(self, pdffile, pagenumber, croplist, rotate=0)` (L95-96)
-- fn `def copyDocumentRoot(self, pdffile)` (L97-99)
+### class `class AbstractPdfFrameper` (L85-98)
+- fn `def writeToStream(self, stream)` (L88-89)
+- fn `def writeToFile(self, filename)` (L90-93)
+- fn `def addPageCropped(self, pdffile, pagenumber, croplist, rotate=0)` (L94-95)
+- fn `def copyDocumentRoot(self, pdffile)` (L96-98)
 
-### class `class SemiAbstractPdfFrameper(AbstractPdfFrameper)` : AbstractPdfFrameper (L100-120)
-- fn `def addPageCropped(self, pdffile, pagenumber, croplist, alwaysinclude, rotate=0)` (L103-113)
-- fn `def doAddPage(self, page, rotate)` (L114-115)
-- fn `def pageGetCropBox(self, page)` (L116-117)
-- fn `def pageSetCropBox(self, page, box)` (L118-120)
+### class `class SemiAbstractPdfFrameper(AbstractPdfFrameper)` : AbstractPdfFrameper (L99-119)
+- fn `def addPageCropped(self, pdffile, pagenumber, croplist, alwaysinclude, rotate=0)` (L102-112)
+- fn `def doAddPage(self, page, rotate)` (L113-114)
+- fn `def pageGetCropBox(self, page)` (L115-116)
+- fn `def pageSetCropBox(self, page, box)` (L117-119)
 
-### class `class PyPdfFrameper(SemiAbstractPdfFrameper)` : SemiAbstractPdfFrameper (L121-152)
-- fn `def __init__(self)` `priv` (L123-124)
-- fn `def writeToStream(self, stream)` (L125-133)
-- fn `def doAddPage(self, page, rotate)` (L134-137)
-- fn `def pageGetCropBox(self, page)` (L138-141)
-- fn `def pageSetCropBox(self, page, box)` (L142-146)
-- fn `def copyDocumentRoot(self, pdffile)` (L147-152)
+### class `class PyPdfFrameper(SemiAbstractPdfFrameper)` : SemiAbstractPdfFrameper (L120-151)
+- fn `def __init__(self)` `priv` (L122-123)
+- fn `def writeToStream(self, stream)` (L124-132)
+- fn `def doAddPage(self, page, rotate)` (L133-136)
+- fn `def pageGetCropBox(self, page)` (L137-140)
+- fn `def pageSetCropBox(self, page, box)` (L141-145)
+- fn `def copyDocumentRoot(self, pdffile)` (L146-151)
 
-### class `class PyPdfOldCropper(PyPdfFrameper)` : PyPdfFrameper (L153-173)
-- fn `def doAddPage(self, page, rotate)` (L155-158)
-- fn `def pageGetCropBox(self, page)` (L159-162)
-- fn `def pageSetCropBox(self, page, box)` (L163-167)
-- fn `def copyDocumentRoot(self, pdffile)` (L168-173)
+### class `class PyPdfOldCropper(PyPdfFrameper)` : PyPdfFrameper (L152-172)
+- fn `def doAddPage(self, page, rotate)` (L154-157)
+- fn `def pageGetCropBox(self, page)` (L158-161)
+- fn `def pageSetCropBox(self, page, box)` (L162-166)
+- fn `def copyDocumentRoot(self, pdffile)` (L167-172)
 
-### class `class PyMuPdfFrameper(SemiAbstractPdfFrameper)` : SemiAbstractPdfFrameper (L174-214)
-- fn `def __init__(self)` `priv` (L176-177)
-- fn `def writeToStream(self, stream)` (L178-179)
-- fn `def addPageCropped(self, pdffile, pagenumber, croplist, alwaysinclude, rotate=0)` (L180-197)
-- fn `def addPage()` (L181-184)
-- fn `def pageGetCropBox(self, page)` (L198-199)
-- fn `def pageSetCropBox(self, page, box)` (L200-210)
-- fn `def copyDocumentRoot(self, pdffile)` (L211-214)
+### class `class PyMuPdfFrameper(SemiAbstractPdfFrameper)` : SemiAbstractPdfFrameper (L173-213)
+- fn `def __init__(self)` `priv` (L175-176)
+- fn `def writeToStream(self, stream)` (L177-178)
+- fn `def addPageCropped(self, pdffile, pagenumber, croplist, alwaysinclude, rotate=0)` (L179-196)
+- fn `def addPage()` (L180-183)
+- fn `def pageGetCropBox(self, page)` (L197-198)
+- fn `def pageSetCropBox(self, page, box)` (L199-209)
+- fn `def copyDocumentRoot(self, pdffile)` (L210-213)
 
-### class `class PikePdfFrameper(SemiAbstractPdfFrameper)` : SemiAbstractPdfFrameper (L215-238)
-- fn `def __init__(self)` `priv` (L217-218)
-- fn `def writeToStream(self, stream)` (L219-220)
-- fn `def doAddPage(self, page, rotate)` (L221-224)
-- fn `def pageGetCropBox(self, page)` (L225-230)
-- fn `def pageSetCropBox(self, page, box)` (L231-234)
-- fn `def copyDocumentRoot(self, pdffile)` (L235-238)
+### class `class PikePdfFrameper(SemiAbstractPdfFrameper)` : SemiAbstractPdfFrameper (L214-237)
+- fn `def __init__(self)` `priv` (L216-217)
+- fn `def writeToStream(self, stream)` (L218-219)
+- fn `def doAddPage(self, page, rotate)` (L220-223)
+- fn `def pageGetCropBox(self, page)` (L224-229)
+- fn `def pageSetCropBox(self, page, box)` (L230-233)
+- fn `def copyDocumentRoot(self, pdffile)` (L234-237)
 
-### fn `def computeCropBoxCoords(box, crop, pdf_coords=True)` (L239-249)
+### fn `def computeCropBoxCoords(box, crop, pdf_coords=True)` (L238-248)
 
-### fn `def optimizePdfGhostscript(oldfilename, newfilename)` (L250-255)
+### fn `def optimizePdfGhostscript(oldfilename, newfilename)` (L249-254)
 
-### fn `def import_pymupdf()` (L259-266)
+### fn `def import_pymupdf()` (L258-265)
 
-### fn `def import_pikepdf()` (L267-272)
+### fn `def import_pikepdf()` (L266-271)
 
-### fn `def import_pypdf()` (L273-278)
+### fn `def import_pypdf()` (L272-277)
 
-### fn `def import_pypdf2()` (L279-293)
+### fn `def import_pypdf2()` (L278-292)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`PdfEncryptedError`|class|pub|22-25|class PdfEncryptedError(Exception)|
-|`AbstractPdfFile`|class|pub|26-33|class AbstractPdfFile|
-|`AbstractPdfFile.loadFromStream`|fn|pub|29-30|def loadFromStream(self, stream)|
-|`AbstractPdfFile.loadFromFile`|fn|pub|31-33|def loadFromFile(self, filename)|
-|`PyPdfFile`|class|pub|34-48|class PyPdfFile(AbstractPdfFile)|
-|`PyPdfFile.__init__`|fn|priv|36-37|def __init__(self)|
-|`PyPdfFile.loadFromStream`|fn|pub|38-45|def loadFromStream(self, stream)|
-|`PyPdfFile.getPage`|fn|pub|46-48|def getPage(self, nr)|
-|`PyPdfOldFile`|class|pub|49-62|class PyPdfOldFile(PyPdfFile)|
-|`PyPdfOldFile.loadFromStream`|fn|pub|52-59|def loadFromStream(self, stream)|
-|`PyPdfOldFile.getPage`|fn|pub|60-62|def getPage(self, nr)|
-|`PyMuPdfFile`|class|pub|63-73|class PyMuPdfFile(AbstractPdfFile)|
-|`PyMuPdfFile.__init__`|fn|priv|65-66|def __init__(self)|
-|`PyMuPdfFile.loadFromStream`|fn|pub|67-70|def loadFromStream(self, stream)|
-|`PyMuPdfFile.getPage`|fn|pub|71-73|def getPage(self, nr)|
-|`PikePdfFile`|class|pub|74-85|class PikePdfFile(AbstractPdfFile)|
-|`PikePdfFile.__init__`|fn|priv|76-77|def __init__(self)|
-|`PikePdfFile.loadFromStream`|fn|pub|78-81|def loadFromStream(self, stream)|
-|`PikePdfFile.getPage`|fn|pub|82-85|def getPage(self, nr)|
-|`AbstractPdfFrameper`|class|pub|86-99|class AbstractPdfFrameper|
-|`AbstractPdfFrameper.writeToStream`|fn|pub|89-90|def writeToStream(self, stream)|
-|`AbstractPdfFrameper.writeToFile`|fn|pub|91-94|def writeToFile(self, filename)|
-|`AbstractPdfFrameper.addPageCropped`|fn|pub|95-96|def addPageCropped(self, pdffile, pagenumber, croplist, r...|
-|`AbstractPdfFrameper.copyDocumentRoot`|fn|pub|97-99|def copyDocumentRoot(self, pdffile)|
-|`SemiAbstractPdfFrameper`|class|pub|100-120|class SemiAbstractPdfFrameper(AbstractPdfFrameper)|
-|`SemiAbstractPdfFrameper.addPageCropped`|fn|pub|103-113|def addPageCropped(self, pdffile, pagenumber, croplist, a...|
-|`SemiAbstractPdfFrameper.doAddPage`|fn|pub|114-115|def doAddPage(self, page, rotate)|
-|`SemiAbstractPdfFrameper.pageGetCropBox`|fn|pub|116-117|def pageGetCropBox(self, page)|
-|`SemiAbstractPdfFrameper.pageSetCropBox`|fn|pub|118-120|def pageSetCropBox(self, page, box)|
-|`PyPdfFrameper`|class|pub|121-152|class PyPdfFrameper(SemiAbstractPdfFrameper)|
-|`PyPdfFrameper.__init__`|fn|priv|123-124|def __init__(self)|
-|`PyPdfFrameper.writeToStream`|fn|pub|125-133|def writeToStream(self, stream)|
-|`PyPdfFrameper.doAddPage`|fn|pub|134-137|def doAddPage(self, page, rotate)|
-|`PyPdfFrameper.pageGetCropBox`|fn|pub|138-141|def pageGetCropBox(self, page)|
-|`PyPdfFrameper.pageSetCropBox`|fn|pub|142-146|def pageSetCropBox(self, page, box)|
-|`PyPdfFrameper.copyDocumentRoot`|fn|pub|147-152|def copyDocumentRoot(self, pdffile)|
-|`PyPdfOldCropper`|class|pub|153-173|class PyPdfOldCropper(PyPdfFrameper)|
-|`PyPdfOldCropper.doAddPage`|fn|pub|155-158|def doAddPage(self, page, rotate)|
-|`PyPdfOldCropper.pageGetCropBox`|fn|pub|159-162|def pageGetCropBox(self, page)|
-|`PyPdfOldCropper.pageSetCropBox`|fn|pub|163-167|def pageSetCropBox(self, page, box)|
-|`PyPdfOldCropper.copyDocumentRoot`|fn|pub|168-173|def copyDocumentRoot(self, pdffile)|
-|`PyMuPdfFrameper`|class|pub|174-214|class PyMuPdfFrameper(SemiAbstractPdfFrameper)|
-|`PyMuPdfFrameper.__init__`|fn|priv|176-177|def __init__(self)|
-|`PyMuPdfFrameper.writeToStream`|fn|pub|178-179|def writeToStream(self, stream)|
-|`PyMuPdfFrameper.addPageCropped`|fn|pub|180-197|def addPageCropped(self, pdffile, pagenumber, croplist, a...|
-|`PyMuPdfFrameper.addPage`|fn|pub|181-184|def addPage()|
-|`PyMuPdfFrameper.pageGetCropBox`|fn|pub|198-199|def pageGetCropBox(self, page)|
-|`PyMuPdfFrameper.pageSetCropBox`|fn|pub|200-210|def pageSetCropBox(self, page, box)|
-|`PyMuPdfFrameper.copyDocumentRoot`|fn|pub|211-214|def copyDocumentRoot(self, pdffile)|
-|`PikePdfFrameper`|class|pub|215-238|class PikePdfFrameper(SemiAbstractPdfFrameper)|
-|`PikePdfFrameper.__init__`|fn|priv|217-218|def __init__(self)|
-|`PikePdfFrameper.writeToStream`|fn|pub|219-220|def writeToStream(self, stream)|
-|`PikePdfFrameper.doAddPage`|fn|pub|221-224|def doAddPage(self, page, rotate)|
-|`PikePdfFrameper.pageGetCropBox`|fn|pub|225-230|def pageGetCropBox(self, page)|
-|`PikePdfFrameper.pageSetCropBox`|fn|pub|231-234|def pageSetCropBox(self, page, box)|
-|`PikePdfFrameper.copyDocumentRoot`|fn|pub|235-238|def copyDocumentRoot(self, pdffile)|
-|`computeCropBoxCoords`|fn|pub|239-249|def computeCropBoxCoords(box, crop, pdf_coords=True)|
-|`optimizePdfGhostscript`|fn|pub|250-255|def optimizePdfGhostscript(oldfilename, newfilename)|
-|`import_pymupdf`|fn|pub|259-266|def import_pymupdf()|
-|`import_pikepdf`|fn|pub|267-272|def import_pikepdf()|
-|`import_pypdf`|fn|pub|273-278|def import_pypdf()|
-|`import_pypdf2`|fn|pub|279-293|def import_pypdf2()|
+|`PdfEncryptedError`|class|pub|21-24|class PdfEncryptedError(Exception)|
+|`AbstractPdfFile`|class|pub|25-32|class AbstractPdfFile|
+|`AbstractPdfFile.loadFromStream`|fn|pub|28-29|def loadFromStream(self, stream)|
+|`AbstractPdfFile.loadFromFile`|fn|pub|30-32|def loadFromFile(self, filename)|
+|`PyPdfFile`|class|pub|33-47|class PyPdfFile(AbstractPdfFile)|
+|`PyPdfFile.__init__`|fn|priv|35-36|def __init__(self)|
+|`PyPdfFile.loadFromStream`|fn|pub|37-44|def loadFromStream(self, stream)|
+|`PyPdfFile.getPage`|fn|pub|45-47|def getPage(self, nr)|
+|`PyPdfOldFile`|class|pub|48-61|class PyPdfOldFile(PyPdfFile)|
+|`PyPdfOldFile.loadFromStream`|fn|pub|51-58|def loadFromStream(self, stream)|
+|`PyPdfOldFile.getPage`|fn|pub|59-61|def getPage(self, nr)|
+|`PyMuPdfFile`|class|pub|62-72|class PyMuPdfFile(AbstractPdfFile)|
+|`PyMuPdfFile.__init__`|fn|priv|64-65|def __init__(self)|
+|`PyMuPdfFile.loadFromStream`|fn|pub|66-69|def loadFromStream(self, stream)|
+|`PyMuPdfFile.getPage`|fn|pub|70-72|def getPage(self, nr)|
+|`PikePdfFile`|class|pub|73-84|class PikePdfFile(AbstractPdfFile)|
+|`PikePdfFile.__init__`|fn|priv|75-76|def __init__(self)|
+|`PikePdfFile.loadFromStream`|fn|pub|77-80|def loadFromStream(self, stream)|
+|`PikePdfFile.getPage`|fn|pub|81-84|def getPage(self, nr)|
+|`AbstractPdfFrameper`|class|pub|85-98|class AbstractPdfFrameper|
+|`AbstractPdfFrameper.writeToStream`|fn|pub|88-89|def writeToStream(self, stream)|
+|`AbstractPdfFrameper.writeToFile`|fn|pub|90-93|def writeToFile(self, filename)|
+|`AbstractPdfFrameper.addPageCropped`|fn|pub|94-95|def addPageCropped(self, pdffile, pagenumber, croplist, r...|
+|`AbstractPdfFrameper.copyDocumentRoot`|fn|pub|96-98|def copyDocumentRoot(self, pdffile)|
+|`SemiAbstractPdfFrameper`|class|pub|99-119|class SemiAbstractPdfFrameper(AbstractPdfFrameper)|
+|`SemiAbstractPdfFrameper.addPageCropped`|fn|pub|102-112|def addPageCropped(self, pdffile, pagenumber, croplist, a...|
+|`SemiAbstractPdfFrameper.doAddPage`|fn|pub|113-114|def doAddPage(self, page, rotate)|
+|`SemiAbstractPdfFrameper.pageGetCropBox`|fn|pub|115-116|def pageGetCropBox(self, page)|
+|`SemiAbstractPdfFrameper.pageSetCropBox`|fn|pub|117-119|def pageSetCropBox(self, page, box)|
+|`PyPdfFrameper`|class|pub|120-151|class PyPdfFrameper(SemiAbstractPdfFrameper)|
+|`PyPdfFrameper.__init__`|fn|priv|122-123|def __init__(self)|
+|`PyPdfFrameper.writeToStream`|fn|pub|124-132|def writeToStream(self, stream)|
+|`PyPdfFrameper.doAddPage`|fn|pub|133-136|def doAddPage(self, page, rotate)|
+|`PyPdfFrameper.pageGetCropBox`|fn|pub|137-140|def pageGetCropBox(self, page)|
+|`PyPdfFrameper.pageSetCropBox`|fn|pub|141-145|def pageSetCropBox(self, page, box)|
+|`PyPdfFrameper.copyDocumentRoot`|fn|pub|146-151|def copyDocumentRoot(self, pdffile)|
+|`PyPdfOldCropper`|class|pub|152-172|class PyPdfOldCropper(PyPdfFrameper)|
+|`PyPdfOldCropper.doAddPage`|fn|pub|154-157|def doAddPage(self, page, rotate)|
+|`PyPdfOldCropper.pageGetCropBox`|fn|pub|158-161|def pageGetCropBox(self, page)|
+|`PyPdfOldCropper.pageSetCropBox`|fn|pub|162-166|def pageSetCropBox(self, page, box)|
+|`PyPdfOldCropper.copyDocumentRoot`|fn|pub|167-172|def copyDocumentRoot(self, pdffile)|
+|`PyMuPdfFrameper`|class|pub|173-213|class PyMuPdfFrameper(SemiAbstractPdfFrameper)|
+|`PyMuPdfFrameper.__init__`|fn|priv|175-176|def __init__(self)|
+|`PyMuPdfFrameper.writeToStream`|fn|pub|177-178|def writeToStream(self, stream)|
+|`PyMuPdfFrameper.addPageCropped`|fn|pub|179-196|def addPageCropped(self, pdffile, pagenumber, croplist, a...|
+|`PyMuPdfFrameper.addPage`|fn|pub|180-183|def addPage()|
+|`PyMuPdfFrameper.pageGetCropBox`|fn|pub|197-198|def pageGetCropBox(self, page)|
+|`PyMuPdfFrameper.pageSetCropBox`|fn|pub|199-209|def pageSetCropBox(self, page, box)|
+|`PyMuPdfFrameper.copyDocumentRoot`|fn|pub|210-213|def copyDocumentRoot(self, pdffile)|
+|`PikePdfFrameper`|class|pub|214-237|class PikePdfFrameper(SemiAbstractPdfFrameper)|
+|`PikePdfFrameper.__init__`|fn|priv|216-217|def __init__(self)|
+|`PikePdfFrameper.writeToStream`|fn|pub|218-219|def writeToStream(self, stream)|
+|`PikePdfFrameper.doAddPage`|fn|pub|220-223|def doAddPage(self, page, rotate)|
+|`PikePdfFrameper.pageGetCropBox`|fn|pub|224-229|def pageGetCropBox(self, page)|
+|`PikePdfFrameper.pageSetCropBox`|fn|pub|230-233|def pageSetCropBox(self, page, box)|
+|`PikePdfFrameper.copyDocumentRoot`|fn|pub|234-237|def copyDocumentRoot(self, pdffile)|
+|`computeCropBoxCoords`|fn|pub|238-248|def computeCropBoxCoords(box, crop, pdf_coords=True)|
+|`optimizePdfGhostscript`|fn|pub|249-254|def optimizePdfGhostscript(oldfilename, newfilename)|
+|`import_pymupdf`|fn|pub|258-265|def import_pymupdf()|
+|`import_pikepdf`|fn|pub|266-271|def import_pikepdf()|
+|`import_pypdf`|fn|pub|272-277|def import_pypdf()|
+|`import_pypdf2`|fn|pub|278-292|def import_pypdf2()|
 
 
 ---
 
-# qt.py | Python | 10L | 0 symbols | 7 imports | 0 comments
+# qt.py | Python | 18L | 0 symbols | 7 imports | 3 comments
 > Path: `src/pdfframe/qt.py`
+- Brief: Unified Qt symbol export layer for PyQt6/PyQt5 compatibility.
+- Details: Re-exports QtCore/QtGui/QtWidgets symbols based on runtime backend selection.
 
 ## Imports
 ```
@@ -1016,8 +1067,15 @@ from PyQt5.QtWidgets import *
 
 ---
 
-# vieweritem.py | Python | 302L | 43 symbols | 8 imports | 25 comments
+# vieweritem.py | Python | 300L | 43 symbols | 7 imports | 26 comments
 > Path: `src/pdfframe/vieweritem.py`
+- Brief: Viewer backends and rendering abstractions for PDF page display.
+- Details: Implements Qt graphics-item viewer classes for Poppler and PyMuPDF rendering backends.
+Copyright (C) 2010-2025 Ogekuri.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
 ## Imports
 ```
@@ -1025,7 +1083,6 @@ import sys
 from pdfframe.config import PYQT6
 from pdfframe.qt import *
 from pdfframe.viewerselections import ViewerSelections
-from pdfframe.config import PYQT6
 import fitz
 import fitz
 from popplerqt5 import Poppler
@@ -1141,8 +1198,15 @@ from popplerqt5 import Poppler
 
 ---
 
-# viewerselections.py | Python | 666L | 71 symbols | 2 imports | 41 comments
+# viewerselections.py | Python | 667L | 71 symbols | 2 imports | 42 comments
 > Path: `src/pdfframe/viewerselections.py`
+- Brief: Interactive selection items and gestures used by viewer backends.
+- Details: Defines selection geometry, resize handles, and mouse-driven edit behavior in scene coordinates.
+Copyright (C) 2010-2020 ogekuri.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
 ## Imports
 ```
@@ -1224,29 +1288,29 @@ from pdfframe.qt import *
 
 ### fn `def keyPressEvent(self, event)` (L475-494)
 
-### class `class SelectionHandleItem(QGraphicsItem)` : QGraphicsItem (L495-594)
+### class `class SelectionHandleItem(QGraphicsItem)` : QGraphicsItem (L495-595)
 - fn `def __init__(self, parent, role)` `priv` (L502-517)
 - fn `def selection(self)` (L519-521)
 - fn `def handleColor(self)` (L523-527)
 - fn `def boundingRect(self)` (L528-547)
-- fn `def paint(self, painter, option, widget)` (L548-566)
-- fn `def mousePressEvent(self, event)` (L567-572)
-- fn `def mouseMoveEvent(self, event)` (L573-590)
-- fn `def mouseReleaseEvent(self, event)` (L591-594)
+- fn `def paint(self, painter, option, widget)` (L548-567)
+- fn `def mousePressEvent(self, event)` (L568-573)
+- fn `def mouseMoveEvent(self, event)` (L574-591)
+- fn `def mouseReleaseEvent(self, event)` (L592-595)
 
-### class `class SelectionCornerHandleItem(QGraphicsItem)` : QGraphicsItem (L595-654)
-- fn `def __init__(self, parent, lr, tb)` `priv` (L596-606)
-- fn `def selection(self)` (L608-610)
-- fn `def handleColor(self)` (L612-616)
-- fn `def corner(self, rect)` (L617-620)
-- fn `def direction(self, pt)` (L621-626)
-- fn `def boundingRect(self)` (L627-632)
-- fn `def paint(self, painter, option, widget)` (L633-638)
-- fn `def mousePressEvent(self, event)` (L639-644)
-- fn `def mouseMoveEvent(self, event)` (L645-650)
-- fn `def mouseReleaseEvent(self, event)` (L651-654)
+### class `class SelectionCornerHandleItem(QGraphicsItem)` : QGraphicsItem (L596-655)
+- fn `def __init__(self, parent, lr, tb)` `priv` (L597-607)
+- fn `def selection(self)` (L609-611)
+- fn `def handleColor(self)` (L613-617)
+- fn `def corner(self, rect)` (L618-621)
+- fn `def direction(self, pt)` (L622-627)
+- fn `def boundingRect(self)` (L628-633)
+- fn `def paint(self, painter, option, widget)` (L634-639)
+- fn `def mousePressEvent(self, event)` (L640-645)
+- fn `def mouseMoveEvent(self, event)` (L646-651)
+- fn `def mouseReleaseEvent(self, event)` (L652-655)
 
-### fn `def aspectRatioFromStr(s)` (L655-666)
+### fn `def aspectRatioFromStr(s)` (L656-667)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
@@ -1301,25 +1365,25 @@ from pdfframe.qt import *
 |`mouseMoveEvent`|fn|pub|452-470|def mouseMoveEvent(self, event)|
 |`mouseReleaseEvent`|fn|pub|471-474|def mouseReleaseEvent(self, event)|
 |`keyPressEvent`|fn|pub|475-494|def keyPressEvent(self, event)|
-|`SelectionHandleItem`|class|pub|495-594|class SelectionHandleItem(QGraphicsItem)|
+|`SelectionHandleItem`|class|pub|495-595|class SelectionHandleItem(QGraphicsItem)|
 |`SelectionHandleItem.__init__`|fn|priv|502-517|def __init__(self, parent, role)|
 |`SelectionHandleItem.selection`|fn|pub|519-521|def selection(self)|
 |`SelectionHandleItem.handleColor`|fn|pub|523-527|def handleColor(self)|
 |`SelectionHandleItem.boundingRect`|fn|pub|528-547|def boundingRect(self)|
-|`SelectionHandleItem.paint`|fn|pub|548-566|def paint(self, painter, option, widget)|
-|`SelectionHandleItem.mousePressEvent`|fn|pub|567-572|def mousePressEvent(self, event)|
-|`SelectionHandleItem.mouseMoveEvent`|fn|pub|573-590|def mouseMoveEvent(self, event)|
-|`SelectionHandleItem.mouseReleaseEvent`|fn|pub|591-594|def mouseReleaseEvent(self, event)|
-|`SelectionCornerHandleItem`|class|pub|595-654|class SelectionCornerHandleItem(QGraphicsItem)|
-|`SelectionCornerHandleItem.__init__`|fn|priv|596-606|def __init__(self, parent, lr, tb)|
-|`SelectionCornerHandleItem.selection`|fn|pub|608-610|def selection(self)|
-|`SelectionCornerHandleItem.handleColor`|fn|pub|612-616|def handleColor(self)|
-|`SelectionCornerHandleItem.corner`|fn|pub|617-620|def corner(self, rect)|
-|`SelectionCornerHandleItem.direction`|fn|pub|621-626|def direction(self, pt)|
-|`SelectionCornerHandleItem.boundingRect`|fn|pub|627-632|def boundingRect(self)|
-|`SelectionCornerHandleItem.paint`|fn|pub|633-638|def paint(self, painter, option, widget)|
-|`SelectionCornerHandleItem.mousePressEvent`|fn|pub|639-644|def mousePressEvent(self, event)|
-|`SelectionCornerHandleItem.mouseMoveEvent`|fn|pub|645-650|def mouseMoveEvent(self, event)|
-|`SelectionCornerHandleItem.mouseReleaseEvent`|fn|pub|651-654|def mouseReleaseEvent(self, event)|
-|`aspectRatioFromStr`|fn|pub|655-666|def aspectRatioFromStr(s)|
+|`SelectionHandleItem.paint`|fn|pub|548-567|def paint(self, painter, option, widget)|
+|`SelectionHandleItem.mousePressEvent`|fn|pub|568-573|def mousePressEvent(self, event)|
+|`SelectionHandleItem.mouseMoveEvent`|fn|pub|574-591|def mouseMoveEvent(self, event)|
+|`SelectionHandleItem.mouseReleaseEvent`|fn|pub|592-595|def mouseReleaseEvent(self, event)|
+|`SelectionCornerHandleItem`|class|pub|596-655|class SelectionCornerHandleItem(QGraphicsItem)|
+|`SelectionCornerHandleItem.__init__`|fn|priv|597-607|def __init__(self, parent, lr, tb)|
+|`SelectionCornerHandleItem.selection`|fn|pub|609-611|def selection(self)|
+|`SelectionCornerHandleItem.handleColor`|fn|pub|613-617|def handleColor(self)|
+|`SelectionCornerHandleItem.corner`|fn|pub|618-621|def corner(self, rect)|
+|`SelectionCornerHandleItem.direction`|fn|pub|622-627|def direction(self, pt)|
+|`SelectionCornerHandleItem.boundingRect`|fn|pub|628-633|def boundingRect(self)|
+|`SelectionCornerHandleItem.paint`|fn|pub|634-639|def paint(self, painter, option, widget)|
+|`SelectionCornerHandleItem.mousePressEvent`|fn|pub|640-645|def mousePressEvent(self, event)|
+|`SelectionCornerHandleItem.mouseMoveEvent`|fn|pub|646-651|def mouseMoveEvent(self, event)|
+|`SelectionCornerHandleItem.mouseReleaseEvent`|fn|pub|652-655|def mouseReleaseEvent(self, event)|
+|`aspectRatioFromStr`|fn|pub|656-667|def aspectRatioFromStr(s)|
 

@@ -1,5 +1,12 @@
 # Form implementation generated from reading ui file 'mainwindow.ui'
+# pyright: reportMissingImports=false
+"""
+@file mainwindowui_qt6.py
+@brief PyQt6-generated UI bindings for `MainWindow`.
+@details Source generated from `mainwindow.ui`; manual edits are restricted to static-analysis metadata.
+"""
 #
+# 
 # Created by: PyQt6 UI code generator 6.6.0
 #
 # WARNING: Any manual changes made to this file will be lost when pyuic6 is
@@ -10,7 +17,16 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
+    """
+    @brief Contains generated widget wiring for the main application window.
+    """
+
     def setupUi(self, MainWindow):
+        """
+        @brief Creates widgets, layouts, and signal connections for `MainWindow`.
+        @param MainWindow {QtWidgets.QMainWindow} Target window instance.
+        @return {None} Applies generated UI graph.
+        """
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(949, 736)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
@@ -368,6 +384,11 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
+        """
+        @brief Applies translatable UI strings to generated widgets.
+        @param MainWindow {QtWidgets.QMainWindow} Target window instance.
+        @return {None} Updates texts/tooltips/actions.
+        """
         _translate = QtCore.QCoreApplication.translate
         self.groupSaveTo.setTitle(_translate("MainWindow", "Save cropped PDF to"))
         self.editFile.setToolTip(_translate("MainWindow", "<p>This is where the cropped PDF will be saved after you choose <i>Go!</i> in the menu.</p>"))
