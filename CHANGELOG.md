@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.0.1](https://github.com/Ogekuri/PdfFrame/releases/tag/v0.0.1) - 2026-02-28
+## [0.1.0](https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0) - 2026-02-28
 ### ⛰️  Features
 - add Preserve fields Ghostscript flag [useReq] *(mainwindow)*
   - Append REQ-032 and TST-011 for Preserve fields behavior.
@@ -86,6 +86,8 @@
   - Regenerate WORKFLOW.md and REFERENCES.md for updated evidence.
 
 ### 📚  Documentation
+- Add screenshot.
+- Fix README.md doc.
 - align annotation fields guidance [useReq] *(readme)*
   - add Feature Highlights coverage for Preserve annotations fields
   - add Feature Highlights coverage for Show annotations fields
@@ -106,6 +108,6 @@
 
 # History
 
-- \[0.0.1\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.0.1
+- \[0.1.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
 
-[0.0.1]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.0.1
+[0.1.0]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
