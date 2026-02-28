@@ -421,6 +421,7 @@ class MainWindow(QMainWindow):
         """
         return {
             "PDF/PreserveFields": MainWindow._preserveFieldsEnabled(self),
+            "PDF/ShowAnnots": MainWindow._showAnnotsEnabled(self),
             "PDF/Mode": self.selectedConversionMode(),
             "Trim/Padding": self.ui.editPadding.text(),
             "Trim/GrayscaleSensitivity": self.ui.editGrayscaleSensitivity.text(),
@@ -431,11 +432,25 @@ class MainWindow(QMainWindow):
 
     def _preserveFieldsEnabled(self):
         """
-        @brief Returns Preserve fields option state.
+        @brief Returns Preserve annotations fields option state.
         @details Reads `checkPreserveFields` when available and normalizes truthy values for compatibility with test stubs.
         @return {bool} True when `-dPreserveAnnots=true` must be emitted.
         """
         checkbox = getattr(getattr(self, "ui", None), "checkPreserveFields", None)
+        if checkbox is None or not hasattr(checkbox, "isChecked"):
+            return False
+        value = checkbox.isChecked()
+        if isinstance(value, bool):
+            return value
+        return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+    def _showAnnotsEnabled(self):
+        """
+        @brief Returns Show annotations fields option state.
+        @details Reads `checkShowAnnotsFields` when available and normalizes truthy values for compatibility with test stubs.
+        @return {bool} True when `-dShowAnnots=true` must be emitted.
+        """
+        checkbox = getattr(getattr(self, "ui", None), "checkShowAnnotsFields", None)
         if checkbox is None or not hasattr(checkbox, "isChecked"):
             return False
         value = checkbox.isChecked()
@@ -714,6 +729,9 @@ class MainWindow(QMainWindow):
         self.ui.checkPreserveFields.setChecked(
             self._toBool(config_values.get("PDF/PreserveFields", False))
         )
+        self.ui.checkShowAnnotsFields.setChecked(
+            self._toBool(config_values.get("PDF/ShowAnnots", False))
+        )
         mode = settings.value("PDF/Mode", "frame")
         mode = str(config_values.get("PDF/Mode", mode) or mode)
         self.radioModeFrame.setChecked(mode != "crop")
@@ -744,6 +762,8 @@ class MainWindow(QMainWindow):
                 self.ui.actionFitInView.isChecked() else "false")
         settings.setValue("PDF/PreserveFields", "true" if
                 self.ui.checkPreserveFields.isChecked() else "false")
+        settings.setValue("PDF/ShowAnnots", "true" if
+                self.ui.checkShowAnnotsFields.isChecked() else "false")
         settings.setValue("PDF/Mode", self.selectedConversionMode())
         settings.setValue("Trim/Padding", self.ui.editPadding.text())
         settings.setValue("Trim/GrayscaleSensitivity", self.ui.editGrayscaleSensitivity.text())
@@ -836,7 +856,7 @@ class MainWindow(QMainWindow):
     def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None):
         """
         @brief Builds single Ghostscript crop plan from GUI-derived parameters.
-        @details Iterates only requested pages (or all pages when omitted), derives geometry from the primary GUI selection tuple, computes crop bbox from page-size metadata, and emits one Ghostscript command for the full selected range using `-dFirstPage/-dLastPage` plus preserve-fields flag state.
+        @details Iterates only requested pages (or all pages when omitted), derives geometry from the primary GUI selection tuple, computes crop bbox from page-size metadata, and emits one Ghostscript command for the full selected range using `-dFirstPage/-dLastPage` plus preserve/show annotation flag states.
         @param inputFileName {str} Source PDF path.
         @param outputFileName {str} Destination cropped PDF path.
         @param requestedPageIndexes {set[int]|None} Optional zero-based page-index filter derived from `--whichpages`.
@@ -866,6 +886,7 @@ class MainWindow(QMainWindow):
             crop_box=crop_box,
             mode=conversion_mode,
             preserve_annots=MainWindow._preserveFieldsEnabled(self),
+            show_annots=MainWindow._showAnnotsEnabled(self),
         )
         return {"page_indexes": page_indexes, "command": command}
 

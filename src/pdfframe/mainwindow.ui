@@ -75,17 +75,30 @@
             <layout class="QVBoxLayout" name="verticalLayout_8">
              <item>
               <widget class="QCheckBox" name="checkPreserveFields">
-               <property name="toolTip">
-                <string>&lt;p&gt;Enable Ghostscript annotation preservation flag &lt;i&gt;-dPreserveAnnots&lt;/i&gt; while generating the output PDF.&lt;/p&gt;</string>
-               </property>
-               <property name="text">
-                <string>Preserve fields</string>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
+                <property name="toolTip">
+                 <string>&lt;p&gt;Enable Ghostscript annotation preservation flag &lt;i&gt;-dPreserveAnnots&lt;/i&gt; while generating the output PDF.&lt;/p&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Preserve annotations fields</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkShowAnnotsFields">
+                <property name="toolTip">
+                 <string>&lt;p&gt;Enable Ghostscript annotation visibility flag &lt;i&gt;-dShowAnnots&lt;/i&gt; while generating the output PDF.&lt;/p&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Show annotations fields</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
              <item>
              <spacer name="verticalSpacerPdfOperations">
               <property name="orientation">

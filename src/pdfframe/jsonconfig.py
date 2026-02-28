@@ -11,6 +11,7 @@ from pathlib import Path
 
 DEFAULT_CONFIG_VALUES = {
     "PDF/PreserveFields": False,
+    "PDF/ShowAnnots": False,
     "PDF/Mode": "frame",
     "Trim/Padding": "0",
     "Trim/GrayscaleSensitivity": "0",

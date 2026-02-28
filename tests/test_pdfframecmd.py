@@ -80,6 +80,7 @@ def test_build_ghostscript_page_crop_command_builds_frame_mode_command():
         "-dFIXEDMEDIA",
         "-dModifiesPageSize=true",
         "-dPreserveAnnots=false",
+        "-dShowAnnots=false",
         "-dFirstPage=3",
         "-dLastPage=3",
         "-dDEVICEWIDTHPOINTS=595",
@@ -115,6 +116,7 @@ def test_build_ghostscript_page_crop_command_builds_crop_mode_command():
         "-dFIXEDMEDIA",
         "-dModifiesPageSize=true",
         "-dPreserveAnnots=false",
+        "-dShowAnnots=false",
         "-dFirstPage=3",
         "-dLastPage=3",
         "-dDEVICEWIDTHPOINTS=570",
@@ -231,6 +233,23 @@ def test_build_ghostscript_page_crop_command_emits_preserve_annots_flag(mode):
         preserve_annots=True,
     )
     assert "-dPreserveAnnots=true" in command
+
+
+@pytest.mark.parametrize("mode", ["frame", "crop"])
+def test_build_ghostscript_page_crop_command_emits_show_annots_flag(mode):
+    """Arrange/Act/Assert: ShowAnnots flag mirrors show_annots parameter."""
+    command = pdfframecmd.build_ghostscript_page_crop_command(
+        "input.pdf",
+        "page-1.pdf",
+        first_page=1,
+        last_page=1,
+        page_width=595,
+        page_height=842,
+        crop_box=(10, 20, 580, 830),
+        mode=mode,
+        show_annots=True,
+    )
+    assert "-dShowAnnots=true" in command
 
 
 def test_run_ghostscript_command_debug_output_prints_stream(monkeypatch, capsys):

@@ -70,6 +70,10 @@ class Ui_MainWindow(object):
         self.checkPreserveFields.setChecked(False)
         self.checkPreserveFields.setObjectName("checkPreserveFields")
         self.verticalLayout_8.addWidget(self.checkPreserveFields)
+        self.checkShowAnnotsFields = QtWidgets.QCheckBox(parent=self.groupPDFOperations)
+        self.checkShowAnnotsFields.setChecked(False)
+        self.checkShowAnnotsFields.setObjectName("checkShowAnnotsFields")
+        self.verticalLayout_8.addWidget(self.checkShowAnnotsFields)
         self.verticalLayout_4.addWidget(self.groupPDFOperations)
         self.groupWhichPages = QtWidgets.QGroupBox(parent=self.tabBasic)
         self.groupWhichPages.setObjectName("groupWhichPages")
@@ -395,7 +399,9 @@ class Ui_MainWindow(object):
         self.buttonFileSelect.setToolTip(_translate("MainWindow", "<p>This is where the cropped PDF will be saved after you choose <i>Go!</i> in the menu.</p>"))
         self.groupPDFOperations.setTitle(_translate("MainWindow", "Extra operations on the final PDF"))
         self.checkPreserveFields.setToolTip(_translate("MainWindow", "<p>Enable Ghostscript annotation preservation flag <i>-dPreserveAnnots</i> while generating the output PDF.</p>"))
-        self.checkPreserveFields.setText(_translate("MainWindow", "Preserve fields"))
+        self.checkPreserveFields.setText(_translate("MainWindow", "Preserve annotations fields"))
+        self.checkShowAnnotsFields.setToolTip(_translate("MainWindow", "<p>Enable Ghostscript annotation visibility flag <i>-dShowAnnots</i> while generating the output PDF.</p>"))
+        self.checkShowAnnotsFields.setText(_translate("MainWindow", "Show annotations fields"))
         self.groupWhichPages.setTitle(_translate("MainWindow", "Which pages to include"))
         self.editWhichPages.setToolTip(_translate("MainWindow", "<p>Which pages to include in the output file.</p><p><i>Eg:</i> 1-5 for the first 5 pages\n"
 "<br><i>Eg:</i> 2- for all but the first page\n"

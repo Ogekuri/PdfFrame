@@ -144,7 +144,7 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-029**: MUST persist the full `presets` array to `~/.pdfframe/config.json` after preset add, rename, update, or delete operations.
 - **REQ-030**: MUST label the trim threshold field as `Grayscale sensitivity` and provide tooltip/help text that defines it as tolerated grayscale transitions used by margin auto-trimming.
 - **REQ-031**: MUST expose `Trim pages range` and an immediate `Pages range:` field below it, where the field defaults to `1-1`, is enabled only when the toggle is enabled, and is separated from `Padding:` by a horizontal line.
-- **REQ-032**: MUST expose unchecked-by-default `Preserve fields` in `Extra operations on the final PDF` before existing controls and pass `-dPreserveAnnots=true/false` in Ghostscript commands for both `frame` and `crop`.
+- **REQ-032**: MUST expose unchecked-by-default `Preserve annotations fields` in `Extra operations on the final PDF`, expose unchecked-by-default `Show annotations fields` directly below it, and pass `-dPreserveAnnots=true/false` plus `-dShowAnnots=true/false` in Ghostscript commands for both `frame` and `crop`.
 - **REQ-033**: MUST update Help-tab and UI explanatory text to reflect active Basic-tab controls and MUST NOT reference `Rotation`, `Use Ghostscript to optimize`, or `Include pages without selections`.
 - **REQ-034**: MUST render the trim/selection area without centered ordinal labels (for example `1`, `2`, `3`).
 
@@ -162,7 +162,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-008**: MUST include unit tests that validate preset list CRUD interactions (save/apply/rename/delete), dedicated Basic-tab `Presets` group placement after `Trim settings`, preset-name stretch-to-delete-button row layout, toolbar order `Save Margins` then `Go!` at the right edge, dedicated icon binding for `Trim Margins`/`Save Margins`/`Go!`, and persistence of the `presets` array in `~/.pdfframe/config.json`.
 - **TST-009**: MUST include unit tests that validate `Grayscale sensitivity` nomenclature across trim UI labels/tooltips/help text and runtime persistence keys used by trim settings and presets.
 - **TST-010**: MUST include unit tests that validate `Trim pages range` / `Pages range:` enablement-default UI behavior, required `N-M` validation, and trim execution limited to the configured visible-page range.
-- **TST-011**: MUST include unit tests that validate `Preserve fields` default/UI placement and `-dPreserveAnnots=true/false` command emission in both `frame` and `crop` modes.
+- **TST-011**: MUST include unit tests that validate `Preserve annotations fields` and `Show annotations fields` default/UI placement and Ghostscript `-dPreserveAnnots=true/false` plus `-dShowAnnots=true/false` command emission in both `frame` and `crop` modes.
 - **TST-012**: MUST include unit tests that validate removal of `Rotation`, `Use Ghostscript to optimize`, and `Include pages without selections` from Basic-tab conversion UI and removal of related runtime-option logic paths.
 - **TST-013**: MUST include unit tests that validate single-selection enforcement across creation paths and absence of centered selection-index rendering.
 
@@ -224,7 +224,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-029 | `src/pdfframe/mainwindow.py::_persistTrimPresetDocument` plus calls in `slotSaveMarginsPreset`, `slotTrimPresetChanged`, `slotDeleteTrimPreset`, and `writeSettings` persist updated `presets` arrays to JSON config. |
 | REQ-030 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindowui_qt5.py`, and `src/pdfframe/mainwindowui_qt6.py` label trim threshold as `Grayscale sensitivity` and define tooltip/help semantics for tolerated grayscale transitions. |
 | REQ-031 | `src/pdfframe/mainwindow.py::_setupTrimSettingsControls/readSettings/writeSettings` and `src/pdfframe/mainwindow.ui` expose `Trim pages range` and `Pages range:` with default `1-1`, toggle-gated enablement, and separator placement before `Padding:`. |
-| REQ-032 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindow.py::readSettings/buildGhostscriptCropPlan`, and `src/pdfframe/pdfframecmd.py::build_ghostscript_page_crop_command` add `Preserve fields` UI and emit `-dPreserveAnnots=true/false` for `frame` and `crop`. |
+| REQ-032 | `src/pdfframe/mainwindow.ui`, `src/pdfframe/mainwindow.py::readSettings/buildGhostscriptCropPlan`, and `src/pdfframe/pdfframecmd.py::build_ghostscript_page_crop_command` add `Preserve annotations fields` plus `Show annotations fields` UI and emit `-dPreserveAnnots=true/false` plus `-dShowAnnots=true/false` for `frame` and `crop`. |
 | REQ-033 | `src/pdfframe/mainwindow.ui` and `src/pdfframe/mainwindow.py` remove obsolete Basic-tab parameter labels/tooltips; `Help` text references only active conversion controls. |
 | REQ-034 | `src/pdfframe/viewerselections.py::ViewerSelectionItem.paint` omits centered ordinal text rendering inside the selection area. |
 | TST-001 | `tests.sh` — creates `.venv` when missing and installs `requirements.txt` before invoking pytest. |
@@ -237,7 +237,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-008 | `tests/test_mainwindow_presets.py` validates preset CRUD, dedicated `Presets` placement after trim settings, stretch-to-delete row layout, toolbar order `Save Margins` then `Go!` at right edge, dedicated icon binding and icon-asset presence for `Trim Margins`/`Save Margins`/`Go!`, and persistence trigger paths. |
 | TST-009 | `tests/test_mainwindow_trim_settings.py` and `tests/test_mainwindow_presets.py` validate `grayscale_sensitivity` runtime/preset keys; `tests/test_mainwindow_trim_nomenclature.py` validates renamed UI labels/tooltips/help semantics. |
 | TST-010 | `tests/test_mainwindow_trim_pages_range.py` validates `Trim pages range` UI defaults, `Pages range` validation, and range-bounded page selection in `trimMarginsSelection`. |
-| TST-011 | `tests/test_mainwindow_preserve_fields.py` and `tests/test_pdfframecmd.py` validate default unchecked placement and Ghostscript `-dPreserveAnnots=true/false` emission in both conversion modes. |
+| TST-011 | `tests/test_mainwindow_preserve_fields.py` and `tests/test_pdfframecmd.py` validate default unchecked placement for `Preserve annotations fields`/`Show annotations fields` and Ghostscript `-dPreserveAnnots=true/false` plus `-dShowAnnots=true/false` emission in both conversion modes. |
 | TST-012 | `tests/test_mainwindow_removed_basic_controls.py` validates removed Basic-tab controls are absent and removed runtime-option logic paths are not used during conversion. |
 | TST-013 | `tests/test_mainwindow_single_selection.py` validates single-selection creation guards and absence of centered selection-index rendering code paths. |
 
