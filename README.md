@@ -45,4 +45,4 @@ PdfFrame is a desktop tool to crop or frame PDF pages with Ghostscript, includin
 
 ## Acknowledgments
 
-- Thanks to Prof. Ogekuri for developing [Krop](https://arminstraub.com/software/krop).
+- Thanks to Prof. Armin Straub for developing [Krop](https://arminstraub.com/software/krop).
