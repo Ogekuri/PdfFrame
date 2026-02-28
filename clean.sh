@@ -10,6 +10,7 @@ CACHE_DIRS=(
     ".pytest_cache"     # Python (Pytest)
     ".mypy_cache"       # Python (MyPy)
     ".cache"            # Generic / Pip / Various tools
+    ".ruff_cache"       # Ruff Cache
     ".npm"              # Node (local npm cache)
     ".parcel-cache"     # Node (Parcel)
     ".eslintcache"      # Node (ESLint)
