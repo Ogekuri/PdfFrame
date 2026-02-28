@@ -1,12 +1,12 @@
 # -*- coding: iso-8859-1 -*-
+# ruff: noqa: F403, F405
+# pyright: reportMissingImports=false, reportUndefinedVariable=false, reportAttributeAccessIssue=false, reportIncompatibleMethodOverride=false, reportOperatorIssue=false, reportOptionalMemberAccess=false, reportOptionalSubscript=false
 
 """
-The main window of pdfframe
-
-Copyright (C) 2010-2025 Ogekuri
-"""
-
-"""
+@file mainwindow.py
+@brief Main Qt window and interactive workflow for pdfframe.
+@details Hosts viewer interactions, selection editing, settings persistence, and conversion orchestration.
+Copyright (C) 2010-2025 Ogekuri.
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or
@@ -779,7 +779,7 @@ class MainWindow(QMainWindow):
 
     def slotOpenFile(self):
         fileName = QFileDialog.getOpenFileName(self,
-             self.tr("Open PDF"), "", self.tr("PDF Files (*.pdf)"));
+             self.tr("Open PDF"), "", self.tr("PDF Files (*.pdf)"))
         fileName = fileName[0]
         self.openFile(fileName)
 
@@ -1193,7 +1193,7 @@ class MainWindow(QMainWindow):
                     rows = 1
             else:
                 rows = colsrows[1]
-        except:
+        except Exception:
             self.showWarning(self.tr("Bad value for grid parameter"), self.tr("For creating a grid "
                 "of selections, you need to specify the dimensions of the grid in the form '2x3'. "
                 "You can also enter a single number, in which case the number of columns/rows is "

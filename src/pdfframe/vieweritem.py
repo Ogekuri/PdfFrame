@@ -1,12 +1,12 @@
 # -*- coding: iso-8859-1 -*-
+# ruff: noqa: F403, F405
+# pyright: reportMissingImports=false, reportUndefinedVariable=false, reportAttributeAccessIssue=false, reportIncompatibleMethodOverride=false, reportOperatorIssue=false, reportOptionalMemberAccess=false, reportOptionalSubscript=false
 
 """
-Viewer for pdfframe used to display PDF files.
-
-Copyright (C) 2010-2025 Ogekuri
-"""
-
-"""
+@file vieweritem.py
+@brief Viewer backends and rendering abstractions for PDF page display.
+@details Implements Qt graphics-item viewer classes for Poppler and PyMuPDF rendering backends.
+Copyright (C) 2010-2025 Ogekuri.
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or
@@ -258,8 +258,6 @@ POPPLERQT = 1
 PYMUPDF = 2
 lib_render = 0
 
-from pdfframe.config import PYQT6
-
 # for PyQt6 use PyMuPDF
 if PYQT6:
     try:
@@ -272,7 +270,7 @@ if PYQT6:
         raise RuntimeError(_msg)
 else:
     # PyQt5 was requested
-    if not '--use-poppler' in sys.argv:
+    if '--use-poppler' not in sys.argv:
         try:
             import fitz
             lib_render = PYMUPDF

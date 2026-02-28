@@ -1,12 +1,11 @@
 # -*- coding: iso-8859-1 -*-
+# pyright: reportMissingImports=false, reportUndefinedVariable=false, reportAttributeAccessIssue=false, reportIncompatibleMethodOverride=false, reportOptionalMemberAccess=false, reportOptionalSubscript=false
 
 """
-Cropping functionality for pdfframe.
-
-Copyright (C) 2010-2025 Ogekuri
-"""
-
-"""
+@file pdfframeper.py
+@brief PDF backend adapters for loading and writing cropped documents.
+@details Provides wrapper classes over pypdf, PyPDF2, PyMuPDF, and pikepdf for unified crop operations.
+Copyright (C) 2010-2025 Ogekuri.
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or
@@ -41,7 +40,7 @@ class PyPdfFile(AbstractPdfFile):
             try:
                 if not self.reader.decrypt(''):
                     raise PdfEncryptedError
-            except:
+            except Exception:
                 raise PdfEncryptedError
     def getPage(self, nr):
         return self.reader.pages[nr]
@@ -55,7 +54,7 @@ class PyPdfOldFile(PyPdfFile):
             try:
                 if not self.reader.decrypt(''):
                     raise PdfEncryptedError
-            except:
+            except Exception:
                 raise PdfEncryptedError
     def getPage(self, nr):
         return self.reader.getPage(nr)
@@ -205,7 +204,7 @@ class PyMuPdfFrameper(SemiAbstractPdfFrameper):
             # careful: mediabox in MuPDF is an exception and uses PDF coordinates
             # page.set_mediabox(page.cropbox)
             page.set_trimbox(page.cropbox)
-        except:
+        except Exception:
             # these functions did not exist prior to v1.19.4
             pass
     def copyDocumentRoot(self, pdffile):
@@ -326,4 +325,3 @@ if not lib_crop:
             "\n\tsudo apt install python3-fitz"\
             "\n\tsudo apt-get install python3-pypdf2"
     raise RuntimeError(_msg)
-

@@ -1,17 +1,17 @@
+# pyright: reportMissingImports=false, reportUndefinedVariable=false, reportAttributeAccessIssue=false
+"""
+@file config.py
+@brief Runtime backend-selection flags for pdfframe.
+@details Detects which Qt binding is available and exposes the `PYQT6` switch consumed by UI modules.
+"""
+
+import importlib.util
 import sys
 
 PYQT6 = False
 
-try:
-    # use PyQt6 unless PyQt5 is specified
-    if '--use-qt5' not in sys.argv:
-        try:
-            from PyQt6 import QtCore
-            PYQT6 = True
-        except ImportError:
-            pass
-    if not PYQT6:
-        from PyQt5 import QtCore
-except ImportError:
+if '--use-qt5' not in sys.argv and importlib.util.find_spec("PyQt6") is not None:
+    PYQT6 = True
+elif importlib.util.find_spec("PyQt5") is None:
     _msg = "Please install PyQt6 (or PyQt5) first."
     raise RuntimeError(_msg)

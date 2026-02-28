@@ -1,18 +1,11 @@
 # -*- coding: iso-8859-1 -*-
+# pyright: reportMissingImports=false, reportUndefinedVariable=false, reportAttributeAccessIssue=false
 
 """
-pdfframe: A tool to crop PDF files
-
-You can use command line arguments in addition to (or, to a degree, instead of) the graphical interface.
-
-For instance, to run conversion with a predefined single selection area:
-    pdfframe --go --grid=1 file.pdf
-Omit the --go to further edit the selections in the graphical interface before cropping.
-
-Copyright (C) 2010-2025 Ogekuri
-"""
-
-"""
+@file application.py
+@brief CLI entrypoint for pdfframe GUI and one-shot conversion.
+@details Parses command-line arguments, applies startup options on MainWindow, and launches Qt event loop.
+Copyright (C) 2010-2025 Ogekuri.
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or

@@ -1,12 +1,12 @@
 # -*- coding: iso-8859-1 -*-
+# ruff: noqa: F403, F405
+# pyright: reportMissingImports=false, reportUndefinedVariable=false, reportAttributeAccessIssue=false
 
 """
-Code for auto trimming margins in pdfframe.
-
-Copyright (C) 2010-2020 ogekuri
-"""
-
-"""
+@file autotrim.py
+@brief Margin auto-trimming helpers for selection rectangles.
+@details Performs grayscale transition scanning to shrink candidate rectangles while preserving content bounds.
+Copyright (C) 2010-2020 ogekuri.
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or

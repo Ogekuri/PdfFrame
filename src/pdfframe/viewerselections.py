@@ -1,12 +1,12 @@
 # -*- coding: iso-8859-1 -*-
+# ruff: noqa: F403, F405
+# pyright: reportMissingImports=false, reportUndefinedVariable=false, reportAttributeAccessIssue=false, reportOptionalMemberAccess=false
 
 """
-User-created selections used in ViewerItem.
-
-Copyright (C) 2010-2020 ogekuri
-"""
-
-"""
+@file viewerselections.py
+@brief Interactive selection items and gestures used by viewer backends.
+@details Defines selection geometry, resize handles, and mouse-driven edit behavior in scene coordinates.
+Copyright (C) 2010-2020 ogekuri.
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or
@@ -548,6 +548,7 @@ class SelectionHandleItem(QGraphicsItem):
     def paint(self, painter, option, widget):
         rect = self.boundingRect()
         pt = rect.center()
+        pts = []
         if self.role==SelectionHandleItem.LeftHandle:
             pts = [QPointF(-self.ah,0), QPointF(self.ah,-self.aw),
                     QPointF(self.ah,self.aw)]
@@ -661,6 +662,6 @@ def aspectRatioFromStr(s):
             aspectRatio = a[0] / a[1]
         if aspectRatio <= 0:
             aspectRatio = None
-    except:
+    except Exception:
         aspectRatio = None
     return aspectRatio
