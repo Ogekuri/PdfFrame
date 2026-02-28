@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0](https://github.com/Ogekuri/PdfFrame/compare/v0.1.0..v0.2.0) - 2026-02-28
+### 🐛  Bug Fixes
+- Fix requirements.txt file.
+
 ## [0.1.0](https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0) - 2026-02-28
 ### ⛰️  Features
 - add Preserve fields Ghostscript flag [useReq] *(mainwindow)*
@@ -109,5 +113,7 @@
 # History
 
 - \[0.1.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
+- \[0.2.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.2.0
 
 [0.1.0]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
+[0.2.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.1.0..v0.2.0
