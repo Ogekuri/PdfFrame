@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0](https://github.com/Ogekuri/PdfFrame/compare/v0.3.0..v0.4.0) - 2026-02-28
+### 📚  Documentation
+- Update README.md doc.
+
 ## [0.3.0](https://github.com/Ogekuri/PdfFrame/compare/v0.2.0..v0.3.0) - 2026-02-28
 ### 🐛  Bug Fixes
 - Fix version number in tests.sh file.
@@ -128,7 +132,9 @@
 - \[0.1.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
 - \[0.2.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.2.0
 - \[0.3.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.3.0
+- \[0.4.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.4.0
 
 [0.1.0]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
 [0.2.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.1.0..v0.2.0
 [0.3.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.2.0..v0.3.0
+[0.4.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.3.0..v0.4.0
