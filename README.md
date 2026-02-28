@@ -30,6 +30,7 @@ PdfFrame is a desktop tool to crop or frame PDF pages with Ghostscript, includin
 ## Feature Highlights
 - Toolbar actions `Trim Margins`, `Save Margins`, and `Go!` use dedicated bundled icons for consistent appearance.
 - `Save Margins` is placed next to `Trim Margins`, and `Go!` is placed at the far right of the toolbar.
+- `Extra operations on the final PDF` includes `Preserve annotations fields` and `Show annotations fields`, both disabled by default.
 
 
 
@@ -38,7 +39,8 @@ PdfFrame is a desktop tool to crop or frame PDF pages with Ghostscript, includin
 1. Open a PDF file.
 2. Use `Trim Margins` to auto-trim the current page/selected range.
 3. Use `Save Margins` to store the current crop/frame setup as a preset.
-4. Click `Go!` to generate the output PDF.
+4. (Optional) In `Extra operations on the final PDF`, enable `Preserve annotations fields` and/or `Show annotations fields`.
+5. Click `Go!` to generate the output PDF.
 
 
 ## Acknowledgments
