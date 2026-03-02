@@ -33,7 +33,7 @@ def main():
 
     parser.add_argument('--initialpage', help='which page to open initially (default: 1)')
     parser.add_argument('--verbose', action='store_true', help='enable verbose console output from the Python program')
-    parser.add_argument('--debug', action='store_true', help='enable debug output for Ghostscript command execution (effective with --verbose)')
+    parser.add_argument('--debug', action='store_true', help='enable debug output for PyMuPDF crop operations (effective with --verbose)')
 
     parser.add_argument('--go', action='store_true', help='output PDF without opening the pdfframe GUI (using the choices supplied on the command line); if used in a script without X server access, you can run pdfframe using xvfb-run')
 

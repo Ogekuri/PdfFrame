@@ -18,7 +18,6 @@ import re
 from datetime import datetime
 from pathlib import Path
 from os.path import splitext
-from shutil import which
 
 from pdfframe.qt import *
 from pdfframe.config import PYQT6
@@ -32,12 +31,10 @@ else:
 from pdfframe.viewerselections import ViewerSelections, aspectRatioFromStr
 from pdfframe.vieweritem import ViewerItem
 from pdfframe.pdfframecmd import (
-    GhostscriptCommandCancelledError,
-    GhostscriptCommandError,
-    build_ghostscript_page_crop_command,
-    extract_ghostscript_page_numbers,
+    CropCancelledError,
+    CropError,
+    crop_pdf_pages,
     normalized_crop_tuple_to_bbox,
-    run_ghostscript_command,
 )
 from pdfframe.autotrim import autoTrimMargins
 
@@ -420,8 +417,7 @@ class MainWindow(QMainWindow):
         @return {dict[str,object]} Persistable runtime config key/value mapping.
         """
         return {
-            "PDF/PreserveFields": MainWindow._preserveFieldsEnabled(self),
-            "PDF/ShowAnnots": MainWindow._showAnnotsEnabled(self),
+            "PDF/DeleteAnnots": MainWindow._deleteAnnotsEnabled(self),
             "PDF/Mode": self.selectedConversionMode(),
             "Trim/Padding": self.ui.editPadding.text(),
             "Trim/GrayscaleSensitivity": self.ui.editGrayscaleSensitivity.text(),
@@ -430,29 +426,16 @@ class MainWindow(QMainWindow):
             "Trim/PagesRange": self.ui.editTrimPagesRange.text(),
         }
 
-    def _preserveFieldsEnabled(self):
+    def _deleteAnnotsEnabled(self):
         """
-        @brief Returns Preserve annotations fields option state.
-        @details Reads `checkPreserveFields` when available and normalizes truthy values for compatibility with test stubs.
-        @return {bool} True when `-dPreserveAnnots=true` must be emitted.
+        @brief Returns Delete annotations fields option state.
+        @details Reads `checkDeleteAnnotsFields` when available and normalizes
+        truthy values for compatibility with test stubs.
+        @return {bool} True when annotations must be deleted from output PDF.
         """
-        checkbox = getattr(getattr(self, "ui", None), "checkPreserveFields", None)
+        checkbox = getattr(getattr(self, "ui", None), "checkDeleteAnnotsFields", None)
         if checkbox is None or not hasattr(checkbox, "isChecked"):
-            return False
-        value = checkbox.isChecked()
-        if isinstance(value, bool):
-            return value
-        return str(value).strip().lower() in ("1", "true", "yes", "on")
-
-    def _showAnnotsEnabled(self):
-        """
-        @brief Returns Show annotations fields option state.
-        @details Reads `checkShowAnnotsFields` when available and normalizes truthy values for compatibility with test stubs.
-        @return {bool} True when `-dShowAnnots=true` must be emitted.
-        """
-        checkbox = getattr(getattr(self, "ui", None), "checkShowAnnotsFields", None)
-        if checkbox is None or not hasattr(checkbox, "isChecked"):
-            return False
+            return True
         value = checkbox.isChecked()
         if isinstance(value, bool):
             return value
@@ -664,8 +647,8 @@ class MainWindow(QMainWindow):
 
     def selectedConversionMode(self):
         """
-        @brief Returns selected conversion mode for Ghostscript execution.
-        @details Maps GUI mode controls to backend mode tokens expected by command generation.
+        @brief Returns selected conversion mode for PDF crop execution.
+        @details Maps GUI mode controls to backend mode tokens expected by crop processing.
         @return {str} Conversion mode token (`frame` or `crop`).
         """
         return "crop" if self.radioModeCrop.isChecked() else "frame"
@@ -726,11 +709,8 @@ class MainWindow(QMainWindow):
         else:
             self.trimPresets = []
 
-        self.ui.checkPreserveFields.setChecked(
-            self._toBool(config_values.get("PDF/PreserveFields", False))
-        )
-        self.ui.checkShowAnnotsFields.setChecked(
-            self._toBool(config_values.get("PDF/ShowAnnots", False))
+        self.ui.checkDeleteAnnotsFields.setChecked(
+            self._toBool(config_values.get("PDF/DeleteAnnots", True))
         )
         mode = settings.value("PDF/Mode", "frame")
         mode = str(config_values.get("PDF/Mode", mode) or mode)
@@ -760,10 +740,8 @@ class MainWindow(QMainWindow):
         settings.setValue("Window/Splitter", self.ui.splitter.saveState())
         settings.setValue("Window/FitInView", "true" if
                 self.ui.actionFitInView.isChecked() else "false")
-        settings.setValue("PDF/PreserveFields", "true" if
-                self.ui.checkPreserveFields.isChecked() else "false")
-        settings.setValue("PDF/ShowAnnots", "true" if
-                self.ui.checkShowAnnotsFields.isChecked() else "false")
+        settings.setValue("PDF/DeleteAnnots", "true" if
+                self.ui.checkDeleteAnnotsFields.isChecked() else "false")
         settings.setValue("PDF/Mode", self.selectedConversionMode())
         settings.setValue("Trim/Padding", self.ui.editPadding.text())
         settings.setValue("Trim/GrayscaleSensitivity", self.ui.editGrayscaleSensitivity.text())
@@ -886,14 +864,19 @@ class MainWindow(QMainWindow):
                 return crop_values[0]
         return None
 
-    def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None):
+    def buildCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None):
         """
-        @brief Builds single Ghostscript crop plan from GUI-derived parameters.
-        @details Iterates only requested pages (or all pages when omitted), derives geometry from the primary GUI selection tuple, computes crop bbox from page-size metadata, and emits one Ghostscript command for the full selected range using `-dFirstPage/-dLastPage` plus preserve/show annotation flag states.
+        @brief Builds PyMuPDF crop plan from GUI-derived parameters.
+        @details Iterates only requested pages (or all pages when omitted),
+        derives geometry from the primary GUI selection tuple, computes crop
+        bbox from page-size metadata, and returns a plan dict with crop
+        parameters for PyMuPDF page processing.
         @param inputFileName {str} Source PDF path.
         @param outputFileName {str} Destination cropped PDF path.
-        @param requestedPageIndexes {set[int]|None} Optional zero-based page-index filter derived from `--whichpages`.
-        @return {dict[str,object]|None} Crop plan containing selected page indexes and one Ghostscript command vector.
+        @param requestedPageIndexes {set[int]|None} Optional zero-based
+        page-index filter derived from `--whichpages`.
+        @return {dict[str,object]|None} Crop plan containing page indexes,
+        crop box, page dimensions, mode, and delete_annots flag.
         """
         if requestedPageIndexes is None:
             page_indexes = list(range(self.viewer.numPages()))
@@ -905,23 +888,18 @@ class MainWindow(QMainWindow):
         if primary_crop_value is None:
             return None
         conversion_mode = self.selectedConversionMode()
-        first_page = page_indexes[0] + 1
-        last_page = page_indexes[-1] + 1
         width, height = self.viewer.pageGetSizePoints(page_indexes[0])
         crop_box = normalized_crop_tuple_to_bbox(primary_crop_value, width, height)
-        command = build_ghostscript_page_crop_command(
-            inputFileName,
-            outputFileName,
-            first_page=first_page,
-            last_page=last_page,
-            page_width=width,
-            page_height=height,
-            crop_box=crop_box,
-            mode=conversion_mode,
-            preserve_annots=MainWindow._preserveFieldsEnabled(self),
-            show_annots=MainWindow._showAnnotsEnabled(self),
-        )
-        return {"page_indexes": page_indexes, "command": command}
+        return {
+            "page_indexes": page_indexes,
+            "crop_box": crop_box,
+            "page_width": width,
+            "page_height": height,
+            "mode": conversion_mode,
+            "delete_annots": MainWindow._deleteAnnotsEnabled(self),
+            "input_path": inputFileName,
+            "output_path": outputFileName,
+        }
 
     def createConversionProgressDialog(self, totalPages):
         """
@@ -948,17 +926,13 @@ class MainWindow(QMainWindow):
 
     def slotPdfFrame(self):
         """
-        @brief Executes PDF crop action using Ghostscript command backend.
-        @details Verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
+        @brief Executes PDF crop action using PyMuPDF crop backend.
+        @details Builds a crop plan from GUI state and processes pages
+        iteratively through PyMuPDF fitz API with per-page progress callback.
         @return {None} Triggers output PDF generation side effect.
         """
         inputFileName = self.fileName
         outputFileName = self.ui.editFile.text()
-        if not which('gs'):
-            self.showWarning(self.tr("Missing Ghostscript executable"),
-                    self.tr("Could not find `gs` on PATH. "
-                        "Please install Ghostscript and retry."))
-            return
 
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         progress_dialog = None
@@ -980,7 +954,7 @@ class MainWindow(QMainWindow):
                             self.tr("The selected --whichpages range does not match any page in the current document."))
                     return
 
-            plan = self.buildGhostscriptCropPlan(
+            plan = self.buildCropPlan(
                 inputFileName,
                 outputFileName,
                 requestedPageIndexes=requested_page_indexes)
@@ -990,69 +964,52 @@ class MainWindow(QMainWindow):
                 return
 
             total_pages = len(plan["page_indexes"])
-            selected_page_numbers = [page_index + 1 for page_index in plan["page_indexes"]]
-            selected_page_number_set = set(selected_page_numbers)
-            relative_to_selected_page = {
-                offset + 1: page_number for offset, page_number in enumerate(selected_page_numbers)
-            }
             progress_dialog = self.createConversionProgressDialog(total_pages)
-            processed_pages = set()
             if self.verbose:
                 sys.stderr.write(self.tr("Starting conversion for {0} selected pages.\n").format(total_pages))
 
-            def mark_page_processed(page_number):
+            def on_page_progress(original_page_number, processed_count, total):
                 """
-                @brief Marks one selected page as processed for progress updates.
-                @details Updates dialog value and label only once per page number to keep deterministic monotonic progress during streamed subprocess output handling.
-                @param page_number {int} One-based page number reported by Ghostscript.
+                @brief Per-page progress callback for PyMuPDF crop processing.
+                @details Updates dialog value and label for each processed page.
+                @param original_page_number {int} One-based original page number.
+                @param processed_count {int} Number of pages processed so far.
+                @param total {int} Total pages to process.
                 @return {None} Applies progress side effects.
                 """
-                if page_number in processed_pages:
-                    return
-                processed_pages.add(page_number)
-                processed_count = min(len(processed_pages), total_pages)
                 progress_dialog.setValue(processed_count)
                 progress_dialog.setLabelText(self.tr(
                     "Converting selected page {0} of {1}...").format(
-                        processed_count, total_pages))
+                        processed_count, total))
                 if self.verbose:
                     sys.stderr.write(self.tr("Processed page {0} ({1}/{2}).\n").format(
-                        page_number, processed_count, total_pages))
-
-            def on_output_line(line):
-                """
-                @brief Processes streamed Ghostscript output lines during conversion.
-                @details Uses parsed Ghostscript page numbers from captured output to advance conversion progress without forwarding captured command output to user-visible UI messages.
-                @param line {str} Single output line emitted by Ghostscript.
-                @return {None} Applies progress side effects.
-                """
-                for page_number in extract_ghostscript_page_numbers(line):
-                    if page_number in selected_page_number_set:
-                        mark_page_processed(page_number)
-                        continue
-                    mapped_page_number = relative_to_selected_page.get(page_number)
-                    if mapped_page_number is not None:
-                        mark_page_processed(mapped_page_number)
+                        original_page_number, processed_count, total))
 
             progress_dialog.show()
-            run_ghostscript_command(
-                plan["command"],
-                event_pump=QApplication.processEvents,
-                output_callback=on_output_line,
+            crop_pdf_pages(
+                input_path=plan["input_path"],
+                output_path=plan["output_path"],
+                page_indexes=plan["page_indexes"],
+                crop_box=plan["crop_box"],
+                page_width=plan["page_width"],
+                page_height=plan["page_height"],
+                mode=plan["mode"],
+                delete_annots=plan["delete_annots"],
+                progress_callback=on_page_progress,
                 cancel_requested=progress_dialog.wasCanceled,
-                log_command=self.verbose and self.debug,
+                event_pump=QApplication.processEvents,
+                log_params=self.verbose and self.debug,
                 debug_output=self.verbose and self.debug,
             )
             progress_dialog.setValue(progress_dialog.maximum())
             if self.verbose:
                 sys.stderr.write(self.tr("Conversion completed.\n"))
-        except GhostscriptCommandCancelledError:
+        except CropCancelledError:
             self.showWarning(self.tr("Conversion interrupted"),
                     self.tr("The PDF conversion was stopped by user request."))
-        except GhostscriptCommandError as err:
-            command = " ".join(err.command)
-            self.showWarning(self.tr("Could not crop PDF using Ghostscript"),
-                    self.tr("Command failed:\n{0}").format(command))
+        except CropError as err:
+            self.showWarning(self.tr("Could not crop PDF"),
+                    self.tr("PDF crop failed:\n{0}").format(err.message))
         except IOError as err:
             self.showWarning(self.tr("Could not write cropped PDF"),
                     self.tr("An error occured while writing the cropped PDF. "

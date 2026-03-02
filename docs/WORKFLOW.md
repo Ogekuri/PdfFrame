@@ -14,13 +14,6 @@
     - `src/pdfframe/viewerselections.py`
     - `src/pdfframe/jsonconfig.py`
     - `src/pdfframe/autotrim.py`
-- ID: `THR:PROC:main#ghostscript-output-reader`
-  - type: `thread`
-  - parent_process: `PROC:main`
-  - role: `Daemon reader thread that streams Ghostscript stdout lines into a synchronized queue`
-  - entrypoint_symbols: `pdfframe.pdfframecmd.run_ghostscript_command.reader`
-  - defining_files:
-    - `src/pdfframe/pdfframecmd.py`
 - ID: `PROC:gha-check-branch`
   - type: `process`
   - parent_process: `-`
@@ -47,7 +40,8 @@
   - Starts when `pdfframe` entrypoint is invoked.
   - Initializes `QApplication`, constructs `MainWindow`, applies CLI-derived startup state, then blocks in `app.exec()`.
   - In `--go` mode, schedules `window.slotPdfFrame` and `window.close` through `QTimer.singleShot(0, ...)`.
-  - During conversion, creates thread `THR:PROC:main#ghostscript-output-reader` inside `run_ghostscript_command(...)` when stream mode is active.
+  - During conversion, iterates pages synchronously through PyMuPDF `fitz` API inside `crop_pdf_pages(...)`, pumping Qt events between pages via `event_pump` callback.
+  - No explicit threads detected (single-threaded synchronous crop processing).
   - Stops when Qt event loop exits.
 - Internal Call-Trace Tree:
   - `main(...)`: parse CLI options, configure runtime flags, construct UI, dispatch startup actions, and enter Qt loop [`src/pdfframe/application.py`]
@@ -66,9 +60,9 @@
         - `PopplerViewerItem.doLoad(...)`: open document through Poppler backend [`src/pdfframe/vieweritem.py`]
       - `MainWindow._hasCompatiblePageFormat(...)`: compare page-1 dimensions/orientation with all later pages [`src/pdfframe/mainwindow.py`]
       - `MainWindow.showWarning(...)`: display modal incompatibility warning before clearing loaded state [`src/pdfframe/mainwindow.py`]
-    - `MainWindow.slotPdfFrame(...)`: build conversion plan, open progress dialog, execute Ghostscript, and handle error/cancel paths [`src/pdfframe/mainwindow.py`]
+    - `MainWindow.slotPdfFrame(...)`: build crop plan, open progress dialog, execute PyMuPDF crop, and handle error/cancel paths [`src/pdfframe/mainwindow.py`]
       - `MainWindow.str2pages(...)`: parse single-range `--whichpages` formats [`src/pdfframe/mainwindow.py`]
-      - `MainWindow.buildGhostscriptCropPlan(...)`: derive one Ghostscript command for selected range and propagate Preserve/Show annotations field toggles [`src/pdfframe/mainwindow.py`]
+      - `MainWindow.buildCropPlan(...)`: derive crop parameters for selected range and propagate Delete annotations field toggle [`src/pdfframe/mainwindow.py`]
         - `MainWindow.primarySelectionCropValue(...)`: resolve primary normalized crop tuple [`src/pdfframe/mainwindow.py`]
           - `AbstractViewerItem.cropValues(...)`: fetch normalized crop tuples for page index [`src/pdfframe/vieweritem.py`]
             - `ViewerSelections.cropValues(...)`: aggregate single-selection crop tuples [`src/pdfframe/viewerselections.py`]
@@ -76,35 +70,17 @@
         - `MainWindow.selectedConversionMode(...)`: map UI state to `frame|crop` token [`src/pdfframe/mainwindow.py`]
         - `AbstractViewerItem.pageGetSizePoints(...)`: return source page dimensions in points [`src/pdfframe/vieweritem.py`]
         - `normalized_crop_tuple_to_bbox(...)`: convert normalized tuple to PDF bbox points [`src/pdfframe/pdfframecmd.py`]
-        - `build_ghostscript_page_crop_command(...)`: build Ghostscript argument vector including `-dPreserveAnnots` and `-dShowAnnots` flags [`src/pdfframe/pdfframecmd.py`]
       - `MainWindow.createConversionProgressDialog(...)`: construct modal progress UI with cancellation [`src/pdfframe/mainwindow.py`]
-      - `run_ghostscript_command(...)`: execute Ghostscript with streamed output, cancellation polling, and callback dispatch [`src/pdfframe/pdfframecmd.py`]
-        - `format_shell_command(...)`: render deterministic shell-escaped command line [`src/pdfframe/pdfframecmd.py`]
-        - `extract_ghostscript_page_numbers(...)`: parse `Page <N>` tokens from streamed lines [`src/pdfframe/pdfframecmd.py`]
+      - `crop_pdf_pages(...)`: iterate pages through PyMuPDF fitz API, apply CropBox/MediaBox, delete annotations, report per-page progress via callback [`src/pdfframe/pdfframecmd.py`]
     - `MainWindow.slotTrimMarginsAll(...)`: auto-trim current selection [`src/pdfframe/mainwindow.py`]
       - `MainWindow.trimMarginsSelection(...)`: compute trim rectangle using thresholds/range/padding [`src/pdfframe/mainwindow.py`]
         - `autoTrimMargins(...)`: detect content bounds from image data [`src/pdfframe/autotrim.py`]
 - External Boundaries:
   - Qt framework event loop, widgets, and signal/slot runtime (`PyQt6`/`PyQt5`).
-  - Ghostscript subprocess execution boundary (`gs`).
+  - PyMuPDF `fitz` API for page manipulation, annotation deletion, and PDF save.
   - OS filesystem I/O for input PDFs, output PDFs, and user config path (`~/.pdfframe/config.json`).
   - Rendering backends (`fitz`, `popplerqt5`) for page rasterization/geometry.
   - OS signal handling (`signal.SIGINT`).
-
-### THR:PROC:main#ghostscript-output-reader
-
-- Entrypoint(s):
-  - local function `reader(...)` created and used inside `run_ghostscript_command(...)` [`src/pdfframe/pdfframecmd.py`]
-- Lifecycle/trigger:
-  - Spawned by `threading.Thread(target=reader, daemon=True)` in `run_ghostscript_command(...)` when stream mode is enabled.
-  - Loops reading Ghostscript stdout line-by-line until EOF.
-  - Exits when stream is exhausted and closed; joined by parent process with timeout.
-- Internal Call-Trace Tree:
-  - `reader(...)`: consume process stdout and enqueue lines for main-thread processing [`src/pdfframe/pdfframecmd.py`]
-    - `output_queue.put(...)`: push each stdout line into synchronized queue [`src/pdfframe/pdfframecmd.py`]
-- External Boundaries:
-  - Subprocess stdout pipe read boundary (`process.stdout.readline`).
-  - CPython threading scheduler/runtime.
 
 ### PROC:gha-check-branch
 
@@ -163,22 +139,11 @@
 
 - ID: `EDGE-003`
   - source: `PROC:main`
-  - destination: `THR:PROC:main#ghostscript-output-reader`
-  - direction: `PROC:main -> THR:PROC:main#ghostscript-output-reader`
-  - mechanism: `thread spawn via threading.Thread`
-  - endpoint_channel: `thread target=reader; shared output_queue instance`
-  - payload_data_shape: `shared object references {process, output_queue}`
-  - evidence:
-    - `src/pdfframe/pdfframecmd.py`: `reader_thread = threading.Thread(target=reader, daemon=True)`
-    - `src/pdfframe/pdfframecmd.py`: `reader_thread.start()`
-
-- ID: `EDGE-004`
-  - source: `THR:PROC:main#ghostscript-output-reader`
   - destination: `PROC:main`
-  - direction: `THR:PROC:main#ghostscript-output-reader -> PROC:main`
-  - mechanism: `thread-safe queue handoff`
-  - endpoint_channel: `output_queue`
-  - payload_data_shape: `stdout line chunks as str`
+  - direction: `MainWindow.slotPdfFrame -> crop_pdf_pages (intra-process synchronous call)`
+  - mechanism: `direct function call with callback-based progress`
+  - endpoint_channel: `progress_callback(page_number, processed_count, total)`, `cancel_requested()`, `event_pump()`
+  - payload_data_shape: `callback signatures: Callable[[int, int, int], None], Callable[[], bool], Callable[[], None]`
   - evidence:
-    - `src/pdfframe/pdfframecmd.py`: `output_queue.put(line)` in `reader(...)`
-    - `src/pdfframe/pdfframecmd.py`: main loop drains with `output_queue.get_nowait()`
+    - `src/pdfframe/mainwindow.py`: `crop_pdf_pages(...)` called with progress_callback, cancel_requested, event_pump lambdas
+    - `src/pdfframe/pdfframecmd.py`: `crop_pdf_pages(...)` invokes `progress_callback(...)` per page, checks `cancel_requested()`, calls `event_pump()`

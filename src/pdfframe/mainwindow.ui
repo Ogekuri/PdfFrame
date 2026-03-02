@@ -74,28 +74,15 @@
            </property>
             <layout class="QVBoxLayout" name="verticalLayout_8">
              <item>
-              <widget class="QCheckBox" name="checkPreserveFields">
+              <widget class="QCheckBox" name="checkDeleteAnnotsFields">
                 <property name="toolTip">
-                 <string>&lt;p&gt;Enable Ghostscript annotation preservation flag &lt;i&gt;-dPreserveAnnots&lt;/i&gt; while generating the output PDF.&lt;/p&gt;</string>
+                 <string>&lt;p&gt;Delete all annotation entries from every page in the output PDF using native PyMuPDF API.&lt;/p&gt;</string>
                 </property>
                 <property name="text">
-                 <string>Preserve annotations fields</string>
+                 <string>Delete annotations fields</string>
                 </property>
                 <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="checkShowAnnotsFields">
-                <property name="toolTip">
-                 <string>&lt;p&gt;Enable Ghostscript annotation visibility flag &lt;i&gt;-dShowAnnots&lt;/i&gt; while generating the output PDF.&lt;/p&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Show annotations fields</string>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

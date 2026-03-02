@@ -1,4 +1,4 @@
-"""Unit tests for --whichpages support in Ghostscript crop flow."""
+"""Unit tests for --whichpages support in PyMuPDF crop flow."""
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -7,6 +7,16 @@ import xml.etree.ElementTree as ET
 import pytest
 
 from pdfframe.mainwindow import MainWindow
+
+
+class _FakeCheckBox:
+    """Checkbox stub returning configured checked state."""
+
+    def __init__(self, checked):
+        self._checked = checked
+
+    def isChecked(self):
+        return self._checked
 
 
 class _FakeViewer:
@@ -45,59 +55,59 @@ class _LargePageViewer:
         return 1000.0, 2000.0
 
 
-def test_build_ghostscript_crop_plan_filters_requested_pages():
-    """Arrange/Act/Assert: single plan keeps requested first/last page bounds."""
+def test_build_crop_plan_filters_requested_pages():
+    """Arrange/Act/Assert: plan keeps only requested page indexes."""
     fake = SimpleNamespace(
         viewer=_FakeViewer(),
         selectedConversionMode=lambda: "frame",
         primarySelectionCropValue=lambda page_indexes: (0.10, 0.10, 0.10, 0.10),
+        ui=SimpleNamespace(checkDeleteAnnotsFields=_FakeCheckBox(True)),
     )
-    plan = MainWindow.buildGhostscriptCropPlan(
+    plan = MainWindow.buildCropPlan(
         fake,
         "input.pdf",
         "out.pdf",
         requestedPageIndexes={1},
     )
     assert plan["page_indexes"] == [1]
-    assert "-dFirstPage=2" in plan["command"]
-    assert "-dLastPage=2" in plan["command"]
+    assert plan["crop_box"] is not None
+    assert plan["mode"] == "frame"
 
 
-def test_build_ghostscript_crop_plan_supports_five_digit_page_indexes():
+def test_build_crop_plan_supports_five_digit_page_indexes():
     """Arrange/Act/Assert: requested page ranges can include five-digit indexes."""
     fake = SimpleNamespace(
         viewer=_LargePageViewer(),
         selectedConversionMode=lambda: "frame",
         primarySelectionCropValue=lambda page_indexes: (0.10, 0.10, 0.10, 0.10),
+        ui=SimpleNamespace(checkDeleteAnnotsFields=_FakeCheckBox(True)),
     )
-    plan = MainWindow.buildGhostscriptCropPlan(
+    plan = MainWindow.buildCropPlan(
         fake,
         "input.pdf",
         "out.pdf",
         requestedPageIndexes={13999},
     )
     assert plan["page_indexes"] == [13999]
-    assert "-dFirstPage=14000" in plan["command"]
-    assert "-dLastPage=14000" in plan["command"]
 
 
-def test_build_ghostscript_crop_plan_uses_single_command_for_selected_range():
-    """Arrange/Act/Assert: one command covers full selected range using primary selection."""
+def test_build_crop_plan_uses_primary_selection_for_range():
+    """Arrange/Act/Assert: plan uses primary selection crop value for all pages."""
     fake = SimpleNamespace(
         viewer=_FakeViewer(),
         selectedConversionMode=lambda: "crop",
         primarySelectionCropValue=lambda page_indexes: (0.10, 0.10, 0.10, 0.10),
+        ui=SimpleNamespace(checkDeleteAnnotsFields=_FakeCheckBox(True)),
     )
-    plan = MainWindow.buildGhostscriptCropPlan(
+    plan = MainWindow.buildCropPlan(
         fake,
         "input.pdf",
         "out.pdf",
         requestedPageIndexes={0, 1},
     )
     assert plan["page_indexes"] == [0, 1]
-    assert "-dFirstPage=1" in plan["command"]
-    assert "-dLastPage=2" in plan["command"]
-    assert "<</BeginPage{0 0 800 1600 rectclip -100 -200 translate}>> setpagedevice" in plan["command"]
+    assert plan["mode"] == "crop"
+    assert plan["crop_box"] is not None
 
 
 def test_str2pages_accepts_supported_single_range_forms():

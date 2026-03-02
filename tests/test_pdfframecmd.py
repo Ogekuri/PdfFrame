@@ -1,9 +1,10 @@
-"""Unit tests for Ghostscript command integration helpers."""
+"""Unit tests for PyMuPDF crop/frame backend helpers."""
 
 from pathlib import Path
 import sys
 from types import SimpleNamespace
 
+import fitz
 import pytest
 
 from pdfframe import pdfframecmd
@@ -58,90 +59,263 @@ def test_apply_crop_offsets_to_bbox_clamps_to_page_bounds():
     assert result == (0.0, 0.0, 1000.0, 1000.0)
 
 
-def test_build_ghostscript_page_crop_command_builds_frame_mode_command():
-    """Arrange/Act/Assert: frame mode keeps original media and applies clipping."""
-    command = pdfframecmd.build_ghostscript_page_crop_command(
-        "input.pdf",
-        "page-1.pdf",
-        first_page=3,
-        last_page=3,
-        page_width=595,
-        page_height=842,
-        crop_box=(10, 20, 580, 830),
-        mode="frame",
+def _create_test_pdf(path, num_pages=3, width=612, height=792, with_annots=False,
+                     with_toc=False):
+    """Creates a test PDF with optional annotations and bookmarks."""
+    doc = fitz.open()
+    for i in range(num_pages):
+        page = doc.new_page(width=width, height=height)
+        if with_annots:
+            annot = page.add_text_annot((72, 72), f"Test annotation page {i+1}")
+            del annot
+    if with_toc:
+        toc = [[1, f"Chapter {i+1}", i+1] for i in range(num_pages)]
+        doc.set_toc(toc)
+    doc.save(str(path))
+    doc.close()
+
+
+def test_crop_pdf_pages_frame_mode_sets_cropbox(tmp_path):
+    """Arrange/Act/Assert: frame mode sets CropBox while preserving MediaBox."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=1, width=612, height=792)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(100, 200, 500, 700),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
     )
-    assert command == [
-        "gs",
-        "-dSAFER",
-        "-dNOPAUSE",
-        "-dBATCH",
-        "-sDEVICE=pdfwrite",
-        "-dAutoRotatePages=/None",
-        "-dFIXEDMEDIA",
-        "-dModifiesPageSize=true",
-        "-dPreserveAnnots=false",
-        "-dShowAnnots=false",
-        "-dFirstPage=3",
-        "-dLastPage=3",
-        "-dDEVICEWIDTHPOINTS=595",
-        "-dDEVICEHEIGHTPOINTS=842",
-        "-o",
-        "page-1.pdf",
-        "-c",
-        "<</BeginPage{10 20 570 810 rectclip}>> setpagedevice",
-        "-f",
-        "input.pdf",
-    ]
+    doc = fitz.open(str(output_pdf))
+    page = doc[0]
+    cropbox = page.cropbox
+    assert cropbox.x0 == pytest.approx(100, abs=1)
+    assert cropbox.x1 == pytest.approx(500, abs=1)
+    doc.close()
 
 
-def test_build_ghostscript_page_crop_command_builds_crop_mode_command():
-    """Arrange/Act/Assert: crop mode translates content into cropped media box."""
-    command = pdfframecmd.build_ghostscript_page_crop_command(
-        "input.pdf",
-        "page-1.pdf",
-        first_page=3,
-        last_page=3,
-        page_width=595,
-        page_height=842,
-        crop_box=(10, 20, 580, 830),
-        mode="crop",
+def test_crop_pdf_pages_crop_mode_sets_mediabox(tmp_path):
+    """Arrange/Act/Assert: crop mode physically resizes page via MediaBox."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=1, width=612, height=792)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(100, 200, 500, 700),
+        page_width=612, page_height=792,
+        mode="crop", delete_annots=False,
     )
-    assert command == [
-        "gs",
-        "-dSAFER",
-        "-dNOPAUSE",
-        "-dBATCH",
-        "-sDEVICE=pdfwrite",
-        "-dAutoRotatePages=/None",
-        "-dFIXEDMEDIA",
-        "-dModifiesPageSize=true",
-        "-dPreserveAnnots=false",
-        "-dShowAnnots=false",
-        "-dFirstPage=3",
-        "-dLastPage=3",
-        "-dDEVICEWIDTHPOINTS=570",
-        "-dDEVICEHEIGHTPOINTS=810",
-        "-o",
-        "page-1.pdf",
-        "-c",
-        "<</BeginPage{0 0 570 810 rectclip -10 -20 translate}>> setpagedevice",
-        "-f",
-        "input.pdf",
-    ]
+    doc = fitz.open(str(output_pdf))
+    page = doc[0]
+    mediabox = page.mediabox
+    assert mediabox.width == pytest.approx(400, abs=1)
+    assert mediabox.height == pytest.approx(500, abs=1)
+    doc.close()
 
 
-def test_run_ghostscript_command_logs_shell_escaped_command(monkeypatch, capsys):
-    """Arrange/Act/Assert: command execution logs exact shell-escaped command."""
+def test_crop_pdf_pages_deletes_annotations_when_enabled(tmp_path):
+    """Arrange/Act/Assert: delete_annots removes all /Annots entries."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=2, with_annots=True)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0, 1],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=True,
+    )
+    doc = fitz.open(str(output_pdf))
+    for page in doc:
+        assert len(list(page.annots())) == 0
+    doc.close()
 
-    def _fake_run(*args, **kwargs):
-        del args, kwargs
-        return SimpleNamespace(returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr(pdfframecmd.subprocess, "run", _fake_run)
-    command = ["gs", "-f", "/tmp/input file.pdf"]
-    pdfframecmd.run_ghostscript_command(command, log_command=True)
-    expected = pdfframecmd.format_shell_command(command)
-    assert f"Executing Ghostscript command: {expected}" in capsys.readouterr().err
+def test_crop_pdf_pages_preserves_annotations_when_disabled(tmp_path):
+    """Arrange/Act/Assert: delete_annots=False keeps annotations in output."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=1, with_annots=True)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+    )
+    doc = fitz.open(str(output_pdf))
+    assert len(list(doc[0].annots())) > 0
+    doc.close()
+
+
+def test_crop_pdf_pages_preserves_bookmarks(tmp_path):
+    """Arrange/Act/Assert: output PDF preserves TOC/bookmarks from input."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=3, with_toc=True)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0, 1, 2],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+    )
+    doc = fitz.open(str(output_pdf))
+    toc = doc.get_toc()
+    assert len(toc) == 3
+    assert toc[0][1] == "Chapter 1"
+    doc.close()
+
+
+def test_crop_pdf_pages_selects_only_requested_pages(tmp_path):
+    """Arrange/Act/Assert: output contains only specified page indexes."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=5)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[1, 3],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+    )
+    doc = fitz.open(str(output_pdf))
+    assert len(doc) == 2
+    doc.close()
+
+
+def test_crop_pdf_pages_progress_callback_invoked_per_page(tmp_path):
+    """Arrange/Act/Assert: progress callback receives per-page updates."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=3)
+    progress_calls = []
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0, 1, 2],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+        progress_callback=lambda pn, pc, t: progress_calls.append((pn, pc, t)),
+    )
+    assert len(progress_calls) == 3
+    assert progress_calls[0] == (1, 1, 3)
+    assert progress_calls[1] == (2, 2, 3)
+    assert progress_calls[2] == (3, 3, 3)
+
+
+def test_crop_pdf_pages_cancel_raises_cancelled_error(tmp_path):
+    """Arrange/Act/Assert: cancel callback triggers CropCancelledError."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=3)
+    with pytest.raises(pdfframecmd.CropCancelledError):
+        pdfframecmd.crop_pdf_pages(
+            str(input_pdf), str(output_pdf),
+            page_indexes=[0, 1, 2],
+            crop_box=(10, 10, 600, 780),
+            page_width=612, page_height=792,
+            mode="frame", delete_annots=False,
+            cancel_requested=lambda: True,
+        )
+
+
+def test_crop_pdf_pages_invalid_crop_raises_value_error(tmp_path):
+    """Arrange/Act/Assert: non-positive crop dimensions raise ValueError."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=1)
+    with pytest.raises(ValueError, match="positive"):
+        pdfframecmd.crop_pdf_pages(
+            str(input_pdf), str(output_pdf),
+            page_indexes=[0],
+            crop_box=(500, 200, 100, 700),
+            page_width=612, page_height=792,
+            mode="frame",
+        )
+
+
+def test_crop_pdf_pages_invalid_mode_raises_value_error(tmp_path):
+    """Arrange/Act/Assert: unsupported mode raises ValueError."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=1)
+    with pytest.raises(ValueError, match="frame.*crop"):
+        pdfframecmd.crop_pdf_pages(
+            str(input_pdf), str(output_pdf),
+            page_indexes=[0],
+            crop_box=(10, 10, 600, 780),
+            page_width=612, page_height=792,
+            mode="invalid",
+        )
+
+
+def test_crop_pdf_pages_logs_parameters_to_stderr(tmp_path, capsys):
+    """Arrange/Act/Assert: log_params prints crop parameters to stderr."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=1)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=True,
+        log_params=True,
+    )
+    err = capsys.readouterr().err
+    assert "PyMuPDF crop" in err
+    assert "mode=frame" in err
+
+
+def test_crop_pdf_pages_debug_output_prints_page_info(tmp_path, capsys):
+    """Arrange/Act/Assert: debug_output prints per-page info to stderr."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=2)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0, 1],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+        debug_output=True,
+    )
+    err = capsys.readouterr().err
+    assert "Processed page 1" in err
+    assert "Processed page 2" in err
+
+
+def test_crop_pdf_pages_open_failure_raises_crop_error(tmp_path):
+    """Arrange/Act/Assert: non-existent input raises CropError."""
+    with pytest.raises(pdfframecmd.CropError, match="open PDF"):
+        pdfframecmd.crop_pdf_pages(
+            str(tmp_path / "nonexistent.pdf"),
+            str(tmp_path / "output.pdf"),
+            page_indexes=[0],
+            crop_box=(10, 10, 600, 780),
+            page_width=612, page_height=792,
+        )
+
+
+@pytest.mark.parametrize("mode", ["frame", "crop"])
+def test_crop_pdf_pages_both_modes_with_delete_annots(tmp_path, mode):
+    """Arrange/Act/Assert: annotation deletion works in both frame and crop modes."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=1, with_annots=True)
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode=mode, delete_annots=True,
+    )
+    doc = fitz.open(str(output_pdf))
+    assert len(list(doc[0].annots())) == 0
+    doc.close()
 
 
 def test_write_cropped_pages_output_keeps_only_selected_pages(tmp_path):
@@ -167,152 +341,3 @@ def test_write_cropped_pages_output_keeps_only_selected_pages(tmp_path):
     )
     reader = PdfReader(str(output_pdf))
     assert len(reader.pages) == 2
-
-
-def test_run_ghostscript_command_raises_with_captured_streams(monkeypatch):
-    """Arrange/Act/Assert: non-zero return propagates captured output in exception."""
-
-    def _fake_run(*args, **kwargs):
-        del args, kwargs
-        return SimpleNamespace(returncode=2, stdout="stdout data", stderr="stderr data")
-
-    monkeypatch.setattr(pdfframecmd.subprocess, "run", _fake_run)
-    with pytest.raises(pdfframecmd.GhostscriptCommandError) as exc:
-        pdfframecmd.run_ghostscript_command(["gs", "in.pdf", "out.pdf"])
-    assert exc.value.returncode == 2
-    assert exc.value.stdout == "stdout data"
-    assert exc.value.stderr == "stderr data"
-
-
-def test_extract_ghostscript_page_number_parses_output():
-    """Arrange/Act/Assert: parser extracts page number from Ghostscript lines."""
-    assert pdfframecmd.extract_ghostscript_page_number("Page 192\n") == 192
-    assert pdfframecmd.extract_ghostscript_page_number("Page 192") is None
-    assert pdfframecmd.extract_ghostscript_page_number("not a page line") is None
-
-
-def test_extract_ghostscript_page_numbers_parses_multiple_tokens():
-    """Arrange/Act/Assert: parser extracts all page tokens from one chunk."""
-    chunk = "Page 1\nPage 2\nPage 3\n"
-    assert pdfframecmd.extract_ghostscript_page_numbers(chunk) == [1, 2, 3]
-
-
-def test_extract_ghostscript_page_numbers_matches_page_line_pattern():
-    """Arrange/Act/Assert: parser accepts only `^Page\\s+\\d+\\n` entries."""
-    chunk = "prefix Page 1\nPage 2\nPage 3\nsuffix\n"
-    assert pdfframecmd.extract_ghostscript_page_numbers(chunk) == [2, 3]
-
-
-def test_build_ghostscript_page_crop_command_does_not_use_quiet_flag():
-    """Arrange/Act/Assert: command does not suppress Ghostscript page progress output."""
-    command = pdfframecmd.build_ghostscript_page_crop_command(
-        "input.pdf",
-        "page-1.pdf",
-        first_page=1,
-        last_page=2,
-        page_width=595,
-        page_height=842,
-        crop_box=(10, 20, 580, 830),
-        mode="frame",
-    )
-    assert "-q" not in command
-
-
-@pytest.mark.parametrize("mode", ["frame", "crop"])
-def test_build_ghostscript_page_crop_command_emits_preserve_annots_flag(mode):
-    """Arrange/Act/Assert: PreserveAnnots flag mirrors preserve_annots parameter."""
-    command = pdfframecmd.build_ghostscript_page_crop_command(
-        "input.pdf",
-        "page-1.pdf",
-        first_page=1,
-        last_page=1,
-        page_width=595,
-        page_height=842,
-        crop_box=(10, 20, 580, 830),
-        mode=mode,
-        preserve_annots=True,
-    )
-    assert "-dPreserveAnnots=true" in command
-
-
-@pytest.mark.parametrize("mode", ["frame", "crop"])
-def test_build_ghostscript_page_crop_command_emits_show_annots_flag(mode):
-    """Arrange/Act/Assert: ShowAnnots flag mirrors show_annots parameter."""
-    command = pdfframecmd.build_ghostscript_page_crop_command(
-        "input.pdf",
-        "page-1.pdf",
-        first_page=1,
-        last_page=1,
-        page_width=595,
-        page_height=842,
-        crop_box=(10, 20, 580, 830),
-        mode=mode,
-        show_annots=True,
-    )
-    assert "-dShowAnnots=true" in command
-
-
-def test_run_ghostscript_command_debug_output_prints_stream(monkeypatch, capsys):
-    """Arrange/Act/Assert: debug mode mirrors captured output to stderr."""
-    command = [
-        sys.executable,
-        "-c",
-        "print('Page 1', flush=True); print('Page 2', flush=True)",
-    ]
-    pdfframecmd.run_ghostscript_command(command, debug_output=True, poll_interval=0.001)
-    err = capsys.readouterr().err
-    assert "Page 1" in err
-    assert "Page 2" in err
-
-
-def test_run_ghostscript_command_streams_output_and_pumps_events():
-    """Arrange/Act/Assert: streamed lines reach callback while event pump runs."""
-    command = [
-        sys.executable,
-        "-c",
-        (
-            "import time;"
-            "print('Page 1', flush=True);"
-            "time.sleep(0.02);"
-            "print('Page 2', flush=True);"
-            "time.sleep(0.02)"
-        ),
-    ]
-    output_lines = []
-    event_pump_calls = []
-    result = pdfframecmd.run_ghostscript_command(
-        command,
-        event_pump=lambda: event_pump_calls.append(1),
-        output_callback=output_lines.append,
-        poll_interval=0.001,
-    )
-    parsed_pages = [pdfframecmd.extract_ghostscript_page_number(line) for line in output_lines]
-    assert result.returncode == 0
-    assert 1 in parsed_pages and 2 in parsed_pages
-    assert len(event_pump_calls) > 0
-
-
-def test_run_ghostscript_command_can_be_cancelled():
-    """Arrange/Act/Assert: cancellation callback terminates running subprocess."""
-    command = [
-        sys.executable,
-        "-c",
-        (
-            "import time;"
-            "print('Page 1', flush=True);"
-            "time.sleep(1.0)"
-        ),
-    ]
-    state = {"calls": 0}
-
-    def cancel_requested():
-        state["calls"] += 1
-        return state["calls"] > 2
-
-    with pytest.raises(pdfframecmd.GhostscriptCommandCancelledError):
-        pdfframecmd.run_ghostscript_command(
-            command,
-            event_pump=lambda: None,
-            cancel_requested=cancel_requested,
-            poll_interval=0.005,
-        )

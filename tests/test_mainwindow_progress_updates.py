@@ -1,4 +1,4 @@
-"""Unit tests for progress updates driven by captured Ghostscript output."""
+"""Unit tests for progress updates driven by PyMuPDF crop callbacks."""
 
 from types import SimpleNamespace
 
@@ -14,6 +14,16 @@ class _FakeLineEdit:
 
     def text(self):
         return self._value
+
+
+class _FakeCheckBox:
+    """Checkbox stub returning configured checked state."""
+
+    def __init__(self, checked):
+        self._checked = checked
+
+    def isChecked(self):
+        return self._checked
 
 
 class _FakeProgressDialog:
@@ -68,6 +78,7 @@ class _FakeProgressWindow:
         self.ui = SimpleNamespace(
             editFile=_FakeLineEdit("output.pdf"),
             editWhichPages=_FakeLineEdit(""),
+            checkDeleteAnnotsFields=_FakeCheckBox(True),
         )
         self.viewer = SimpleNamespace(numPages=lambda: 100)
         self._page_indexes = page_indexes
@@ -77,12 +88,18 @@ class _FakeProgressWindow:
     def tr(self, text):
         return text
 
-    def requestedUnsupportedGhostscriptOptions(self):
-        return []
-
-    def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None):
+    def buildCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None):
         del inputFileName, outputFileName, requestedPageIndexes
-        return {"page_indexes": self._page_indexes, "command": ["gs", "-f", "input.pdf"]}
+        return {
+            "page_indexes": self._page_indexes,
+            "crop_box": (10, 10, 600, 780),
+            "page_width": 612,
+            "page_height": 792,
+            "mode": "frame",
+            "delete_annots": True,
+            "input_path": "input.pdf",
+            "output_path": "output.pdf",
+        }
 
     def createConversionProgressDialog(self, totalPages):
         self.progress_dialog = _FakeProgressDialog(totalPages)
@@ -94,20 +111,18 @@ class _FakeProgressWindow:
     str2pages = MainWindow.str2pages
 
 
-def test_slot_pdfframe_updates_progress_from_absolute_page_numbers(monkeypatch):
-    """Arrange/Act/Assert: captured output page numbers drive monotonic progress."""
+def test_slot_pdfframe_updates_progress_from_callback(monkeypatch):
+    """Arrange/Act/Assert: per-page callback drives monotonic progress updates."""
 
-    def _fake_run_ghostscript_command(*args, **kwargs):
-        del args
-        output_callback = kwargs["output_callback"]
-        output_callback("Page 5\n")
-        output_callback("Page 6\n")
-        output_callback("Page 7\n")
+    def _fake_crop_pdf_pages(*args, **kwargs):
+        progress_callback = kwargs["progress_callback"]
+        progress_callback(5, 1, 3)
+        progress_callback(6, 2, 3)
+        progress_callback(7, 3, 3)
 
     fake = _FakeProgressWindow(page_indexes=[4, 5, 6])
-    monkeypatch.setattr(mainwindow_module, "which", lambda _name: "/usr/bin/gs")
     monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
-    monkeypatch.setattr(mainwindow_module, "run_ghostscript_command", _fake_run_ghostscript_command)
+    monkeypatch.setattr(mainwindow_module, "crop_pdf_pages", _fake_crop_pdf_pages)
 
     MainWindow.slotPdfFrame(fake)
 
@@ -116,66 +131,22 @@ def test_slot_pdfframe_updates_progress_from_absolute_page_numbers(monkeypatch):
     assert fake.progress_dialog.values[:3] == [1, 2, 3]
 
 
-def test_slot_pdfframe_updates_progress_from_relative_page_numbers(monkeypatch):
-    """Arrange/Act/Assert: relative page-output numbers map to selected-page progress."""
-
-    def _fake_run_ghostscript_command(*args, **kwargs):
-        del args
-        output_callback = kwargs["output_callback"]
-        output_callback("Page 1\n")
-        output_callback("Page 2\n")
-        output_callback("Page 3\n")
-
-    fake = _FakeProgressWindow(page_indexes=[4, 5, 6])
-    monkeypatch.setattr(mainwindow_module, "which", lambda _name: "/usr/bin/gs")
-    monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
-    monkeypatch.setattr(mainwindow_module, "run_ghostscript_command", _fake_run_ghostscript_command)
-
-    MainWindow.slotPdfFrame(fake)
-
-    assert fake.warnings == []
-    assert fake.progress_dialog is not None
-    assert fake.progress_dialog.values[:3] == [1, 2, 3]
-
-
-def test_slot_pdfframe_parses_multiple_page_numbers_from_one_output_chunk(monkeypatch):
-    """Arrange/Act/Assert: one chunk containing multiple page tokens updates progress."""
-
-    def _fake_run_ghostscript_command(*args, **kwargs):
-        del args
-        output_callback = kwargs["output_callback"]
-        output_callback("Page 1\rPage 2\rPage 3")
-
-    fake = _FakeProgressWindow(page_indexes=[4, 5, 6])
-    monkeypatch.setattr(mainwindow_module, "which", lambda _name: "/usr/bin/gs")
-    monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
-    monkeypatch.setattr(mainwindow_module, "run_ghostscript_command", _fake_run_ghostscript_command)
-
-    MainWindow.slotPdfFrame(fake)
-
-    assert fake.warnings == []
-    assert fake.progress_dialog is not None
-    assert fake.progress_dialog.values[:3] == [1, 2, 3]
-
-
-def test_slot_pdfframe_enables_command_and_shell_debug_output_with_verbose_and_debug(monkeypatch):
-    """Arrange/Act/Assert: combined flags pass command/output debug toggles downstream."""
+def test_slot_pdfframe_enables_log_and_debug_with_verbose_and_debug(monkeypatch):
+    """Arrange/Act/Assert: combined flags pass log/debug toggles downstream."""
     captured = {}
 
-    def _fake_run_ghostscript_command(*args, **kwargs):
-        del args
-        captured["log_command"] = kwargs.get("log_command")
+    def _fake_crop_pdf_pages(*args, **kwargs):
+        captured["log_params"] = kwargs.get("log_params")
         captured["debug_output"] = kwargs.get("debug_output")
-        kwargs["output_callback"]("Page 5\n")
+        kwargs["progress_callback"](5, 1, 1)
 
     fake = _FakeProgressWindow(page_indexes=[4])
     fake.verbose = True
     fake.debug = True
-    monkeypatch.setattr(mainwindow_module, "which", lambda _name: "/usr/bin/gs")
     monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
-    monkeypatch.setattr(mainwindow_module, "run_ghostscript_command", _fake_run_ghostscript_command)
+    monkeypatch.setattr(mainwindow_module, "crop_pdf_pages", _fake_crop_pdf_pages)
 
     MainWindow.slotPdfFrame(fake)
 
-    assert captured["log_command"] is True
+    assert captured["log_params"] is True
     assert captured["debug_output"] is True

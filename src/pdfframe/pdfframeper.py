@@ -246,11 +246,6 @@ def computeCropBoxCoords(box, crop, pdf_coords=True):
     y0, y1 = y0+crop[3]*(y1-y0), y1-crop[1]*(y1-y0)
     return x0, y0, x1, y1
 
-def optimizePdfGhostscript(oldfilename, newfilename):
-    import subprocess
-    subprocess.check_call(('gs', '-sDEVICE=pdfwrite', '-sOutputFile=' + newfilename,
-        '-dNOPAUSE', '-dBATCH', oldfilename))
-
 
 # In the following, we determine which cropping library to use.
 # See lib_crop_options below for a list of the supported libraries.

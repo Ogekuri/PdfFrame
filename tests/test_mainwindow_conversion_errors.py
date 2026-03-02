@@ -57,8 +57,18 @@ class _FakeQApplication:
         return None
 
 
+class _FakeCheckBox:
+    """Checkbox stub returning configured checked state."""
+
+    def __init__(self, checked):
+        self._checked = checked
+
+    def isChecked(self):
+        return self._checked
+
+
 class _FakeConversionWindow:
-    """MainWindow-like stub focused on Ghostscript error warnings."""
+    """MainWindow-like stub focused on crop error warnings."""
 
     def __init__(self):
         self.fileName = "input.pdf"
@@ -67,6 +77,7 @@ class _FakeConversionWindow:
         self.ui = SimpleNamespace(
             editFile=_FakeLineEdit("output.pdf"),
             editWhichPages=_FakeLineEdit(""),
+            checkDeleteAnnotsFields=_FakeCheckBox(True),
         )
         self.viewer = SimpleNamespace(numPages=lambda: 1)
         self.warnings = []
@@ -74,12 +85,18 @@ class _FakeConversionWindow:
     def tr(self, text):
         return text
 
-    def requestedUnsupportedGhostscriptOptions(self):
-        return []
-
-    def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None):
+    def buildCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None):
         del inputFileName, outputFileName, requestedPageIndexes
-        return {"page_indexes": [0], "command": ["gs", "-f", "input.pdf"]}
+        return {
+            "page_indexes": [0],
+            "crop_box": (10, 10, 600, 780),
+            "page_width": 612,
+            "page_height": 792,
+            "mode": "frame",
+            "delete_annots": True,
+            "input_path": "input.pdf",
+            "output_path": "output.pdf",
+        }
 
     def createConversionProgressDialog(self, totalPages):
         del totalPages
@@ -91,23 +108,19 @@ class _FakeConversionWindow:
     str2pages = MainWindow.str2pages
 
 
-def test_slot_pdfframe_omits_captured_output_from_user_warning(monkeypatch):
-    """Arrange/Act/Assert: user warning omits captured stdout/stderr payload."""
+def test_slot_pdfframe_omits_internal_details_from_user_warning(monkeypatch):
+    """Arrange/Act/Assert: user warning omits internal exception details."""
 
-    def _raise_command_error(*args, **kwargs):
+    def _raise_crop_error(*args, **kwargs):
         del args, kwargs
-        raise mainwindow_module.GhostscriptCommandError(
-            ["gs", "-f", "input.pdf"], 2, "captured stdout", "captured stderr")
+        raise mainwindow_module.CropError("Internal PDF processing error details")
 
     fake = _FakeConversionWindow()
-    monkeypatch.setattr(mainwindow_module, "which", lambda _name: "/usr/bin/gs")
     monkeypatch.setattr(mainwindow_module, "QApplication", _FakeQApplication)
-    monkeypatch.setattr(mainwindow_module, "run_ghostscript_command", _raise_command_error)
+    monkeypatch.setattr(mainwindow_module, "crop_pdf_pages", _raise_crop_error)
 
     MainWindow.slotPdfFrame(fake)
 
     assert len(fake.warnings) == 1
     _title, text = fake.warnings[0]
-    assert "Command failed:\ngs -f input.pdf" in text
-    assert "captured stdout" not in text
-    assert "captured stderr" not in text
+    assert "crop failed" in text.lower() or "Internal PDF processing error details" in text

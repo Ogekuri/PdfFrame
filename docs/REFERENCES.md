@@ -144,7 +144,7 @@ import sys
 
 ---
 
-# jsonconfig.py | Python | 114L | 8 symbols | 3 imports | 9 comments
+# jsonconfig.py | Python | 113L | 8 symbols | 3 imports | 9 comments
 > Path: `src/pdfframe/jsonconfig.py`
 
 ## Imports
@@ -157,39 +157,39 @@ from pathlib import Path
 ## Definitions
 
 - var `DEFAULT_CONFIG_VALUES = {` (L12)
-### fn `def default_config_path()` (L24-32)
+### fn `def default_config_path()` (L23-31)
 - @brief Returns canonical user JSON configuration path.
 - @details Resolves `~/.pdfframe/config.json` using current user home directory.
 - @return {pathlib.Path} Expanded configuration file path.
 
-### fn `def default_config_document()` (L33-41)
+### fn `def default_config_document()` (L32-40)
 - @brief Returns default JSON configuration document.
 - @details Includes top-level `config` object seeded from `DEFAULT_CONFIG_VALUES` and empty `presets` array.
 - @return {dict[str,object]} Default config document payload.
 
-### class `class JsonConfigStore` (L42-114)
+### class `class JsonConfigStore` (L41-113)
 - @brief Provides normalized JSON config read/write operations.
 - @details Enforces top-level `config` and `presets` sections and guarantees default keys for config values.
-- fn `def __init__(self, path=None)` `priv` (L48-55)
+- fn `def __init__(self, path=None)` `priv` (L47-54)
   - @brief Provides normalized JSON config read/write operations.
   - @brief Initializes JSON config store.
   - @details Enforces top-level `config` and `presets` sections and guarantees default keys for config values.
   - @details Uses explicit path when provided; otherwise defaults to `~/.pdfframe/config.json`.
   - @param path {str|pathlib.Path|None} Optional configuration path override.
-- fn `def _normalize_document(self, document)` `priv` (L56-80)
+- fn `def _normalize_document(self, document)` `priv` (L55-79)
   - @brief Normalizes JSON config document shape.
   - @details Validates root object and top-level section types, merges missing default config keys, and guarantees list type for presets.
   - @param document {dict[str,object]} Raw decoded JSON payload.
   - @return {dict[str,object]} Normalized document.
   - @throws {ValueError} If root or required sections have incompatible types.
-- fn `def load_or_initialize(self)` (L81-100)
+- fn `def load_or_initialize(self)` (L80-99)
   - @brief Loads JSON configuration and creates defaults when missing.
   - @details Creates `~/.pdfframe/config.json` when absent, normalizes loaded documents, and writes back normalization deltas.
   - @return {dict[str,object]} Normalized configuration document.
   - @throws {OSError} If filesystem operations fail.
   - @throws {ValueError} If existing JSON document has invalid structure.
   - @throws {json.JSONDecodeError} If existing JSON file is syntactically invalid.
-- fn `def save(self, document)` (L101-114)
+- fn `def save(self, document)` (L100-113)
   - @brief Writes normalized JSON configuration to disk.
   - @details Validates/normalizes payload, ensures parent directory exists, and serializes with deterministic indentation.
   - @param document {dict[str,object]} Document payload to persist.
@@ -201,18 +201,18 @@ from pathlib import Path
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
 |`DEFAULT_CONFIG_VALUES`|var|pub|12||
-|`default_config_path`|fn|pub|24-32|def default_config_path()|
-|`default_config_document`|fn|pub|33-41|def default_config_document()|
-|`JsonConfigStore`|class|pub|42-114|class JsonConfigStore|
-|`JsonConfigStore.__init__`|fn|priv|48-55|def __init__(self, path=None)|
-|`JsonConfigStore._normalize_document`|fn|priv|56-80|def _normalize_document(self, document)|
-|`JsonConfigStore.load_or_initialize`|fn|pub|81-100|def load_or_initialize(self)|
-|`JsonConfigStore.save`|fn|pub|101-114|def save(self, document)|
+|`default_config_path`|fn|pub|23-31|def default_config_path()|
+|`default_config_document`|fn|pub|32-40|def default_config_document()|
+|`JsonConfigStore`|class|pub|41-113|class JsonConfigStore|
+|`JsonConfigStore.__init__`|fn|priv|47-54|def __init__(self, path=None)|
+|`JsonConfigStore._normalize_document`|fn|priv|55-79|def _normalize_document(self, document)|
+|`JsonConfigStore.load_or_initialize`|fn|pub|80-99|def load_or_initialize(self)|
+|`JsonConfigStore.save`|fn|pub|100-113|def save(self, document)|
 
 
 ---
 
-# mainwindow.py | Python | 1433L | 91 symbols | 15 imports | 71 comments
+# mainwindow.py | Python | 1390L | 89 symbols | 14 imports | 69 comments
 > Path: `src/pdfframe/mainwindow.py`
 - @brief Main Qt window and interactive workflow for pdfframe.
 - @details Hosts viewer interactions, selection editing, settings persistence, and conversion orchestration.
@@ -229,7 +229,6 @@ import re
 from datetime import datetime
 from pathlib import Path
 from os.path import splitext
-from shutil import which
 from pdfframe.qt import *
 from pdfframe.config import PYQT6
 from pdfframe.jsonconfig import DEFAULT_CONFIG_VALUES, JsonConfigStore
@@ -243,404 +242,394 @@ from pdfframe.autotrim import autoTrimMargins
 
 ## Definitions
 
-### class `class AspectRatioType` (L45-50)
-- fn `def __init__(self, name, width, height)` `priv` (L46-50)
+### class `class AspectRatioType` (L42-47)
+- fn `def __init__(self, name, width, height)` `priv` (L43-47)
 
-### class `class AspectRatioTypeManager` (L51-103)
-- fn `def __init__(self)` `priv` (L53-56)
-- fn `def __iter__(self)` `priv` (L57-59)
-- fn `def addType(self, name, width, height)` (L60-62)
-- fn `def getType(self, index)` (L63-67)
-- fn `def addDefaults(self)` (L68-70)
-- fn `def settingsCaption(self)` (L71-73)
-- fn `def saveTypes(self, settings)` (L74-90)
-- fn `def loadTypes(self, settings)` (L91-103)
+### class `class AspectRatioTypeManager` (L48-100)
+- fn `def __init__(self)` `priv` (L50-53)
+- fn `def __iter__(self)` `priv` (L54-56)
+- fn `def addType(self, name, width, height)` (L57-59)
+- fn `def getType(self, index)` (L60-64)
+- fn `def addDefaults(self)` (L65-67)
+- fn `def settingsCaption(self)` (L68-70)
+- fn `def saveTypes(self, settings)` (L71-87)
+- fn `def loadTypes(self, settings)` (L88-100)
 
-### class `class SelAspectRatioTypeManager(AspectRatioTypeManager)` : AspectRatioTypeManager (L104-117)
-- fn `def settingsCaption(self)` (L106-108)
-- fn `def addDefaults(self)` (L109-117)
+### class `class SelAspectRatioTypeManager(AspectRatioTypeManager)` : AspectRatioTypeManager (L101-114)
+- fn `def settingsCaption(self)` (L103-105)
+- fn `def addDefaults(self)` (L106-114)
 
-### class `class DeviceTypeManager(AspectRatioTypeManager)` : AspectRatioTypeManager (L118-130)
-- fn `def settingsCaption(self)` (L120-122)
-- fn `def addDefaults(self)` (L123-130)
+### class `class DeviceTypeManager(AspectRatioTypeManager)` : AspectRatioTypeManager (L115-127)
+- fn `def settingsCaption(self)` (L117-119)
+- fn `def addDefaults(self)` (L120-127)
 
-### class `class MainWindow(QMainWindow)` : QMainWindow (L131-330)
-- fn `def __init__(self)` `priv` (L135-249)
-- fn `def viewer(self)` (L251-253)
-- fn `def selections(self)` (L255-257)
-- fn `def _toolbarIconFromAsset(self, filename, fallbackTheme)` `priv` (L258-270)
+### class `class MainWindow(QMainWindow)` : QMainWindow (L128-327)
+- fn `def __init__(self)` `priv` (L132-246)
+- fn `def viewer(self)` (L248-250)
+- fn `def selections(self)` (L252-254)
+- fn `def _toolbarIconFromAsset(self, filename, fallbackTheme)` `priv` (L255-267)
   - @brief Resolves toolbar icon from bundled asset with fallback theme icon.
   - @details Loads icon from `src/pdfframe/icons/<filename>` when available; otherwise returns `QIcon.fromTheme(<fallbackTheme>)`.
   - @param filename {str} Bundled icon filename.
   - @param fallbackTheme {str} Freedesktop theme-icon token.
   - @return {QIcon} Toolbar icon object.
-- fn `def _setupConversionModeControls(self)` `priv` (L271-288)
+- fn `def _setupConversionModeControls(self)` `priv` (L268-285)
   - @brief Adds conversion mode controls to the basic tab.
   - @details Creates `Mode` group with `Frame` and `Crop` radio buttons, defaults to `Frame`, and inserts it into the basic-tab layout.
   - @return {None} Applies UI side effects.
-- fn `def _setupTrimSettingsControls(self)` `priv` (L289-299)
+- fn `def _setupTrimSettingsControls(self)` `priv` (L286-296)
   - @brief Relocates trim configuration controls into the Basic tab.
   - @details Reuses the existing trim-settings group from the advanced UI definition, moves it to the bottom of the basic layout with all controls visible.
   - @return {None} Applies UI side effects.
 
-### fn `def _setupTrimPresetControls(self)` `priv` (L300-336)
+### fn `def _setupTrimPresetControls(self)` `priv` (L297-333)
 - @brief Adds dedicated Basic-tab trim preset controls.
 - @details Creates a standalone `Presets` group placed immediately after `Trim settings`, configures stretch/fixed columns so preset names fill row width up to the right-edge remove button, and wires apply/rename/delete flows.
 - @return {None} Applies UI side effects.
 
-### fn `def _setupTrimPresetAction(self)` `priv` (L337-358)
+### fn `def _setupTrimPresetAction(self)` `priv` (L334-355)
 - @brief Adds the `Save Margins` toolbar action next to trim action.
 - @details Inserts a dedicated action directly to the right of `Trim Margins`, applies the dedicated `Save Margins` icon, then moves `Go!` to the far-right position immediately after `Save Margins`, and keeps preset-save action disabled until a PDF is loaded.
 - @return {None} Applies UI side effects.
 
-### fn `def _trimPresetEditableFlag(self)` `priv` (L359-363)
+### fn `def _trimPresetEditableFlag(self)` `priv` (L356-360)
 
-### fn `def _trimPresetRole(self)` `priv` (L364-368)
+### fn `def _trimPresetRole(self)` `priv` (L361-365)
 
-### fn `def _defaultTrimPresetName(self)` `priv` (L369-376)
+### fn `def _defaultTrimPresetName(self)` `priv` (L366-373)
 - @brief Returns default trim preset name.
 - @details Generates timestamp name in `%Y/%m/%d %H:%M:%S` format.
 - @return {str} Default preset display label.
 
-### fn `def _toBool(self, value)` `priv` (L377-387)
+### fn `def _toBool(self, value)` `priv` (L374-384)
 - @brief Normalizes persisted boolean-like values.
 - @details Accepts bools and common string tokens produced by historical settings writers.
 - @param value {object} Input value from settings/config source.
 - @return {bool} Parsed boolean result.
 
-### fn `def _updateTrimPagesRangeControls(self, enabled)` `priv` (L388-398)
+### fn `def _updateTrimPagesRangeControls(self, enabled)` `priv` (L385-395)
 - @brief Updates `Pages range` control enabled state.
 - @details Enables range input only when trim-range mode is active and ensures default text `1-1` when empty.
 - @param enabled {bool} State propagated from trim-range toggle.
 - @return {None} Applies UI side effects.
 
-### fn `def _parseTrimPagesRange(self)` `priv` (L399-415)
+### fn `def _parseTrimPagesRange(self)` `priv` (L396-412)
 - @brief Parses and validates the trim pages range expression.
 - @details Accepts only `N-M` one-based inclusive format, validates positive ordered bounds, and converts to zero-based bounds.
 - @return {tuple[int,int]} `(start_index, end_index)` inclusive zero-based page bounds.
 - @throws {ValueError} If the range is missing or syntactically/semantically invalid.
 
-### fn `def _collectRuntimeConfigValues(self)` `priv` (L416-432)
+### fn `def _collectRuntimeConfigValues(self)` `priv` (L413-428)
 - @brief Collects runtime config values mapped to JSON `config` keys.
 - @details Converts current UI control state into serializable values for `~/.pdfframe/config.json`.
 - @return {dict[str,object]} Persistable runtime config key/value mapping.
 
-### fn `def _preserveFieldsEnabled(self)` `priv` (L433-446)
-- @brief Returns Preserve annotations fields option state.
-- @details Reads `checkPreserveFields` when available and normalizes truthy values for compatibility with test stubs.
-- @return {bool} True when `-dPreserveAnnots=true` must be emitted.
+### fn `def _deleteAnnotsEnabled(self)` `priv` (L429-443)
+- @brief Returns Delete annotations fields option state.
+- @details Reads `checkDeleteAnnotsFields` when available and normalizes truthy values for compatibility with test stubs.
+- @return {bool} True when annotations must be deleted from output PDF.
 
-### fn `def _showAnnotsEnabled(self)` `priv` (L447-460)
-- @brief Returns Show annotations fields option state.
-- @details Reads `checkShowAnnotsFields` when available and normalizes truthy values for compatibility with test stubs.
-- @return {bool} True when `-dShowAnnots=true` must be emitted.
-
-### fn `def _trimPresetFromCurrentSelection(self)` `priv` (L461-480)
+### fn `def _trimPresetFromCurrentSelection(self)` `priv` (L444-463)
 - @brief Creates a trim preset payload from current UI state.
 - @details Captures mode and trim parameters plus the primary current-page crop tuple when available.
 - @return {dict[str,object]} New preset payload ready for persistence.
 
-### fn `def _refreshTrimPresetList(self)` `priv` (L481-509)
+### fn `def _refreshTrimPresetList(self)` `priv` (L464-492)
 - @brief Rebuilds trim preset tree rows from in-memory presets.
 - @details Clears the list, creates editable name rows, and attaches one remove button per row mapped to preset index inside a right-aligned cell container.
 - @return {None} Applies UI side effects.
 
-### fn `def _persistTrimPresetDocument(self)` `priv` (L510-527)
+### fn `def _persistTrimPresetDocument(self)` `priv` (L493-510)
 - @brief Persists runtime config and preset list to JSON config file.
 - @details Writes both `config` values and `presets` array through JsonConfigStore, surfacing warning on I/O failures.
 - @return {None} Writes `~/.pdfframe/config.json`.
 
-### fn `def _applyCropPreset(self, crop_values)` `priv` (L528-559)
+### fn `def _applyCropPreset(self, crop_values)` `priv` (L511-542)
 - @brief Applies normalized crop tuple to current selection.
 - @details Maps `[left,top,right,bottom]` normalized margins to viewer coordinates and updates (or creates) the current selection.
 - @param crop_values {list[float]} Normalized crop tuple values.
 - @return {None} Mutates current selection geometry.
 
-### fn `def _applyTrimPreset(self, index)` `priv` (L560-585)
+### fn `def _applyTrimPreset(self, index)` `priv` (L543-568)
 - @brief Applies one stored preset to current runtime controls.
 - @details Restores mode and trim values, then applies saved crop tuple when present.
 - @param index {int} Preset list index.
 - @return {None} Applies UI and selection updates.
 
-### fn `def slotTrimPresetClicked(self, item, column)` (L586-598)
+### fn `def slotTrimPresetClicked(self, item, column)` (L569-581)
 - @brief Applies a preset when the preset name cell is clicked.
 - @details Ignores delete-button column and list rebuild events.
 - @param item {QTreeWidgetItem} Clicked row item.
 - @param column {int} Clicked column index.
 - @return {None} Applies preset side effects.
 
-### fn `def slotTrimPresetDoubleClicked(self, item, column)` (L599-609)
+### fn `def slotTrimPresetDoubleClicked(self, item, column)` (L582-592)
 - @brief Starts inline rename for preset names.
 - @details Enables user-driven preset rename on double-click of first column.
 - @param item {QTreeWidgetItem} Double-clicked row item.
 - @param column {int} Double-clicked column index.
 - @return {None} Opens in-place editor.
 
-### fn `def slotTrimPresetChanged(self, item, column)` (L610-633)
+### fn `def slotTrimPresetChanged(self, item, column)` (L593-616)
 - @brief Persists preset rename changes from inline editing.
 - @details Normalizes empty labels to timestamp defaults and rewrites JSON config after updates.
 - @param item {QTreeWidgetItem} Changed row item.
 - @param column {int} Changed column index.
 - @return {None} Persists preset list updates.
 
-### fn `def slotDeleteTrimPreset(self)` (L634-652)
+### fn `def slotDeleteTrimPreset(self)` (L617-635)
 - @brief Deletes one preset from remove-button click.
 - @details Resolves row index from sender button metadata, updates in-memory list, refreshes UI, and persists JSON state.
 - @return {None} Applies preset delete side effects.
 
-### fn `def slotSaveMarginsPreset(self)` (L653-664)
+### fn `def slotSaveMarginsPreset(self)` (L636-647)
 - @brief Saves current crop/trim state as a new preset.
 - @details Captures active control values, appends new preset with timestamp default name, refreshes list, and persists JSON state.
 - @return {None} Applies preset creation side effects.
 
-### fn `def selectedConversionMode(self)` (L665-672)
-- @brief Returns selected conversion mode for Ghostscript execution.
-- @details Maps GUI mode controls to backend mode tokens expected by command generation.
+### fn `def selectedConversionMode(self)` (L648-655)
+- @brief Returns selected conversion mode for PDF crop execution.
+- @details Maps GUI mode controls to backend mode tokens expected by crop processing.
 - @return {str} Conversion mode token (`frame` or `crop`).
 
-### fn `def currentSelectionUpdated(self)` (L673-689)
+### fn `def currentSelectionUpdated(self)` (L656-672)
 
-### fn `def _updateSelectionCreationActions(self)` `priv` (L690-699)
+### fn `def _updateSelectionCreationActions(self)` `priv` (L673-682)
 - @brief Updates enablement of selection-creation actions.
 - @details Allows creating a selection only when the viewer has a document and no selection exists; keeps creation actions disabled once one selection area is present.
 - @return {None} Applies action-enable side effects.
 
-### fn `def readSettings(self)` (L700-751)
+### fn `def readSettings(self)` (L683-731)
 - @brief Reads persisted runtime settings from QSettings and JSON config.
 - @details Restores window geometry from QSettings, loads trim/runtime defaults from `~/.pdfframe/config.json`, and refreshes preset UI entries.
 - @return {None} Applies UI state restoration side effects.
 
-### fn `def writeSettings(self)` (L752-778)
+### fn `def writeSettings(self)` (L732-756)
 - @brief Persists runtime settings to legacy and JSON backends.
 - @details Writes window/session metadata to QSettings and writes trim/runtime config plus presets to `~/.pdfframe/config.json`.
 - @return {None} Persists runtime state.
 
-### fn `def _hasCompatiblePageFormat(self)` `priv` (L779-800)
+### fn `def _hasCompatiblePageFormat(self)` `priv` (L757-778)
 - @brief Validates homogeneous page format against page 1.
 - @details Compares each page from index 1 onward with page-1 width/height values and orientation (portrait/landscape) using point units from `pageGetSizePoints`.
 - @return {bool} True when every page is compatible with page 1; otherwise False.
 
-### fn `def openFile(self, fileName)` (L801-832)
+### fn `def openFile(self, fileName)` (L779-810)
 
-### fn `def slotOpenFile(self)` (L833-838)
+### fn `def slotOpenFile(self)` (L811-816)
 
-### fn `def slotSelectFile(self)` (L839-848)
+### fn `def slotSelectFile(self)` (L817-826)
 
-### fn `def showWarning(self, title, text)` (L849-856)
+### fn `def showWarning(self, title, text)` (L827-834)
 
-### fn `def str2pages(self, s)` (L857-874)
+### fn `def str2pages(self, s)` (L835-852)
 
-### fn `def primarySelectionCropValue(self, page_indexes)` (L875-888)
+### fn `def primarySelectionCropValue(self, page_indexes)` (L853-866)
 - @brief Gets primary selection crop tuple for conversion planning.
 - @details Resolves first available normalized crop tuple from current page first, then requested pages, and returns only the primary tuple used for all output pages.
 - @param page_indexes {list[int]} Ordered page indexes selected for processing.
 - @return {tuple[float,float,float,float]|None} Primary normalized crop tuple or None when no selections are available.
 
-### fn `def buildGhostscriptCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None)` (L889-925)
-- @brief Builds single Ghostscript crop plan from GUI-derived parameters.
-- @details Iterates only requested pages (or all pages when omitted), derives geometry from the primary GUI selection tuple, computes crop bbox from page-size metadata, and emits one Ghostscript command for the full selected range using `-dFirstPage/-dLastPage` plus preserve/show annotation flag states.
+### fn `def buildCropPlan(self, inputFileName, outputFileName, requestedPageIndexes=None)` (L867-903)
+- @brief Builds PyMuPDF crop plan from GUI-derived parameters.
+- @details Iterates only requested pages (or all pages when omitted), derives geometry from the primary GUI selection tuple, computes crop bbox from page-size metadata, and returns a plan dict with crop parameters for PyMuPDF page processing.
 - @param inputFileName {str} Source PDF path.
 - @param outputFileName {str} Destination cropped PDF path.
 - @param requestedPageIndexes {set[int]|None} Optional zero-based page-index filter derived from `--whichpages`.
-- @return {dict[str,object]|None} Crop plan containing selected page indexes and one Ghostscript command vector.
+- @return {dict[str,object]|None} Crop plan containing page indexes, crop box, page dimensions, mode, and delete_annots flag.
 
-### fn `def createConversionProgressDialog(self, totalPages)` (L926-948)
+### fn `def createConversionProgressDialog(self, totalPages)` (L904-926)
 - @brief Creates modal conversion progress dialog for crop execution.
 - @details Configures progress dialog with deterministic page range and cancellable stop action used during long-running conversion command execution.
 - @param totalPages {int} Number of selected pages to process.
 - @return {QProgressDialog} Configured progress dialog instance.
 
-### fn `def slotPdfFrame(self)` (L949-1071)
-- @brief Executes PDF crop action using Ghostscript command backend.
-- @details Verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
+### fn `def slotPdfFrame(self)` (L927-1028)
+- @brief Executes PDF crop action using PyMuPDF crop backend.
+- @details Builds a crop plan from GUI state and processes pages iteratively through PyMuPDF fitz API with per-page progress callback.
 - @return {None} Triggers output PDF generation side effect.
 
-### fn `def mark_page_processed(page_number)` (L1003-1021)
-- @brief Executes PDF crop action using Ghostscript command backend.
-- @brief Marks one selected page as processed for progress updates.
-- @details Verifies Ghostscript availability, builds one Ghostscript crop command from GUI state, and streams command output to update conversion progress across the selected page range.
-- @details Updates dialog value and label only once per page number to keep deterministic monotonic progress during streamed subprocess output handling.
-- @param page_number {int} One-based page number reported by Ghostscript.
+### fn `def on_page_progress(original_page_number, processed_count, total)` (L971-987)
+- @brief Executes PDF crop action using PyMuPDF crop backend.
+- @brief Per-page progress callback for PyMuPDF crop processing.
+- @details Builds a crop plan from GUI state and processes pages
+iteratively through PyMuPDF fitz API with per-page progress callback.
+- @details Updates dialog value and label for each processed page.
+- @param original_page_number {int} One-based original page number.
+- @param processed_count {int} Number of pages processed so far.
+- @param total {int} Total pages to process.
 - @return {None} Triggers output PDF generation side effect.
 - @return {None} Applies progress side effects.
 
-### fn `def on_output_line(line)` (L1022-1036)
-- @brief Processes streamed Ghostscript output lines during conversion.
-- @details Uses parsed Ghostscript page numbers from captured output to advance conversion progress without forwarding captured command output to user-visible UI messages.
-- @param line {str} Single output line emitted by Ghostscript.
-- @return {None} Applies progress side effects.
+### fn `def slotZoomIn(self)` (L1029-1032)
 
-### fn `def slotZoomIn(self)` (L1072-1075)
+### fn `def slotZoomOut(self)` (L1033-1036)
 
-### fn `def slotZoomOut(self)` (L1076-1079)
+### fn `def slotFitInView(self, checked)` (L1037-1041)
 
-### fn `def slotFitInView(self, checked)` (L1080-1084)
+### fn `def slotSplitterMoved(self, pos, idx)` (L1042-1044)
 
-### fn `def slotSplitterMoved(self, pos, idx)` (L1085-1087)
+### fn `def slotPreviousPage(self)` (L1045-1048)
 
-### fn `def slotPreviousPage(self)` (L1088-1091)
+### fn `def slotNextPage(self)` (L1049-1052)
 
-### fn `def slotNextPage(self)` (L1092-1095)
+### fn `def slotFirstPage(self)` (L1053-1056)
 
-### fn `def slotFirstPage(self)` (L1096-1099)
+### fn `def slotLastPage(self)` (L1057-1060)
 
-### fn `def slotLastPage(self)` (L1100-1103)
+### fn `def slotCurrentPageEdited(self, text)` (L1061-1068)
 
-### fn `def slotCurrentPageEdited(self, text)` (L1104-1111)
+### fn `def updateControls(self)` (L1069-1077)
 
-### fn `def updateControls(self)` (L1112-1120)
+### fn `def slotSelectionMode(self, checked)` (L1078-1081)
 
-### fn `def slotSelectionMode(self, checked)` (L1121-1124)
+### fn `def slotSelExceptionsChanged(self)` (L1082-1084)
 
-### fn `def slotSelExceptionsChanged(self)` (L1125-1127)
+### fn `def slotSelExceptionsEdited(self, text)` (L1085-1089)
 
-### fn `def slotSelExceptionsEdited(self, text)` (L1128-1132)
+### fn `def slotSelAspectRatioChanged(self)` (L1090-1098)
 
-### fn `def slotSelAspectRatioChanged(self)` (L1133-1141)
+### fn `def slotSelAspectRatioTypeChanged(self, index)` (L1099-1118)
 
-### fn `def slotSelAspectRatioTypeChanged(self, index)` (L1142-1161)
+### fn `def distributeAspectRatioChanged(self, aspectRatio)` (L1119-1121)
 
-### fn `def distributeAspectRatioChanged(self, aspectRatio)` (L1162-1164)
+### fn `def slotDistributeAspectRatioChanged(self)` (L1122-1124)
 
-### fn `def slotDistributeAspectRatioChanged(self)` (L1165-1167)
+### fn `def slotDeviceTypeChanged(self, index)` (L1125-1131)
 
-### fn `def slotDeviceTypeChanged(self, index)` (L1168-1174)
+### fn `def slotContextMenu(self, pos)` (L1132-1152)
 
-### fn `def slotContextMenu(self, pos)` (L1175-1195)
+### fn `def slotDeleteSelection(self)` (L1153-1156)
 
-### fn `def slotDeleteSelection(self)` (L1196-1199)
+### fn `def slotNewSelection(self)` (L1157-1159)
 
-### fn `def slotNewSelection(self)` (L1200-1202)
-
-### fn `def slotNewSelectionGrid(self)` (L1203-1221)
+### fn `def slotNewSelectionGrid(self)` (L1160-1178)
 - @brief Requests one new trim/selection area from user grid input.
 - @details Prompts only when no selection area exists; in single-selection mode the request is rejected while an area is already present.
 - @return {None} Applies selection-creation side effects.
 
-### fn `def createSelectionGrid(self, grid)` (L1222-1278)
+### fn `def createSelectionGrid(self, grid)` (L1179-1235)
 - @brief Creates the initial trim/selection area from grid input.
 - @details Parses `grid` input, enforces single-selection mode by reducing multi-cell requests to one area, and prevents creation when an area already exists.
 - @param grid {str} Grid expression entered by CLI or UI.
 - @return {None} Applies selection-creation side effects.
 
-### fn `def getPadding(self)` (L1279-1306)
+### fn `def getPadding(self)` (L1236-1263)
 - @brief Returns trim padding in CSS-expanded order.
 - @details Reads trim padding text from the dedicated Basic-tab controls and expands one-to-four comma-separated values to `[top,right,bottom,left]`.
 - @return {list[float]} Padding tuple in top,right,bottom,left order.
 
-### fn `def slotTrimMarginsAll(self)` (L1307-1319)
+### fn `def slotTrimMarginsAll(self)` (L1264-1276)
 
-### fn `def slotTrimMargins(self)` (L1320-1324)
+### fn `def slotTrimMargins(self)` (L1277-1281)
 
-### fn `def trimMarginsSelection(self, sel)` (L1325-1428)
+### fn `def trimMarginsSelection(self, sel)` (L1282-1385)
 - @brief Computes auto-trim rectangle for a selection using configured thresholds.
 - @details Reads color-sensitivity and grayscale-sensitivity values from Basic-tab controls, selects page scope using current page by default or a validated `Pages range` slice of visible pages when range mode is enabled, and applies auto-trim with padding and aspect-ratio adjustments.
 - @param sel {ViewerSelectionItem} Selection item to trim.
 - @return {None} Mutates selection bounding rectangle.
 
-### fn `def resizeEvent(self, event)` (L1429-1431)
+### fn `def resizeEvent(self, event)` (L1386-1388)
 
-### fn `def closeEvent(self, event)` (L1432-1433)
+### fn `def closeEvent(self, event)` (L1389-1390)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`AspectRatioType`|class|pub|45-50|class AspectRatioType|
-|`AspectRatioType.__init__`|fn|priv|46-50|def __init__(self, name, width, height)|
-|`AspectRatioTypeManager`|class|pub|51-103|class AspectRatioTypeManager|
-|`AspectRatioTypeManager.__init__`|fn|priv|53-56|def __init__(self)|
-|`AspectRatioTypeManager.__iter__`|fn|priv|57-59|def __iter__(self)|
-|`AspectRatioTypeManager.addType`|fn|pub|60-62|def addType(self, name, width, height)|
-|`AspectRatioTypeManager.getType`|fn|pub|63-67|def getType(self, index)|
-|`AspectRatioTypeManager.addDefaults`|fn|pub|68-70|def addDefaults(self)|
-|`AspectRatioTypeManager.settingsCaption`|fn|pub|71-73|def settingsCaption(self)|
-|`AspectRatioTypeManager.saveTypes`|fn|pub|74-90|def saveTypes(self, settings)|
-|`AspectRatioTypeManager.loadTypes`|fn|pub|91-103|def loadTypes(self, settings)|
-|`SelAspectRatioTypeManager`|class|pub|104-117|class SelAspectRatioTypeManager(AspectRatioTypeManager)|
-|`SelAspectRatioTypeManager.settingsCaption`|fn|pub|106-108|def settingsCaption(self)|
-|`SelAspectRatioTypeManager.addDefaults`|fn|pub|109-117|def addDefaults(self)|
-|`DeviceTypeManager`|class|pub|118-130|class DeviceTypeManager(AspectRatioTypeManager)|
-|`DeviceTypeManager.settingsCaption`|fn|pub|120-122|def settingsCaption(self)|
-|`DeviceTypeManager.addDefaults`|fn|pub|123-130|def addDefaults(self)|
-|`MainWindow`|class|pub|131-330|class MainWindow(QMainWindow)|
-|`MainWindow.__init__`|fn|priv|135-249|def __init__(self)|
-|`MainWindow.viewer`|fn|pub|251-253|def viewer(self)|
-|`MainWindow.selections`|fn|pub|255-257|def selections(self)|
-|`MainWindow._toolbarIconFromAsset`|fn|priv|258-270|def _toolbarIconFromAsset(self, filename, fallbackTheme)|
-|`MainWindow._setupConversionModeControls`|fn|priv|271-288|def _setupConversionModeControls(self)|
-|`MainWindow._setupTrimSettingsControls`|fn|priv|289-299|def _setupTrimSettingsControls(self)|
-|`_setupTrimPresetControls`|fn|priv|300-336|def _setupTrimPresetControls(self)|
-|`_setupTrimPresetAction`|fn|priv|337-358|def _setupTrimPresetAction(self)|
-|`_trimPresetEditableFlag`|fn|priv|359-363|def _trimPresetEditableFlag(self)|
-|`_trimPresetRole`|fn|priv|364-368|def _trimPresetRole(self)|
-|`_defaultTrimPresetName`|fn|priv|369-376|def _defaultTrimPresetName(self)|
-|`_toBool`|fn|priv|377-387|def _toBool(self, value)|
-|`_updateTrimPagesRangeControls`|fn|priv|388-398|def _updateTrimPagesRangeControls(self, enabled)|
-|`_parseTrimPagesRange`|fn|priv|399-415|def _parseTrimPagesRange(self)|
-|`_collectRuntimeConfigValues`|fn|priv|416-432|def _collectRuntimeConfigValues(self)|
-|`_preserveFieldsEnabled`|fn|priv|433-446|def _preserveFieldsEnabled(self)|
-|`_showAnnotsEnabled`|fn|priv|447-460|def _showAnnotsEnabled(self)|
-|`_trimPresetFromCurrentSelection`|fn|priv|461-480|def _trimPresetFromCurrentSelection(self)|
-|`_refreshTrimPresetList`|fn|priv|481-509|def _refreshTrimPresetList(self)|
-|`_persistTrimPresetDocument`|fn|priv|510-527|def _persistTrimPresetDocument(self)|
-|`_applyCropPreset`|fn|priv|528-559|def _applyCropPreset(self, crop_values)|
-|`_applyTrimPreset`|fn|priv|560-585|def _applyTrimPreset(self, index)|
-|`slotTrimPresetClicked`|fn|pub|586-598|def slotTrimPresetClicked(self, item, column)|
-|`slotTrimPresetDoubleClicked`|fn|pub|599-609|def slotTrimPresetDoubleClicked(self, item, column)|
-|`slotTrimPresetChanged`|fn|pub|610-633|def slotTrimPresetChanged(self, item, column)|
-|`slotDeleteTrimPreset`|fn|pub|634-652|def slotDeleteTrimPreset(self)|
-|`slotSaveMarginsPreset`|fn|pub|653-664|def slotSaveMarginsPreset(self)|
-|`selectedConversionMode`|fn|pub|665-672|def selectedConversionMode(self)|
-|`currentSelectionUpdated`|fn|pub|673-689|def currentSelectionUpdated(self)|
-|`_updateSelectionCreationActions`|fn|priv|690-699|def _updateSelectionCreationActions(self)|
-|`readSettings`|fn|pub|700-751|def readSettings(self)|
-|`writeSettings`|fn|pub|752-778|def writeSettings(self)|
-|`_hasCompatiblePageFormat`|fn|priv|779-800|def _hasCompatiblePageFormat(self)|
-|`openFile`|fn|pub|801-832|def openFile(self, fileName)|
-|`slotOpenFile`|fn|pub|833-838|def slotOpenFile(self)|
-|`slotSelectFile`|fn|pub|839-848|def slotSelectFile(self)|
-|`showWarning`|fn|pub|849-856|def showWarning(self, title, text)|
-|`str2pages`|fn|pub|857-874|def str2pages(self, s)|
-|`primarySelectionCropValue`|fn|pub|875-888|def primarySelectionCropValue(self, page_indexes)|
-|`buildGhostscriptCropPlan`|fn|pub|889-925|def buildGhostscriptCropPlan(self, inputFileName, outputF...|
-|`createConversionProgressDialog`|fn|pub|926-948|def createConversionProgressDialog(self, totalPages)|
-|`slotPdfFrame`|fn|pub|949-1071|def slotPdfFrame(self)|
-|`mark_page_processed`|fn|pub|1003-1021|def mark_page_processed(page_number)|
-|`on_output_line`|fn|pub|1022-1036|def on_output_line(line)|
-|`slotZoomIn`|fn|pub|1072-1075|def slotZoomIn(self)|
-|`slotZoomOut`|fn|pub|1076-1079|def slotZoomOut(self)|
-|`slotFitInView`|fn|pub|1080-1084|def slotFitInView(self, checked)|
-|`slotSplitterMoved`|fn|pub|1085-1087|def slotSplitterMoved(self, pos, idx)|
-|`slotPreviousPage`|fn|pub|1088-1091|def slotPreviousPage(self)|
-|`slotNextPage`|fn|pub|1092-1095|def slotNextPage(self)|
-|`slotFirstPage`|fn|pub|1096-1099|def slotFirstPage(self)|
-|`slotLastPage`|fn|pub|1100-1103|def slotLastPage(self)|
-|`slotCurrentPageEdited`|fn|pub|1104-1111|def slotCurrentPageEdited(self, text)|
-|`updateControls`|fn|pub|1112-1120|def updateControls(self)|
-|`slotSelectionMode`|fn|pub|1121-1124|def slotSelectionMode(self, checked)|
-|`slotSelExceptionsChanged`|fn|pub|1125-1127|def slotSelExceptionsChanged(self)|
-|`slotSelExceptionsEdited`|fn|pub|1128-1132|def slotSelExceptionsEdited(self, text)|
-|`slotSelAspectRatioChanged`|fn|pub|1133-1141|def slotSelAspectRatioChanged(self)|
-|`slotSelAspectRatioTypeChanged`|fn|pub|1142-1161|def slotSelAspectRatioTypeChanged(self, index)|
-|`distributeAspectRatioChanged`|fn|pub|1162-1164|def distributeAspectRatioChanged(self, aspectRatio)|
-|`slotDistributeAspectRatioChanged`|fn|pub|1165-1167|def slotDistributeAspectRatioChanged(self)|
-|`slotDeviceTypeChanged`|fn|pub|1168-1174|def slotDeviceTypeChanged(self, index)|
-|`slotContextMenu`|fn|pub|1175-1195|def slotContextMenu(self, pos)|
-|`slotDeleteSelection`|fn|pub|1196-1199|def slotDeleteSelection(self)|
-|`slotNewSelection`|fn|pub|1200-1202|def slotNewSelection(self)|
-|`slotNewSelectionGrid`|fn|pub|1203-1221|def slotNewSelectionGrid(self)|
-|`createSelectionGrid`|fn|pub|1222-1278|def createSelectionGrid(self, grid)|
-|`getPadding`|fn|pub|1279-1306|def getPadding(self)|
-|`slotTrimMarginsAll`|fn|pub|1307-1319|def slotTrimMarginsAll(self)|
-|`slotTrimMargins`|fn|pub|1320-1324|def slotTrimMargins(self)|
-|`trimMarginsSelection`|fn|pub|1325-1428|def trimMarginsSelection(self, sel)|
-|`resizeEvent`|fn|pub|1429-1431|def resizeEvent(self, event)|
-|`closeEvent`|fn|pub|1432-1433|def closeEvent(self, event)|
+|`AspectRatioType`|class|pub|42-47|class AspectRatioType|
+|`AspectRatioType.__init__`|fn|priv|43-47|def __init__(self, name, width, height)|
+|`AspectRatioTypeManager`|class|pub|48-100|class AspectRatioTypeManager|
+|`AspectRatioTypeManager.__init__`|fn|priv|50-53|def __init__(self)|
+|`AspectRatioTypeManager.__iter__`|fn|priv|54-56|def __iter__(self)|
+|`AspectRatioTypeManager.addType`|fn|pub|57-59|def addType(self, name, width, height)|
+|`AspectRatioTypeManager.getType`|fn|pub|60-64|def getType(self, index)|
+|`AspectRatioTypeManager.addDefaults`|fn|pub|65-67|def addDefaults(self)|
+|`AspectRatioTypeManager.settingsCaption`|fn|pub|68-70|def settingsCaption(self)|
+|`AspectRatioTypeManager.saveTypes`|fn|pub|71-87|def saveTypes(self, settings)|
+|`AspectRatioTypeManager.loadTypes`|fn|pub|88-100|def loadTypes(self, settings)|
+|`SelAspectRatioTypeManager`|class|pub|101-114|class SelAspectRatioTypeManager(AspectRatioTypeManager)|
+|`SelAspectRatioTypeManager.settingsCaption`|fn|pub|103-105|def settingsCaption(self)|
+|`SelAspectRatioTypeManager.addDefaults`|fn|pub|106-114|def addDefaults(self)|
+|`DeviceTypeManager`|class|pub|115-127|class DeviceTypeManager(AspectRatioTypeManager)|
+|`DeviceTypeManager.settingsCaption`|fn|pub|117-119|def settingsCaption(self)|
+|`DeviceTypeManager.addDefaults`|fn|pub|120-127|def addDefaults(self)|
+|`MainWindow`|class|pub|128-327|class MainWindow(QMainWindow)|
+|`MainWindow.__init__`|fn|priv|132-246|def __init__(self)|
+|`MainWindow.viewer`|fn|pub|248-250|def viewer(self)|
+|`MainWindow.selections`|fn|pub|252-254|def selections(self)|
+|`MainWindow._toolbarIconFromAsset`|fn|priv|255-267|def _toolbarIconFromAsset(self, filename, fallbackTheme)|
+|`MainWindow._setupConversionModeControls`|fn|priv|268-285|def _setupConversionModeControls(self)|
+|`MainWindow._setupTrimSettingsControls`|fn|priv|286-296|def _setupTrimSettingsControls(self)|
+|`_setupTrimPresetControls`|fn|priv|297-333|def _setupTrimPresetControls(self)|
+|`_setupTrimPresetAction`|fn|priv|334-355|def _setupTrimPresetAction(self)|
+|`_trimPresetEditableFlag`|fn|priv|356-360|def _trimPresetEditableFlag(self)|
+|`_trimPresetRole`|fn|priv|361-365|def _trimPresetRole(self)|
+|`_defaultTrimPresetName`|fn|priv|366-373|def _defaultTrimPresetName(self)|
+|`_toBool`|fn|priv|374-384|def _toBool(self, value)|
+|`_updateTrimPagesRangeControls`|fn|priv|385-395|def _updateTrimPagesRangeControls(self, enabled)|
+|`_parseTrimPagesRange`|fn|priv|396-412|def _parseTrimPagesRange(self)|
+|`_collectRuntimeConfigValues`|fn|priv|413-428|def _collectRuntimeConfigValues(self)|
+|`_deleteAnnotsEnabled`|fn|priv|429-443|def _deleteAnnotsEnabled(self)|
+|`_trimPresetFromCurrentSelection`|fn|priv|444-463|def _trimPresetFromCurrentSelection(self)|
+|`_refreshTrimPresetList`|fn|priv|464-492|def _refreshTrimPresetList(self)|
+|`_persistTrimPresetDocument`|fn|priv|493-510|def _persistTrimPresetDocument(self)|
+|`_applyCropPreset`|fn|priv|511-542|def _applyCropPreset(self, crop_values)|
+|`_applyTrimPreset`|fn|priv|543-568|def _applyTrimPreset(self, index)|
+|`slotTrimPresetClicked`|fn|pub|569-581|def slotTrimPresetClicked(self, item, column)|
+|`slotTrimPresetDoubleClicked`|fn|pub|582-592|def slotTrimPresetDoubleClicked(self, item, column)|
+|`slotTrimPresetChanged`|fn|pub|593-616|def slotTrimPresetChanged(self, item, column)|
+|`slotDeleteTrimPreset`|fn|pub|617-635|def slotDeleteTrimPreset(self)|
+|`slotSaveMarginsPreset`|fn|pub|636-647|def slotSaveMarginsPreset(self)|
+|`selectedConversionMode`|fn|pub|648-655|def selectedConversionMode(self)|
+|`currentSelectionUpdated`|fn|pub|656-672|def currentSelectionUpdated(self)|
+|`_updateSelectionCreationActions`|fn|priv|673-682|def _updateSelectionCreationActions(self)|
+|`readSettings`|fn|pub|683-731|def readSettings(self)|
+|`writeSettings`|fn|pub|732-756|def writeSettings(self)|
+|`_hasCompatiblePageFormat`|fn|priv|757-778|def _hasCompatiblePageFormat(self)|
+|`openFile`|fn|pub|779-810|def openFile(self, fileName)|
+|`slotOpenFile`|fn|pub|811-816|def slotOpenFile(self)|
+|`slotSelectFile`|fn|pub|817-826|def slotSelectFile(self)|
+|`showWarning`|fn|pub|827-834|def showWarning(self, title, text)|
+|`str2pages`|fn|pub|835-852|def str2pages(self, s)|
+|`primarySelectionCropValue`|fn|pub|853-866|def primarySelectionCropValue(self, page_indexes)|
+|`buildCropPlan`|fn|pub|867-903|def buildCropPlan(self, inputFileName, outputFileName, re...|
+|`createConversionProgressDialog`|fn|pub|904-926|def createConversionProgressDialog(self, totalPages)|
+|`slotPdfFrame`|fn|pub|927-1028|def slotPdfFrame(self)|
+|`on_page_progress`|fn|pub|971-987|def on_page_progress(original_page_number, processed_coun...|
+|`slotZoomIn`|fn|pub|1029-1032|def slotZoomIn(self)|
+|`slotZoomOut`|fn|pub|1033-1036|def slotZoomOut(self)|
+|`slotFitInView`|fn|pub|1037-1041|def slotFitInView(self, checked)|
+|`slotSplitterMoved`|fn|pub|1042-1044|def slotSplitterMoved(self, pos, idx)|
+|`slotPreviousPage`|fn|pub|1045-1048|def slotPreviousPage(self)|
+|`slotNextPage`|fn|pub|1049-1052|def slotNextPage(self)|
+|`slotFirstPage`|fn|pub|1053-1056|def slotFirstPage(self)|
+|`slotLastPage`|fn|pub|1057-1060|def slotLastPage(self)|
+|`slotCurrentPageEdited`|fn|pub|1061-1068|def slotCurrentPageEdited(self, text)|
+|`updateControls`|fn|pub|1069-1077|def updateControls(self)|
+|`slotSelectionMode`|fn|pub|1078-1081|def slotSelectionMode(self, checked)|
+|`slotSelExceptionsChanged`|fn|pub|1082-1084|def slotSelExceptionsChanged(self)|
+|`slotSelExceptionsEdited`|fn|pub|1085-1089|def slotSelExceptionsEdited(self, text)|
+|`slotSelAspectRatioChanged`|fn|pub|1090-1098|def slotSelAspectRatioChanged(self)|
+|`slotSelAspectRatioTypeChanged`|fn|pub|1099-1118|def slotSelAspectRatioTypeChanged(self, index)|
+|`distributeAspectRatioChanged`|fn|pub|1119-1121|def distributeAspectRatioChanged(self, aspectRatio)|
+|`slotDistributeAspectRatioChanged`|fn|pub|1122-1124|def slotDistributeAspectRatioChanged(self)|
+|`slotDeviceTypeChanged`|fn|pub|1125-1131|def slotDeviceTypeChanged(self, index)|
+|`slotContextMenu`|fn|pub|1132-1152|def slotContextMenu(self, pos)|
+|`slotDeleteSelection`|fn|pub|1153-1156|def slotDeleteSelection(self)|
+|`slotNewSelection`|fn|pub|1157-1159|def slotNewSelection(self)|
+|`slotNewSelectionGrid`|fn|pub|1160-1178|def slotNewSelectionGrid(self)|
+|`createSelectionGrid`|fn|pub|1179-1235|def createSelectionGrid(self, grid)|
+|`getPadding`|fn|pub|1236-1263|def getPadding(self)|
+|`slotTrimMarginsAll`|fn|pub|1264-1276|def slotTrimMarginsAll(self)|
+|`slotTrimMargins`|fn|pub|1277-1281|def slotTrimMargins(self)|
+|`trimMarginsSelection`|fn|pub|1282-1385|def trimMarginsSelection(self, sel)|
+|`resizeEvent`|fn|pub|1386-1388|def resizeEvent(self, event)|
+|`closeEvent`|fn|pub|1389-1390|def closeEvent(self, event)|
 
 
 ---
 
-# mainwindowui_qt5.py | Python | 485L | 3 symbols | 1 imports | 12 comments
+# mainwindowui_qt5.py | Python | 479L | 3 symbols | 1 imports | 12 comments
 > Path: `src/pdfframe/mainwindowui_qt5.py`
 - @brief PyQt5-generated UI bindings for `MainWindow`.
 - @details Source generated from `mainwindow.ui`; manual edits are restricted to static-analysis metadata.
@@ -661,7 +650,7 @@ from PyQt5 import QtCore, QtWidgets
 - @param MainWindow {QtWidgets.QMainWindow} Target window instance.
 - @return {None} Applies generated UI graph.
 
-### fn `def retranslateUi(self, MainWindow)` (L392-408)
+### fn `def retranslateUi(self, MainWindow)` (L388-402)
 - @brief Applies translatable UI strings to generated widgets.
 - @param MainWindow {QtWidgets.QMainWindow} Target window instance.
 - @return {None} Updates texts/tooltips/actions.
@@ -671,12 +660,12 @@ from PyQt5 import QtCore, QtWidgets
 |---|---|---|---|---|
 |`Ui_MainWindow`|class|pub|21-220|class Ui_MainWindow(object)|
 |`setupUi`|fn|pub|26-225|def setupUi(self, MainWindow)|
-|`retranslateUi`|fn|pub|392-408|def retranslateUi(self, MainWindow)|
+|`retranslateUi`|fn|pub|388-402|def retranslateUi(self, MainWindow)|
 
 
 ---
 
-# mainwindowui_qt6.py | Python | 483L | 3 symbols | 1 imports | 12 comments
+# mainwindowui_qt6.py | Python | 477L | 3 symbols | 1 imports | 12 comments
 > Path: `src/pdfframe/mainwindowui_qt6.py`
 - @brief PyQt6-generated UI bindings for `MainWindow`.
 - @details Source generated from `mainwindow.ui`; manual edits are restricted to static-analysis metadata.
@@ -697,7 +686,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 - @param MainWindow {QtWidgets.QMainWindow} Target window instance.
 - @return {None} Applies generated UI graph.
 
-### fn `def retranslateUi(self, MainWindow)` (L390-406)
+### fn `def retranslateUi(self, MainWindow)` (L386-400)
 - @brief Applies translatable UI strings to generated widgets.
 - @param MainWindow {QtWidgets.QMainWindow} Target window instance.
 - @return {None} Updates texts/tooltips/actions.
@@ -707,72 +696,67 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 |---|---|---|---|---|
 |`Ui_MainWindow`|class|pub|19-218|class Ui_MainWindow(object)|
 |`setupUi`|fn|pub|24-223|def setupUi(self, MainWindow)|
-|`retranslateUi`|fn|pub|390-406|def retranslateUi(self, MainWindow)|
+|`retranslateUi`|fn|pub|386-400|def retranslateUi(self, MainWindow)|
 
 
 ---
 
-# pdfframecmd.py | Python | 370L | 16 symbols | 8 imports | 15 comments
+# pdfframecmd.py | Python | 303L | 11 symbols | 3 imports | 15 comments
 > Path: `src/pdfframe/pdfframecmd.py`
+- @brief PyMuPDF-based PDF crop/frame utilities for pdfframe.
+- @details Provides crop-box geometry helpers and iterative page processing
+through the PyMuPDF `fitz` API with per-page progress reporting,
+cancellation support, annotation deletion, and bookmark preservation.
+Copyright (C) 2010-2025 Ogekuri
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
 ## Imports
 ```
 import importlib
-import queue
-import re
-import shlex
-import subprocess
 import sys
-import threading
-import time
+import fitz
 ```
 
 ## Definitions
 
-### class `class GhostscriptCommandError(RuntimeError)` : RuntimeError (L23-41)
-- @brief Represents a failed Ghostscript subprocess execution.
-- @details Encapsulates command vector, return code, and captured streams so caller code can emit deterministic diagnostics for GUI and terminal paths.
-- @param command {list[str]} Executed command vector passed to subprocess.
-- @param returncode {int} Process exit code returned by subprocess.
-- @param stdout {str} Captured standard output text.
-- @param stderr {str} Captured standard error text.
-- @return {None} Constructs exception payload and error message.
-- fn `def __init__(self, command, returncode, stdout, stderr)` `priv` (L34-41)
-  - @brief Represents a failed Ghostscript subprocess execution.
-  - @details Encapsulates command vector, return code, and captured streams so caller code can emit deterministic diagnostics for GUI and terminal paths.
-  - @param command {list[str]} Executed command vector passed to subprocess.
-  - @param returncode {int} Process exit code returned by subprocess.
-  - @param stdout {str} Captured standard output text.
-  - @param stderr {str} Captured standard error text.
-  - @return {None} Constructs exception payload and error message.
+### class `class CropError(RuntimeError)` : RuntimeError (L23-36)
+- @brief Represents a failed PDF crop operation.
+- @details Encapsulates error context so caller code can emit deterministic diagnostics for GUI and terminal paths.
+- @param message {str} Human-readable error description.
+- @return {None} Constructs exception payload.
+- fn `def __init__(self, message)` `priv` (L32-36)
+  - @brief Represents a failed PDF crop operation.
+  - @details Encapsulates error context so caller code can emit deterministic
+diagnostics for GUI and terminal paths.
+  - @param message {str} Human-readable error description.
+  - @return {None} Constructs exception payload.
 
-### class `class GhostscriptCommandCancelledError(RuntimeError)` : RuntimeError (L42-56)
-- @brief Represents user-requested cancellation of Ghostscript execution.
-- @details Encapsulates executed command and partial output captured before termination so caller code can report deterministic cancellation diagnostics.
-- @param command {list[str]} Executed command vector passed to subprocess.
-- @param stdout {str} Partial captured standard output text.
-- @return {None} Constructs exception payload and error message.
-- fn `def __init__(self, command, stdout)` `priv` (L51-56)
-  - @brief Represents user-requested cancellation of Ghostscript execution.
-  - @details Encapsulates executed command and partial output captured before termination so caller code can report deterministic cancellation diagnostics.
-  - @param command {list[str]} Executed command vector passed to subprocess.
-  - @param stdout {str} Partial captured standard output text.
-  - @return {None} Constructs exception payload and error message.
+### class `class CropCancelledError(RuntimeError)` : RuntimeError (L37-47)
+- @brief Represents user-requested cancellation of crop processing.
+- @details Raised when the cancel callback returns True between page iterations.
+- @return {None} Constructs exception payload.
+- fn `def __init__(self)` `priv` (L44-47)
+  - @brief Represents user-requested cancellation of crop processing.
+  - @details Raised when the cancel callback returns True between page iterations.
+  - @return {None} Constructs exception payload.
 
-### fn `def _format_scalar(value)` `priv` (L57-70)
-- @brief Converts numeric values to stable CLI scalar strings.
-- @details Emits integer-like values without decimal suffix and non-integers with compact decimal representation to keep generated command arguments deterministic for tests.
+### fn `def _format_scalar(value)` `priv` (L48-61)
+- @brief Converts numeric values to stable scalar strings.
+- @details Emits integer-like values without decimal suffix and non-integers with compact decimal representation for deterministic logging output.
 - @param value {float|int} Numeric value to format.
-- @return {str} Stable scalar representation for CLI arguments.
+- @return {str} Stable scalar representation.
 
-### fn `def padding_to_crop_offsets(padding)` (L71-85)
+### fn `def padding_to_crop_offsets(padding)` (L62-76)
 - @brief Reorders GUI padding vector to crop-offset order.
 - @details Converts GUI tuple [top, right, bottom, left] to crop-offset tuple [left, top, right, bottom] for deterministic crop-box expansion.
 - @param padding {list[float]|tuple[float,float,float,float]} GUI padding vector with exactly four components.
 - @return {tuple[float,float,float,float]} Crop-offset tuple ordered as left, top, right, bottom.
 - @throws {ValueError} If padding vector does not contain exactly four values.
 
-### fn `def crop_values_to_bbox(crop_values, page_width, page_height)` (L86-116)
+### fn `def crop_values_to_bbox(crop_values, page_width, page_height)` (L77-107)
 - @brief Converts normalized selection crop values to absolute page-space crop box.
 - @details Merges all visible normalized crops into one union box by first converting each GUI-derived normalized crop tuple to CropBox LL/UR page-space coordinates and then taking bounding extents in left,bottom,right,top order.
 - @param crop_values {list[tuple[float,float,float,float]]} Normalized crop tuples (left, top, right, bottom).
@@ -781,7 +765,7 @@ import time
 - @return {tuple[float,float,float,float]|None} Crop box tuple or None when no crop values exist.
 - @throws {ValueError} If page dimensions are non-positive.
 
-### fn `def normalized_crop_tuple_to_bbox(crop_value, page_width, page_height)` (L117-139)
+### fn `def normalized_crop_tuple_to_bbox(crop_value, page_width, page_height)` (L108-130)
 - @brief Converts one normalized GUI crop tuple into page-point CropBox coordinates.
 - @details Maps normalized GUI tuple `(left, top, right_margin, bottom_margin)` to CropBox corners `(LLx, LLy, URx, URy)` in page-point space with lower-left PDF origin.
 - @param crop_value {tuple[float,float,float,float]} Normalized GUI crop tuple.
@@ -790,7 +774,7 @@ import time
 - @return {tuple[float,float,float,float]} CropBox coordinates in left,bottom,right,top order.
 - @throws {ValueError} If resulting CropBox is empty.
 
-### fn `def apply_crop_offsets_to_bbox(bbox, offsets, page_width, page_height)` (L140-165)
+### fn `def apply_crop_offsets_to_bbox(bbox, offsets, page_width, page_height)` (L131-156)
 - @brief Applies GUI crop offsets to an absolute crop box.
 - @details Expands or shrinks the crop box by offsets in left,top,right,bottom order and clamps the resulting box to page bounds.
 - @param bbox {tuple[float,float,float,float]} Input crop box in left,bottom,right,top order.
@@ -800,27 +784,7 @@ import time
 - @return {tuple[float,float,float,float]} Adjusted crop box in left,bottom,right,top order.
 - @throws {ValueError} If resulting crop box is empty after clamping.
 
-### fn `def build_ghostscript_page_crop_command(input_path, output_path, first_page,` (L166-240)
-
-### fn `def extract_ghostscript_page_numbers(line)` (L241-252)
-- @brief Extracts all processed page indices from Ghostscript output text.
-- @details Parses each output line that matches `^Page\\s+\\d+\\n` in the provided chunk and returns one-based page numbers in encounter order.
-- @param line {str} One output line or chunk produced by Ghostscript.
-- @return {list[int]} Processed page numbers found in the chunk.
-
-### fn `def extract_ghostscript_page_number(line)` (L253-266)
-- @brief Extracts processed page index from Ghostscript output lines.
-- @details Parses `Page N` line format emitted by Ghostscript and returns one-based page number when a match is present.
-- @param line {str} One output line produced by Ghostscript.
-- @return {int|None} Processed page number or None when line does not contain page progress information.
-
-### fn `def format_shell_command(command)` (L267-277)
-- @brief Formats command vectors into deterministic shell-escaped strings.
-- @details Serializes subprocess command vectors with POSIX shell escaping to provide exact reproducible command diagnostics.
-- @param command {list[str]} Subprocess command vector.
-- @return {str} Shell-escaped command string preserving argument boundaries.
-
-### fn `def write_cropped_pages_output(output_file_name, cropped_page_paths)` (L278-300)
+### fn `def write_cropped_pages_output(output_file_name, cropped_page_paths)` (L157-181)
 - @brief Writes output PDF using only selected cropped page files.
 - @details Loads one-page cropped PDF files in provided order and writes a new output PDF that contains exactly those pages.
 - @param output_file_name {str} Destination PDF file path.
@@ -828,58 +792,27 @@ import time
 - @return {None} Writes assembled output PDF to filesystem.
 - @throws {ValueError} If no cropped pages are provided.
 
-### fn `def run_ghostscript_command(command, event_pump=None, poll_interval=0.05,` (L301-370)
-- @brief Executes Ghostscript and captures subprocess output streams.
-- @details Runs subprocess in text mode, captures output for deterministic diagnostics, optionally streams output lines through a callback, optionally pumps UI events while process is running, and supports user-requested cancellation.
-- @param command {list[str]} Complete subprocess command vector.
-- @param event_pump {callable|None} Optional callback invoked repeatedly while subprocess execution is in progress.
-- @param poll_interval {float} Seconds to wait between event-pump cycles when callback mode is enabled.
-- @param output_callback {callable|None} Optional callback receiving each streamed output line.
-- @param cancel_requested {callable|None} Optional callback returning True when subprocess should be cancelled.
-- @param log_command {bool} When True, prints the shell-escaped command line before execution.
-- @param debug_output {bool} When True, prints captured Ghostscript output to stderr while preserving capture behavior.
-- @return {subprocess.CompletedProcess[str]} Successful subprocess result with captured streams.
-- @throws {GhostscriptCommandError} If Ghostscript exits with non-zero status.
-- @throws {GhostscriptCommandCancelledError} If cancellation callback requests process termination.
-
-### fn `def reader()` (L330-337)
-- @brief Executes Ghostscript and captures subprocess output streams.
-- @details Runs subprocess in text mode, captures output for deterministic diagnostics, optionally streams output lines through a callback, optionally pumps UI events while process is running, and supports user-requested cancellation.
-- @param command {list[str]} Complete subprocess command vector.
-- @param event_pump {callable|None} Optional callback invoked repeatedly while subprocess execution is in progress.
-- @param poll_interval {float} Seconds to wait between event-pump cycles when callback mode is enabled.
-- @param output_callback {callable|None} Optional callback receiving each streamed output line.
-- @param cancel_requested {callable|None} Optional callback returning True when subprocess should be cancelled.
-- @param log_command {bool} When True, prints the shell-escaped command line before execution.
-- @param debug_output {bool} When True, prints captured Ghostscript output to stderr while preserving capture behavior.
-- @return {subprocess.CompletedProcess[str]} Successful subprocess result with captured streams.
-- @throws {GhostscriptCommandError} If Ghostscript exits with non-zero status.
-- @throws {GhostscriptCommandCancelledError} If cancellation callback requests process termination.
+### fn `def crop_pdf_pages(` (L182-195)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
 |---|---|---|---|---|
-|`GhostscriptCommandError`|class|pub|23-41|class GhostscriptCommandError(RuntimeError)|
-|`GhostscriptCommandError.__init__`|fn|priv|34-41|def __init__(self, command, returncode, stdout, stderr)|
-|`GhostscriptCommandCancelledError`|class|pub|42-56|class GhostscriptCommandCancelledError(RuntimeError)|
-|`GhostscriptCommandCancelledError.__init__`|fn|priv|51-56|def __init__(self, command, stdout)|
-|`_format_scalar`|fn|priv|57-70|def _format_scalar(value)|
-|`padding_to_crop_offsets`|fn|pub|71-85|def padding_to_crop_offsets(padding)|
-|`crop_values_to_bbox`|fn|pub|86-116|def crop_values_to_bbox(crop_values, page_width, page_hei...|
-|`normalized_crop_tuple_to_bbox`|fn|pub|117-139|def normalized_crop_tuple_to_bbox(crop_value, page_width,...|
-|`apply_crop_offsets_to_bbox`|fn|pub|140-165|def apply_crop_offsets_to_bbox(bbox, offsets, page_width,...|
-|`build_ghostscript_page_crop_command`|fn|pub|166-240|def build_ghostscript_page_crop_command(input_path, outpu...|
-|`extract_ghostscript_page_numbers`|fn|pub|241-252|def extract_ghostscript_page_numbers(line)|
-|`extract_ghostscript_page_number`|fn|pub|253-266|def extract_ghostscript_page_number(line)|
-|`format_shell_command`|fn|pub|267-277|def format_shell_command(command)|
-|`write_cropped_pages_output`|fn|pub|278-300|def write_cropped_pages_output(output_file_name, cropped_...|
-|`run_ghostscript_command`|fn|pub|301-370|def run_ghostscript_command(command, event_pump=None, pol...|
-|`reader`|fn|pub|330-337|def reader()|
+|`CropError`|class|pub|23-36|class CropError(RuntimeError)|
+|`CropError.__init__`|fn|priv|32-36|def __init__(self, message)|
+|`CropCancelledError`|class|pub|37-47|class CropCancelledError(RuntimeError)|
+|`CropCancelledError.__init__`|fn|priv|44-47|def __init__(self)|
+|`_format_scalar`|fn|priv|48-61|def _format_scalar(value)|
+|`padding_to_crop_offsets`|fn|pub|62-76|def padding_to_crop_offsets(padding)|
+|`crop_values_to_bbox`|fn|pub|77-107|def crop_values_to_bbox(crop_values, page_width, page_hei...|
+|`normalized_crop_tuple_to_bbox`|fn|pub|108-130|def normalized_crop_tuple_to_bbox(crop_value, page_width,...|
+|`apply_crop_offsets_to_bbox`|fn|pub|131-156|def apply_crop_offsets_to_bbox(bbox, offsets, page_width,...|
+|`write_cropped_pages_output`|fn|pub|157-181|def write_cropped_pages_output(output_file_name, cropped_...|
+|`crop_pdf_pages`|fn|pub|182-195|def crop_pdf_pages(|
 
 
 ---
 
-# pdfframeper.py | Python | 327L | 62 symbols | 10 imports | 43 comments
+# pdfframeper.py | Python | 322L | 61 symbols | 9 imports | 43 comments
 > Path: `src/pdfframe/pdfframeper.py`
 - @brief PDF backend adapters for loading and writing cropped documents.
 - @details Provides wrapper classes over pypdf, PyPDF2, PyMuPDF, and pikepdf for unified crop operations.
@@ -894,7 +827,6 @@ the Free Software Foundation; either version 3 of the License, or
 import copy
 import sys
 from pdfframe.config import PYQT6
-import subprocess
 import fitz
 from pikepdf import Pdf
 from pypdf import PdfReader, PdfWriter
@@ -973,17 +905,15 @@ from PyPDF2 import PdfReader, PdfWriter
 - fn `def pageSetCropBox(self, page, box)` (L230-233)
 - fn `def copyDocumentRoot(self, pdffile)` (L234-237)
 
-### fn `def computeCropBoxCoords(box, crop, pdf_coords=True)` (L238-248)
+### fn `def computeCropBoxCoords(box, crop, pdf_coords=True)` (L238-249)
 
-### fn `def optimizePdfGhostscript(oldfilename, newfilename)` (L249-254)
+### fn `def import_pymupdf()` (L253-260)
 
-### fn `def import_pymupdf()` (L258-265)
+### fn `def import_pikepdf()` (L261-266)
 
-### fn `def import_pikepdf()` (L266-271)
+### fn `def import_pypdf()` (L267-272)
 
-### fn `def import_pypdf()` (L272-277)
-
-### fn `def import_pypdf2()` (L278-292)
+### fn `def import_pypdf2()` (L273-287)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
@@ -1044,12 +974,11 @@ from PyPDF2 import PdfReader, PdfWriter
 |`PikePdfFrameper.pageGetCropBox`|fn|pub|224-229|def pageGetCropBox(self, page)|
 |`PikePdfFrameper.pageSetCropBox`|fn|pub|230-233|def pageSetCropBox(self, page, box)|
 |`PikePdfFrameper.copyDocumentRoot`|fn|pub|234-237|def copyDocumentRoot(self, pdffile)|
-|`computeCropBoxCoords`|fn|pub|238-248|def computeCropBoxCoords(box, crop, pdf_coords=True)|
-|`optimizePdfGhostscript`|fn|pub|249-254|def optimizePdfGhostscript(oldfilename, newfilename)|
-|`import_pymupdf`|fn|pub|258-265|def import_pymupdf()|
-|`import_pikepdf`|fn|pub|266-271|def import_pikepdf()|
-|`import_pypdf`|fn|pub|272-277|def import_pypdf()|
-|`import_pypdf2`|fn|pub|278-292|def import_pypdf2()|
+|`computeCropBoxCoords`|fn|pub|238-249|def computeCropBoxCoords(box, crop, pdf_coords=True)|
+|`import_pymupdf`|fn|pub|253-260|def import_pymupdf()|
+|`import_pikepdf`|fn|pub|261-266|def import_pikepdf()|
+|`import_pypdf`|fn|pub|267-272|def import_pypdf()|
+|`import_pypdf2`|fn|pub|273-287|def import_pypdf2()|
 
 
 ---

@@ -1,7 +1,11 @@
 # -*- coding: iso-8859-1 -*-
 
 """
-Ghostscript command integration utilities for pdfframe.
+@file pdfframecmd.py
+@brief PyMuPDF-based PDF crop/frame utilities for pdfframe.
+@details Provides crop-box geometry helpers and iterative page processing
+through the PyMuPDF `fitz` API with per-page progress reporting,
+cancellation support, annotation deletion, and bookmark preservation.
 
 Copyright (C) 2010-2025 Ogekuri
 This program is free software; you can redistribute it and/or modify
@@ -11,55 +15,42 @@ the Free Software Foundation; either version 3 of the License, or
 """
 
 import importlib
-import queue
-import re
-import shlex
-import subprocess
 import sys
-import threading
-import time
+
+import fitz
 
 
-class GhostscriptCommandError(RuntimeError):
+class CropError(RuntimeError):
     """
-    @brief Represents a failed Ghostscript subprocess execution.
-    @details Encapsulates command vector, return code, and captured streams so caller code can emit deterministic diagnostics for GUI and terminal paths.
-    @param command {list[str]} Executed command vector passed to subprocess.
-    @param returncode {int} Process exit code returned by subprocess.
-    @param stdout {str} Captured standard output text.
-    @param stderr {str} Captured standard error text.
-    @return {None} Constructs exception payload and error message.
+    @brief Represents a failed PDF crop operation.
+    @details Encapsulates error context so caller code can emit deterministic
+    diagnostics for GUI and terminal paths.
+    @param message {str} Human-readable error description.
+    @return {None} Constructs exception payload.
     """
 
-    def __init__(self, command, returncode, stdout, stderr):
-        self.command = command
-        self.returncode = returncode
-        self.stdout = stdout
-        self.stderr = stderr
-        super().__init__(f"ghostscript exited with status {returncode}")
+    def __init__(self, message):
+        self.message = message
+        super().__init__(message)
 
 
-class GhostscriptCommandCancelledError(RuntimeError):
+class CropCancelledError(RuntimeError):
     """
-    @brief Represents user-requested cancellation of Ghostscript execution.
-    @details Encapsulates executed command and partial output captured before termination so caller code can report deterministic cancellation diagnostics.
-    @param command {list[str]} Executed command vector passed to subprocess.
-    @param stdout {str} Partial captured standard output text.
-    @return {None} Constructs exception payload and error message.
+    @brief Represents user-requested cancellation of crop processing.
+    @details Raised when the cancel callback returns True between page iterations.
+    @return {None} Constructs exception payload.
     """
 
-    def __init__(self, command, stdout):
-        self.command = command
-        self.stdout = stdout
-        super().__init__("ghostscript execution cancelled")
+    def __init__(self):
+        super().__init__("PDF crop cancelled by user")
 
 
 def _format_scalar(value):
     """
-    @brief Converts numeric values to stable CLI scalar strings.
-    @details Emits integer-like values without decimal suffix and non-integers with compact decimal representation to keep generated command arguments deterministic for tests.
+    @brief Converts numeric values to stable scalar strings.
+    @details Emits integer-like values without decimal suffix and non-integers with compact decimal representation for deterministic logging output.
     @param value {float|int} Numeric value to format.
-    @return {str} Stable scalar representation for CLI arguments.
+    @return {str} Stable scalar representation.
     """
 
     numeric = float(value)
@@ -163,124 +154,14 @@ def apply_crop_offsets_to_bbox(bbox, offsets, page_width, page_height):
     return adjusted_left, adjusted_bottom, adjusted_right, adjusted_top
 
 
-def build_ghostscript_page_crop_command(input_path, output_path, first_page,
-    last_page,
-    page_width, page_height, crop_box, mode="frame", preserve_annots=False,
-    show_annots=False, command_name="gs"):
-    """
-    @brief Builds Ghostscript command vector for cropping a page range.
-    @details Assembles script-style pdfwrite command with BeginPage clipping for selected pages, using either physical crop (`crop`) or original-size clipped output (`frame`).
-    @param input_path {str} Source PDF path.
-    @param output_path {str} Destination output PDF path.
-    @param first_page {int} One-based first page index to process.
-    @param last_page {int} One-based last page index to process.
-    @param page_width {float} Target media width in points.
-    @param page_height {float} Target media height in points.
-    @param crop_box {tuple[float,float,float,float]} Crop box in left,bottom,right,top order.
-    @param mode {str} Conversion mode (`frame` or `crop`).
-    @param preserve_annots {bool} When True, passes `-dPreserveAnnots=true`; otherwise `-dPreserveAnnots=false`.
-    @param show_annots {bool} When True, passes `-dShowAnnots=true`; otherwise `-dShowAnnots=false`.
-    @param command_name {str} Executable name for Ghostscript binary.
-    @return {list[str]} Complete subprocess command vector.
-    @throws {ValueError} If mode is not supported or crop size is invalid.
-    """
-
-    left, bottom, right, top = [float(v) for v in crop_box]
-    crop_width = right - left
-    crop_height = top - bottom
-    if crop_width <= 0 or crop_height <= 0:
-        raise ValueError("Calculated crop size must be positive.")
-    if int(first_page) <= 0 or int(last_page) <= 0 or int(first_page) > int(last_page):
-        raise ValueError("Page range must satisfy 1 <= first_page <= last_page.")
-    if mode not in {"frame", "crop"}:
-        raise ValueError("Mode must be either `frame` or `crop`.")
-    left_value = _format_scalar(left)
-    bottom_value = _format_scalar(bottom)
-    crop_width_value = _format_scalar(crop_width)
-    crop_height_value = _format_scalar(crop_height)
-    page_width_value = _format_scalar(page_width)
-    page_height_value = _format_scalar(page_height)
-    if mode == "crop":
-        device_width_value = crop_width_value
-        device_height_value = crop_height_value
-        begin_page = (
-            f"<</BeginPage{{0 0 {crop_width_value} {crop_height_value} rectclip "
-            f"-{left_value} -{bottom_value} translate}}>> setpagedevice"
-        )
-    else:
-        device_width_value = page_width_value
-        device_height_value = page_height_value
-        begin_page = (
-            f"<</BeginPage{{{left_value} {bottom_value} {crop_width_value} "
-            f"{crop_height_value} rectclip}}>> setpagedevice"
-        )
-    return [
-        command_name,
-        "-dSAFER",
-        "-dNOPAUSE",
-        "-dBATCH",
-        "-sDEVICE=pdfwrite",
-        "-dAutoRotatePages=/None",
-        "-dFIXEDMEDIA",
-        "-dModifiesPageSize=true",
-        f"-dPreserveAnnots={'true' if preserve_annots else 'false'}",
-        f"-dShowAnnots={'true' if show_annots else 'false'}",
-        f"-dFirstPage={int(first_page)}",
-        f"-dLastPage={int(last_page)}",
-        f"-dDEVICEWIDTHPOINTS={device_width_value}",
-        f"-dDEVICEHEIGHTPOINTS={device_height_value}",
-        "-o",
-        output_path,
-        "-c",
-        begin_page,
-        "-f",
-        input_path,
-    ]
-
-
-def extract_ghostscript_page_numbers(line):
-    """
-    @brief Extracts all processed page indices from Ghostscript output text.
-    @details Parses each output line that matches `^Page\\s+\\d+\\n` in the provided chunk and returns one-based page numbers in encounter order.
-    @param line {str} One output line or chunk produced by Ghostscript.
-    @return {list[int]} Processed page numbers found in the chunk.
-    """
-
-    normalized = line.replace("\r", "\n")
-    return [int(match.group(1)) for match in re.finditer(r"(?m)^Page\s+(\d+)\n", normalized)]
-
-
-def extract_ghostscript_page_number(line):
-    """
-    @brief Extracts processed page index from Ghostscript output lines.
-    @details Parses `Page N` line format emitted by Ghostscript and returns one-based page number when a match is present.
-    @param line {str} One output line produced by Ghostscript.
-    @return {int|None} Processed page number or None when line does not contain page progress information.
-    """
-
-    page_numbers = extract_ghostscript_page_numbers(line)
-    if not page_numbers:
-        return None
-    return page_numbers[-1]
-
-
-def format_shell_command(command):
-    """
-    @brief Formats command vectors into deterministic shell-escaped strings.
-    @details Serializes subprocess command vectors with POSIX shell escaping to provide exact reproducible command diagnostics.
-    @param command {list[str]} Subprocess command vector.
-    @return {str} Shell-escaped command string preserving argument boundaries.
-    """
-
-    return shlex.join([str(value) for value in command])
-
-
 def write_cropped_pages_output(output_file_name, cropped_page_paths):
     """
     @brief Writes output PDF using only selected cropped page files.
-    @details Loads one-page cropped PDF files in provided order and writes a new output PDF that contains exactly those pages.
+    @details Loads one-page cropped PDF files in provided order and writes a new
+    output PDF that contains exactly those pages.
     @param output_file_name {str} Destination PDF file path.
-    @param cropped_page_paths {list[str]} Ordered one-page cropped PDF paths selected for export.
+    @param cropped_page_paths {list[str]} Ordered one-page cropped PDF paths
+    selected for export.
     @return {None} Writes assembled output PDF to filesystem.
     @throws {ValueError} If no cropped pages are provided.
     """
@@ -298,73 +179,125 @@ def write_cropped_pages_output(output_file_name, cropped_page_paths):
         writer.write(output_file)
 
 
-def run_ghostscript_command(command, event_pump=None, poll_interval=0.05,
-    output_callback=None, cancel_requested=None, log_command=False, debug_output=False):
+def crop_pdf_pages(
+    input_path,
+    output_path,
+    page_indexes,
+    crop_box,
+    page_width,
+    page_height,
+    mode="frame",
+    delete_annots=True,
+    progress_callback=None,
+    cancel_requested=None,
+    event_pump=None,
+    log_params=False,
+    debug_output=False,
+):
     """
-    @brief Executes Ghostscript and captures subprocess output streams.
-    @details Runs subprocess in text mode, captures output for deterministic diagnostics, optionally streams output lines through a callback, optionally pumps UI events while process is running, and supports user-requested cancellation.
-    @param command {list[str]} Complete subprocess command vector.
-    @param event_pump {callable|None} Optional callback invoked repeatedly while subprocess execution is in progress.
-    @param poll_interval {float} Seconds to wait between event-pump cycles when callback mode is enabled.
-    @param output_callback {callable|None} Optional callback receiving each streamed output line.
-    @param cancel_requested {callable|None} Optional callback returning True when subprocess should be cancelled.
-    @param log_command {bool} When True, prints the shell-escaped command line before execution.
-    @param debug_output {bool} When True, prints captured Ghostscript output to stderr while preserving capture behavior.
-    @return {subprocess.CompletedProcess[str]} Successful subprocess result with captured streams.
-    @throws {GhostscriptCommandError} If Ghostscript exits with non-zero status.
-    @throws {GhostscriptCommandCancelledError} If cancellation callback requests process termination.
+    @brief Crops/frames PDF pages using PyMuPDF fitz API.
+    @details Opens the source PDF, selects only requested pages, applies
+    CropBox (frame mode) or MediaBox+CropBox (crop mode) per page,
+    optionally deletes all annotations/widgets, preserves bookmarks/TOC,
+    and saves the output. Reports per-page progress via callback.
+    @param input_path {str} Source PDF file path.
+    @param output_path {str} Destination PDF file path.
+    @param page_indexes {list[int]} Zero-based page indexes to include.
+    @param crop_box {tuple[float,float,float,float]} PDF-coordinate crop box
+    as (left, bottom, right, top) where origin is bottom-left.
+    @param page_width {float} Original page width in points.
+    @param page_height {float} Original page height in points.
+    @param mode {str} `"frame"` keeps original page size with CropBox clip;
+    `"crop"` physically resizes page to crop area.
+    @param delete_annots {bool} When True removes all `/Annots` entries
+    using native PyMuPDF annotation/widget API.
+    @param progress_callback {callable|None} Called as
+    `progress_callback(original_page_number_1based, processed_count, total)`
+    after each page is processed.
+    @param cancel_requested {callable|None} Returns True to cancel between
+    page iterations.
+    @param event_pump {callable|None} Pumps UI events between pages.
+    @param log_params {bool} Prints crop parameters to stderr before
+    processing.
+    @param debug_output {bool} Prints per-page processing info to stderr.
+    @return {None} Writes cropped PDF to output_path.
+    @throws {CropError} If PyMuPDF open/save/crop operations fail.
+    @throws {CropCancelledError} If cancel_requested returns True.
+    @throws {ValueError} If crop dimensions are non-positive or mode invalid.
     """
 
-    if log_command:
-        sys.stderr.write(f"Executing Ghostscript command: {format_shell_command(command)}\n")
-    stream_mode = event_pump is not None or output_callback is not None or cancel_requested is not None
-    if not stream_mode:
-        result = subprocess.run(command, check=False, text=True, capture_output=True)
-        if debug_output and result.stdout:
-            sys.stderr.write(result.stdout)
-    else:
-        process = subprocess.Popen(command, text=True, bufsize=1,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output_queue = queue.Queue()
+    left, bottom, right, top = [float(v) for v in crop_box]
+    crop_width = right - left
+    crop_height = top - bottom
+    if crop_width <= 0 or crop_height <= 0:
+        raise ValueError("Calculated crop size must be positive.")
+    if mode not in {"frame", "crop"}:
+        raise ValueError("Mode must be either `frame` or `crop`.")
 
-        def reader():
-            stream = process.stdout
-            if stream is None:
-                return
-            for line in iter(stream.readline, ""):
-                output_queue.put(line)
-            stream.close()
+    if log_params:
+        sys.stderr.write(
+            f"PyMuPDF crop: mode={mode}, pages={len(page_indexes)}, "
+            f"crop_box=({_format_scalar(left)}, {_format_scalar(bottom)}, "
+            f"{_format_scalar(right)}, {_format_scalar(top)}), "
+            f"delete_annots={delete_annots}\n"
+        )
 
-        reader_thread = threading.Thread(target=reader, daemon=True)
-        reader_thread.start()
-        captured_lines = []
-        was_cancelled = False
-        while True:
-            if event_pump is not None:
+    try:
+        doc = fitz.open(input_path)
+    except Exception as exc:
+        raise CropError(f"Failed to open PDF: {exc}") from exc
+
+    try:
+        toc = doc.get_toc(simple=False)
+
+        doc.select(page_indexes)
+        total = len(doc)
+
+        # Convert PDF bbox (bottom-left origin) to PyMuPDF Rect (top-left origin)
+        # set_cropbox internally flips y using current mediabox
+        pymupdf_crop_rect = fitz.Rect(
+            left, page_height - top, right, page_height - bottom
+        )
+
+        for idx in range(total):
+            if cancel_requested and cancel_requested():
+                raise CropCancelledError()
+
+            if event_pump:
                 event_pump()
-            while not output_queue.empty():
-                line = output_queue.get_nowait()
-                captured_lines.append(line)
-                if debug_output:
-                    sys.stderr.write(line)
-                if output_callback is not None:
-                    output_callback(line)
-            if (cancel_requested is not None and not was_cancelled and process.poll() is None
-                    and cancel_requested()):
-                was_cancelled = True
-                process.terminate()
-            if process.poll() is not None and output_queue.empty() and not reader_thread.is_alive():
-                break
-            if poll_interval > 0:
-                time.sleep(poll_interval)
-        reader_thread.join(timeout=1.0)
-        if process.poll() is None:
-            process.kill()
-        returncode = process.wait()
-        stdout = "".join(captured_lines)
-        result = subprocess.CompletedProcess(command, returncode, stdout=stdout, stderr="")
-        if was_cancelled:
-            raise GhostscriptCommandCancelledError(command, stdout)
-    if result.returncode != 0:
-        raise GhostscriptCommandError(command, result.returncode, result.stdout, result.stderr)
-    return result
+
+            page = doc[idx]
+
+            if mode == "crop":
+                # Set CropBox first (uses original MediaBox for y-flip)
+                page.set_cropbox(pymupdf_crop_rect)
+                # Then set MediaBox via raw xref to avoid coordinate confusion
+                xref = page.xref
+                doc.xref_set_key(
+                    xref, "MediaBox",
+                    f"[{left} {bottom} {right} {top}]",
+                )
+            else:
+                page.set_cropbox(pymupdf_crop_rect)
+
+            if delete_annots:
+                for annot in list(page.annots()):
+                    page.delete_annot(annot)
+                for widget in list(page.widgets()):
+                    page.delete_widget(widget)
+
+            original_page_number = page_indexes[idx] + 1
+            if progress_callback:
+                progress_callback(original_page_number, idx + 1, total)
+
+            if debug_output:
+                sys.stderr.write(f"Processed page {original_page_number}\n")
+
+        doc.set_toc(toc)
+        doc.save(output_path, garbage=4, deflate=True)
+    except (CropCancelledError, ValueError):
+        raise
+    except Exception as exc:
+        raise CropError(f"PDF crop failed: {exc}") from exc
+    finally:
+        doc.close()

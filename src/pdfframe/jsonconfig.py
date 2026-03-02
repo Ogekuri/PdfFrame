@@ -10,8 +10,7 @@ from pathlib import Path
 
 
 DEFAULT_CONFIG_VALUES = {
-    "PDF/PreserveFields": False,
-    "PDF/ShowAnnots": False,
+    "PDF/DeleteAnnots": True,
     "PDF/Mode": "frame",
     "Trim/Padding": "0",
     "Trim/GrayscaleSensitivity": "0",
