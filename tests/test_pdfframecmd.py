@@ -463,3 +463,28 @@ def test_crop_pdf_pages_crop_mode_physically_removes_text(tmp_path):
     assert "HIDDEN_ARTIFACT" not in text
     assert "KEPT_CONTENT" in text
     doc.close()
+
+
+def test_crop_pdf_pages_frame_mode_no_fill_rectangles_outside_selection(
+    tmp_path,
+):
+    """Arrange/Act/Assert: frame mode redaction adds no fill rectangles."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    doc = fitz.open()
+    doc.new_page(width=612, height=792)
+    doc.save(str(input_pdf))
+    doc.close()
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(100, 200, 500, 700),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+    )
+    doc = fitz.open(str(output_pdf))
+    drawings = doc[0].get_drawings()
+    assert len(drawings) == 0, (
+        f"Expected no fill rectangles outside selection, found {len(drawings)}"
+    )
+    doc.close()

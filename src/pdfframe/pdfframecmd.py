@@ -62,10 +62,11 @@ def _format_scalar(value):
 def _redact_outside_selection(page, selection_rect, page_rect):
     """
     @brief Physically removes page content outside the selection boundary.
-    @details Adds redaction annotations for four rectangular strips (top,
-    bottom, left, right) around the selection boundary, then applies
-    redactions to permanently remove text, images, and line art from
-    those areas. Content inside the selection is preserved unchanged.
+    @details Adds redaction annotations (fill=False) for four rectangular
+    strips (top, bottom, left, right) around the selection boundary, then
+    applies redactions to permanently remove text, images, and line art
+    from those areas without drawing fill rectangles over the redacted
+    regions. Content inside the selection is preserved unchanged.
     Uses PyMuPDF redaction API with PDF_REDACT_IMAGE_REMOVE and
     PDF_REDACT_LINE_ART_REMOVE_IF_TOUCHED to ensure no hidden artifacts remain.
     @param page {fitz.Page} PyMuPDF page object to redact.
@@ -82,25 +83,25 @@ def _redact_outside_selection(page, selection_rect, page_rect):
         page.add_redact_annot(
             fitz.Rect(page_rect.x0, page_rect.y0,
                       page_rect.x1, selection_rect.y0),
-            fill=(1, 1, 1))
+            fill=False)
         has_redactions = True
     if selection_rect.y1 < page_rect.y1:
         page.add_redact_annot(
             fitz.Rect(page_rect.x0, selection_rect.y1,
                       page_rect.x1, page_rect.y1),
-            fill=(1, 1, 1))
+            fill=False)
         has_redactions = True
     if selection_rect.x0 > page_rect.x0:
         page.add_redact_annot(
             fitz.Rect(page_rect.x0, selection_rect.y0,
                       selection_rect.x0, selection_rect.y1),
-            fill=(1, 1, 1))
+            fill=False)
         has_redactions = True
     if selection_rect.x1 < page_rect.x1:
         page.add_redact_annot(
             fitz.Rect(selection_rect.x1, selection_rect.y0,
                       page_rect.x1, selection_rect.y1),
-            fill=(1, 1, 1))
+            fill=False)
         has_redactions = True
     if has_redactions:
         page.apply_redactions(

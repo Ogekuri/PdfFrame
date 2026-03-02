@@ -72,7 +72,7 @@
         - `normalized_crop_tuple_to_bbox(...)`: convert normalized tuple to PDF bbox points [`src/pdfframe/pdfframecmd.py`]
       - `MainWindow.createConversionProgressDialog(...)`: construct modal progress UI with cancellation [`src/pdfframe/mainwindow.py`]
       - `crop_pdf_pages(...)`: iterate pages through PyMuPDF fitz API, physically remove content outside selection via redaction, apply frame-mode CropBox or crop-mode CropBox/MediaBox, delete annotations via API and xref cleanup, report per-page progress via callback, pump UI events before save [`src/pdfframe/pdfframecmd.py`]
-        - `_redact_outside_selection(...)`: add redaction annotations for page areas outside selection boundary and apply redactions to physically remove text, images, and line art [`src/pdfframe/pdfframecmd.py`]
+        - `_redact_outside_selection(...)`: add redaction annotations (fill=False) for page areas outside selection boundary and apply redactions to physically remove text, images, and line art without drawing fill rectangles [`src/pdfframe/pdfframecmd.py`]
     - `MainWindow.slotTrimMarginsAll(...)`: auto-trim current selection [`src/pdfframe/mainwindow.py`]
       - `MainWindow.trimMarginsSelection(...)`: compute trim rectangle using thresholds/range/padding [`src/pdfframe/mainwindow.py`]
         - `autoTrimMargins(...)`: detect content bounds from image data [`src/pdfframe/autotrim.py`]
