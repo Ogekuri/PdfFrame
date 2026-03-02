@@ -701,7 +701,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 ---
 
-# pdfframecmd.py | Python | 303L | 11 symbols | 3 imports | 15 comments
+# pdfframecmd.py | Python | 348L | 12 symbols | 3 imports | 17 comments
 > Path: `src/pdfframe/pdfframecmd.py`
 - @brief PyMuPDF-based PDF crop/frame utilities for pdfframe.
 - @details Provides crop-box geometry helpers and iterative page processing
@@ -749,14 +749,22 @@ diagnostics for GUI and terminal paths.
 - @param value {float|int} Numeric value to format.
 - @return {str} Stable scalar representation.
 
-### fn `def padding_to_crop_offsets(padding)` (L62-76)
+### fn `def _blank_outside_selection(page, selection_rect, page_rect)` `priv` (L62-98)
+- @brief Draws white fill rectangles over page areas outside a selection.
+- @details Covers four rectangular strips (top, bottom, left, right) around the selection boundary with opaque white fill to blank content outside the selection on an original-size page. Used by frame mode to keep page dimensions unchanged while restricting visible content.
+- @param page {fitz.Page} PyMuPDF page object to draw on.
+- @param selection_rect {fitz.Rect} Selection boundary in PyMuPDF coordinates.
+- @param page_rect {fitz.Rect} Full page boundary (MediaBox) in PyMuPDF coordinates.
+- @return {None} Modifies page content stream in place.
+
+### fn `def padding_to_crop_offsets(padding)` (L99-113)
 - @brief Reorders GUI padding vector to crop-offset order.
 - @details Converts GUI tuple [top, right, bottom, left] to crop-offset tuple [left, top, right, bottom] for deterministic crop-box expansion.
 - @param padding {list[float]|tuple[float,float,float,float]} GUI padding vector with exactly four components.
 - @return {tuple[float,float,float,float]} Crop-offset tuple ordered as left, top, right, bottom.
 - @throws {ValueError} If padding vector does not contain exactly four values.
 
-### fn `def crop_values_to_bbox(crop_values, page_width, page_height)` (L77-107)
+### fn `def crop_values_to_bbox(crop_values, page_width, page_height)` (L114-144)
 - @brief Converts normalized selection crop values to absolute page-space crop box.
 - @details Merges all visible normalized crops into one union box by first converting each GUI-derived normalized crop tuple to CropBox LL/UR page-space coordinates and then taking bounding extents in left,bottom,right,top order.
 - @param crop_values {list[tuple[float,float,float,float]]} Normalized crop tuples (left, top, right, bottom).
@@ -765,7 +773,7 @@ diagnostics for GUI and terminal paths.
 - @return {tuple[float,float,float,float]|None} Crop box tuple or None when no crop values exist.
 - @throws {ValueError} If page dimensions are non-positive.
 
-### fn `def normalized_crop_tuple_to_bbox(crop_value, page_width, page_height)` (L108-130)
+### fn `def normalized_crop_tuple_to_bbox(crop_value, page_width, page_height)` (L145-167)
 - @brief Converts one normalized GUI crop tuple into page-point CropBox coordinates.
 - @details Maps normalized GUI tuple `(left, top, right_margin, bottom_margin)` to CropBox corners `(LLx, LLy, URx, URy)` in page-point space with lower-left PDF origin.
 - @param crop_value {tuple[float,float,float,float]} Normalized GUI crop tuple.
@@ -774,7 +782,7 @@ diagnostics for GUI and terminal paths.
 - @return {tuple[float,float,float,float]} CropBox coordinates in left,bottom,right,top order.
 - @throws {ValueError} If resulting CropBox is empty.
 
-### fn `def apply_crop_offsets_to_bbox(bbox, offsets, page_width, page_height)` (L131-156)
+### fn `def apply_crop_offsets_to_bbox(bbox, offsets, page_width, page_height)` (L168-193)
 - @brief Applies GUI crop offsets to an absolute crop box.
 - @details Expands or shrinks the crop box by offsets in left,top,right,bottom order and clamps the resulting box to page bounds.
 - @param bbox {tuple[float,float,float,float]} Input crop box in left,bottom,right,top order.
@@ -784,7 +792,7 @@ diagnostics for GUI and terminal paths.
 - @return {tuple[float,float,float,float]} Adjusted crop box in left,bottom,right,top order.
 - @throws {ValueError} If resulting crop box is empty after clamping.
 
-### fn `def write_cropped_pages_output(output_file_name, cropped_page_paths)` (L157-181)
+### fn `def write_cropped_pages_output(output_file_name, cropped_page_paths)` (L194-218)
 - @brief Writes output PDF using only selected cropped page files.
 - @details Loads one-page cropped PDF files in provided order and writes a new output PDF that contains exactly those pages.
 - @param output_file_name {str} Destination PDF file path.
@@ -792,7 +800,7 @@ diagnostics for GUI and terminal paths.
 - @return {None} Writes assembled output PDF to filesystem.
 - @throws {ValueError} If no cropped pages are provided.
 
-### fn `def crop_pdf_pages(` (L182-195)
+### fn `def crop_pdf_pages(` (L219-232)
 
 ## Symbol Index
 |Symbol|Kind|Vis|Lines|Sig|
@@ -802,12 +810,13 @@ diagnostics for GUI and terminal paths.
 |`CropCancelledError`|class|pub|37-47|class CropCancelledError(RuntimeError)|
 |`CropCancelledError.__init__`|fn|priv|44-47|def __init__(self)|
 |`_format_scalar`|fn|priv|48-61|def _format_scalar(value)|
-|`padding_to_crop_offsets`|fn|pub|62-76|def padding_to_crop_offsets(padding)|
-|`crop_values_to_bbox`|fn|pub|77-107|def crop_values_to_bbox(crop_values, page_width, page_hei...|
-|`normalized_crop_tuple_to_bbox`|fn|pub|108-130|def normalized_crop_tuple_to_bbox(crop_value, page_width,...|
-|`apply_crop_offsets_to_bbox`|fn|pub|131-156|def apply_crop_offsets_to_bbox(bbox, offsets, page_width,...|
-|`write_cropped_pages_output`|fn|pub|157-181|def write_cropped_pages_output(output_file_name, cropped_...|
-|`crop_pdf_pages`|fn|pub|182-195|def crop_pdf_pages(|
+|`_blank_outside_selection`|fn|priv|62-98|def _blank_outside_selection(page, selection_rect, page_r...|
+|`padding_to_crop_offsets`|fn|pub|99-113|def padding_to_crop_offsets(padding)|
+|`crop_values_to_bbox`|fn|pub|114-144|def crop_values_to_bbox(crop_values, page_width, page_hei...|
+|`normalized_crop_tuple_to_bbox`|fn|pub|145-167|def normalized_crop_tuple_to_bbox(crop_value, page_width,...|
+|`apply_crop_offsets_to_bbox`|fn|pub|168-193|def apply_crop_offsets_to_bbox(bbox, offsets, page_width,...|
+|`write_cropped_pages_output`|fn|pub|194-218|def write_cropped_pages_output(output_file_name, cropped_...|
+|`crop_pdf_pages`|fn|pub|219-232|def crop_pdf_pages(|
 
 
 ---

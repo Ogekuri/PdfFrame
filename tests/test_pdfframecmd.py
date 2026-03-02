@@ -75,8 +75,8 @@ def _create_test_pdf(path, num_pages=3, width=612, height=792, with_annots=False
     doc.close()
 
 
-def test_crop_pdf_pages_frame_mode_sets_cropbox(tmp_path):
-    """Arrange/Act/Assert: frame mode sets CropBox while preserving MediaBox."""
+def test_crop_pdf_pages_frame_mode_preserves_original_page_size(tmp_path):
+    """Arrange/Act/Assert: frame mode keeps original page dimensions."""
     input_pdf = tmp_path / "input.pdf"
     output_pdf = tmp_path / "output.pdf"
     _create_test_pdf(input_pdf, num_pages=1, width=612, height=792)
@@ -89,9 +89,12 @@ def test_crop_pdf_pages_frame_mode_sets_cropbox(tmp_path):
     )
     doc = fitz.open(str(output_pdf))
     page = doc[0]
+    mediabox = page.mediabox
     cropbox = page.cropbox
-    assert cropbox.x0 == pytest.approx(100, abs=1)
-    assert cropbox.x1 == pytest.approx(500, abs=1)
+    assert mediabox.width == pytest.approx(612, abs=1)
+    assert mediabox.height == pytest.approx(792, abs=1)
+    assert cropbox.width == pytest.approx(612, abs=1)
+    assert cropbox.height == pytest.approx(792, abs=1)
     doc.close()
 
 
@@ -341,3 +344,74 @@ def test_write_cropped_pages_output_keeps_only_selected_pages(tmp_path):
     )
     reader = PdfReader(str(output_pdf))
     assert len(reader.pages) == 2
+
+
+def test_crop_pdf_pages_frame_mode_blanks_outside_selection(tmp_path):
+    """Arrange/Act/Assert: frame mode draws white fill outside selection area."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+    page.draw_rect(fitz.Rect(0, 0, 612, 792), fill=(0, 0, 0))
+    doc.save(str(input_pdf))
+    doc.close()
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(100, 200, 500, 700),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+    )
+    doc = fitz.open(str(output_pdf))
+    page = doc[0]
+    pix = page.get_pixmap()
+    corner_sample = pix.pixel(5, 5)
+    assert corner_sample[0] == 255 and corner_sample[1] == 255
+    doc.close()
+
+
+def test_crop_pdf_pages_deletes_all_annotation_types(tmp_path):
+    """Arrange/Act/Assert: delete_annots removes annotations including links."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+    page.add_text_annot((72, 72), "Text annot")
+    page.insert_link({
+        "kind": fitz.LINK_URI,
+        "from": fitz.Rect(100, 100, 200, 200),
+        "uri": "https://example.com",
+    })
+    doc.save(str(input_pdf))
+    doc.close()
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=True,
+    )
+    doc = fitz.open(str(output_pdf))
+    page = doc[0]
+    assert len(list(page.annots())) == 0
+    assert len(page.get_links()) == 0
+    xref_str = doc.xref_object(page.xref)
+    assert "/Annots null" in xref_str
+    doc.close()
+
+
+def test_crop_pdf_pages_event_pump_called_before_save(tmp_path):
+    """Arrange/Act/Assert: event_pump is called once more than page count."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    _create_test_pdf(input_pdf, num_pages=2)
+    pump_count = [0]
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0, 1],
+        crop_box=(10, 10, 600, 780),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+        event_pump=lambda: pump_count.__setitem__(0, pump_count[0] + 1),
+    )
+    assert pump_count[0] == 3

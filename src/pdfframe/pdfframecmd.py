@@ -59,6 +59,43 @@ def _format_scalar(value):
     return f"{numeric:.6f}".rstrip("0").rstrip(".")
 
 
+def _blank_outside_selection(page, selection_rect, page_rect):
+    """
+    @brief Draws white fill rectangles over page areas outside a selection.
+    @details Covers four rectangular strips (top, bottom, left, right) around
+    the selection boundary with opaque white fill to blank content outside the
+    selection on an original-size page. Used by frame mode to keep page
+    dimensions unchanged while restricting visible content.
+    @param page {fitz.Page} PyMuPDF page object to draw on.
+    @param selection_rect {fitz.Rect} Selection boundary in PyMuPDF coordinates.
+    @param page_rect {fitz.Rect} Full page boundary (MediaBox) in PyMuPDF
+    coordinates.
+    @return {None} Modifies page content stream in place.
+    """
+
+    white = (1, 1, 1)
+    if selection_rect.y0 > page_rect.y0:
+        page.draw_rect(
+            fitz.Rect(page_rect.x0, page_rect.y0,
+                      page_rect.x1, selection_rect.y0),
+            color=None, fill=white, overlay=True)
+    if selection_rect.y1 < page_rect.y1:
+        page.draw_rect(
+            fitz.Rect(page_rect.x0, selection_rect.y1,
+                      page_rect.x1, page_rect.y1),
+            color=None, fill=white, overlay=True)
+    if selection_rect.x0 > page_rect.x0:
+        page.draw_rect(
+            fitz.Rect(page_rect.x0, selection_rect.y0,
+                      selection_rect.x0, selection_rect.y1),
+            color=None, fill=white, overlay=True)
+    if selection_rect.x1 < page_rect.x1:
+        page.draw_rect(
+            fitz.Rect(selection_rect.x1, selection_rect.y0,
+                      page_rect.x1, selection_rect.y1),
+            color=None, fill=white, overlay=True)
+
+
 def padding_to_crop_offsets(padding):
     """
     @brief Reorders GUI padding vector to crop-offset order.
@@ -278,13 +315,16 @@ def crop_pdf_pages(
                     f"[{left} {bottom} {right} {top}]",
                 )
             else:
-                page.set_cropbox(pymupdf_crop_rect)
+                # Frame mode: keep original page size, blank outside selection
+                page.set_cropbox(page.mediabox)
+                _blank_outside_selection(page, pymupdf_crop_rect, page.mediabox)
 
             if delete_annots:
                 for annot in list(page.annots()):
                     page.delete_annot(annot)
                 for widget in list(page.widgets()):
                     page.delete_widget(widget)
+                doc.xref_set_key(page.xref, "Annots", "null")
 
             original_page_number = page_indexes[idx] + 1
             if progress_callback:
@@ -292,6 +332,11 @@ def crop_pdf_pages(
 
             if debug_output:
                 sys.stderr.write(f"Processed page {original_page_number}\n")
+
+        if event_pump:
+            event_pump()
+        if cancel_requested and cancel_requested():
+            raise CropCancelledError()
 
         doc.set_toc(toc)
         doc.save(output_path, garbage=4, deflate=True)
