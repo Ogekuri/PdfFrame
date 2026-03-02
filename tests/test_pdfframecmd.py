@@ -415,3 +415,51 @@ def test_crop_pdf_pages_event_pump_called_before_save(tmp_path):
         event_pump=lambda: pump_count.__setitem__(0, pump_count[0] + 1),
     )
     assert pump_count[0] == 3
+
+
+def test_crop_pdf_pages_frame_mode_physically_removes_text(tmp_path):
+    """Arrange/Act/Assert: frame mode removes text outside selection from content stream."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+    page.insert_text((50, 50), "OUTSIDE_TEXT", fontsize=12)
+    page.insert_text((300, 400), "INSIDE_TEXT", fontsize=12)
+    doc.save(str(input_pdf))
+    doc.close()
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(200, 200, 500, 600),
+        page_width=612, page_height=792,
+        mode="frame", delete_annots=False,
+    )
+    doc = fitz.open(str(output_pdf))
+    text = doc[0].get_text()
+    assert "OUTSIDE_TEXT" not in text
+    assert "INSIDE_TEXT" in text
+    doc.close()
+
+
+def test_crop_pdf_pages_crop_mode_physically_removes_text(tmp_path):
+    """Arrange/Act/Assert: crop mode removes text outside selection from content stream."""
+    input_pdf = tmp_path / "input.pdf"
+    output_pdf = tmp_path / "output.pdf"
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+    page.insert_text((50, 50), "HIDDEN_ARTIFACT", fontsize=12)
+    page.insert_text((300, 400), "KEPT_CONTENT", fontsize=12)
+    doc.save(str(input_pdf))
+    doc.close()
+    pdfframecmd.crop_pdf_pages(
+        str(input_pdf), str(output_pdf),
+        page_indexes=[0],
+        crop_box=(200, 200, 500, 600),
+        page_width=612, page_height=792,
+        mode="crop", delete_annots=False,
+    )
+    doc = fitz.open(str(output_pdf))
+    text = doc[0].get_text()
+    assert "HIDDEN_ARTIFACT" not in text
+    assert "KEPT_CONTENT" in text
+    doc.close()

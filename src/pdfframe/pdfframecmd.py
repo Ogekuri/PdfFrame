@@ -59,41 +59,54 @@ def _format_scalar(value):
     return f"{numeric:.6f}".rstrip("0").rstrip(".")
 
 
-def _blank_outside_selection(page, selection_rect, page_rect):
+def _redact_outside_selection(page, selection_rect, page_rect):
     """
-    @brief Draws white fill rectangles over page areas outside a selection.
-    @details Covers four rectangular strips (top, bottom, left, right) around
-    the selection boundary with opaque white fill to blank content outside the
-    selection on an original-size page. Used by frame mode to keep page
-    dimensions unchanged while restricting visible content.
-    @param page {fitz.Page} PyMuPDF page object to draw on.
-    @param selection_rect {fitz.Rect} Selection boundary in PyMuPDF coordinates.
+    @brief Physically removes page content outside the selection boundary.
+    @details Adds redaction annotations for four rectangular strips (top,
+    bottom, left, right) around the selection boundary, then applies
+    redactions to permanently remove text, images, and line art from
+    those areas. Content inside the selection is preserved unchanged.
+    Uses PyMuPDF redaction API with PDF_REDACT_IMAGE_REMOVE and
+    PDF_REDACT_LINE_ART_REMOVE_IF_TOUCHED to ensure no hidden artifacts remain.
+    @param page {fitz.Page} PyMuPDF page object to redact.
+    @param selection_rect {fitz.Rect} Selection boundary in PyMuPDF
+    coordinates (top-left origin).
     @param page_rect {fitz.Rect} Full page boundary (MediaBox) in PyMuPDF
     coordinates.
-    @return {None} Modifies page content stream in place.
+    @return {None} Modifies page content stream in place; removed content
+    is irrecoverable.
     """
 
-    white = (1, 1, 1)
+    has_redactions = False
     if selection_rect.y0 > page_rect.y0:
-        page.draw_rect(
+        page.add_redact_annot(
             fitz.Rect(page_rect.x0, page_rect.y0,
                       page_rect.x1, selection_rect.y0),
-            color=None, fill=white, overlay=True)
+            fill=(1, 1, 1))
+        has_redactions = True
     if selection_rect.y1 < page_rect.y1:
-        page.draw_rect(
+        page.add_redact_annot(
             fitz.Rect(page_rect.x0, selection_rect.y1,
                       page_rect.x1, page_rect.y1),
-            color=None, fill=white, overlay=True)
+            fill=(1, 1, 1))
+        has_redactions = True
     if selection_rect.x0 > page_rect.x0:
-        page.draw_rect(
+        page.add_redact_annot(
             fitz.Rect(page_rect.x0, selection_rect.y0,
                       selection_rect.x0, selection_rect.y1),
-            color=None, fill=white, overlay=True)
+            fill=(1, 1, 1))
+        has_redactions = True
     if selection_rect.x1 < page_rect.x1:
-        page.draw_rect(
+        page.add_redact_annot(
             fitz.Rect(selection_rect.x1, selection_rect.y0,
                       page_rect.x1, selection_rect.y1),
-            color=None, fill=white, overlay=True)
+            fill=(1, 1, 1))
+        has_redactions = True
+    if has_redactions:
+        page.apply_redactions(
+            images=fitz.PDF_REDACT_IMAGE_REMOVE,
+            graphics=fitz.PDF_REDACT_LINE_ART_REMOVE_IF_TOUCHED,
+        )
 
 
 def padding_to_crop_offsets(padding):
@@ -232,11 +245,14 @@ def crop_pdf_pages(
     debug_output=False,
 ):
     """
-    @brief Crops/frames PDF pages using PyMuPDF fitz API.
-    @details Opens the source PDF, selects only requested pages, applies
-    CropBox (frame mode) or MediaBox+CropBox (crop mode) per page,
-    optionally deletes all annotations/widgets, preserves bookmarks/TOC,
-    and saves the output. Reports per-page progress via callback.
+    @brief Crops/frames PDF pages using PyMuPDF fitz API with physical
+    content removal.
+    @details Opens the source PDF, selects only requested pages, physically
+    removes all content outside the selection boundary via PyMuPDF redaction
+    API (no hidden artifacts remain), then applies mode-specific page sizing:
+    crop mode resizes to selection bounds, frame mode preserves original
+    page dimensions. Optionally deletes all annotations/widgets, preserves
+    bookmarks/TOC, and saves the output with garbage collection.
     @param input_path {str} Source PDF file path.
     @param output_path {str} Destination PDF file path.
     @param page_indexes {list[int]} Zero-based page indexes to include.
@@ -305,19 +321,20 @@ def crop_pdf_pages(
 
             page = doc[idx]
 
+            # Physically remove content outside selection via redaction
+            _redact_outside_selection(page, pymupdf_crop_rect, page.mediabox)
+
             if mode == "crop":
-                # Set CropBox first (uses original MediaBox for y-flip)
+                # Physically resize page to selection bounds
                 page.set_cropbox(pymupdf_crop_rect)
-                # Then set MediaBox via raw xref to avoid coordinate confusion
                 xref = page.xref
                 doc.xref_set_key(
                     xref, "MediaBox",
                     f"[{left} {bottom} {right} {top}]",
                 )
             else:
-                # Frame mode: keep original page size, blank outside selection
+                # Frame mode: keep original page size, content already removed
                 page.set_cropbox(page.mediabox)
-                _blank_outside_selection(page, pymupdf_crop_rect, page.mediabox)
 
             if delete_annots:
                 for annot in list(page.annots()):
