@@ -776,13 +776,46 @@ class MainWindow(QMainWindow):
         self.deviceTypes.saveTypes(settings)
         self._persistTrimPresetDocument()
 
+    def _hasCompatiblePageFormat(self):
+        """
+        @brief Validates homogeneous page format against page 1.
+        @details Compares each page from index 1 onward with page-1 width/height values and orientation (portrait/landscape) using point units from `pageGetSizePoints`.
+        @return {bool} True when every page is compatible with page 1; otherwise False.
+        """
+        num_pages = self.viewer.numPages()
+        if num_pages <= 1:
+            return True
+        first_width, first_height = self.viewer.pageGetSizePoints(0)
+        first_is_portrait = first_width <= first_height
+        epsilon = 1e-3
+        for page_index in range(1, num_pages):
+            page_width, page_height = self.viewer.pageGetSizePoints(page_index)
+            if abs(page_width - first_width) > epsilon:
+                return False
+            if abs(page_height - first_height) > epsilon:
+                return False
+            if (page_width <= page_height) != first_is_portrait:
+                return False
+        return True
+
     def openFile(self, fileName):
         if fileName:
             self.viewer.load(fileName)
             if not self.viewer.isEmpty():
-                self.fileName = fileName
-                outputFileName = "%s-cropped.pdf" % splitext(fileName)[0]
-                self.slotFitInView(self.ui.actionFitInView.isChecked())
+                if self._hasCompatiblePageFormat():
+                    self.fileName = fileName
+                    outputFileName = "%s-cropped.pdf" % splitext(fileName)[0]
+                    self.slotFitInView(self.ui.actionFitInView.isChecked())
+                else:
+                    self.showWarning(
+                        self.tr("Incompatible page format"),
+                        self.tr(
+                            "Cannot process PDF documents with pages in different sizes or orientations."
+                        ),
+                    )
+                    self.viewer.reset()
+                    self.fileName = ''
+                    outputFileName = ''
             else:
                 self.fileName = ''
                 outputFileName = ''

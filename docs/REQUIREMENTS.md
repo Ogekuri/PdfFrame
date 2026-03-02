@@ -152,6 +152,7 @@ Explicit performance optimization identified: lazy page-image caching in `Abstra
 - **REQ-034**: MUST render the trim/selection area without centered ordinal labels (for example `1`, `2`, `3`).
 - **REQ-035**: MUST provide `pyproject.toml` with build metadata, runtime dependencies, and console script entrypoint `pdfframe = pdfframe.application:main`.
 - **REQ-036**: MUST document Astral `uv` installation and Astral `uvx` live execution commands for `pdfframe` in `README.md`.
+- **REQ-037**: MUST compare page-1 size/orientation with every later page after PDF load, show a modal incompatibility warning when any page differs, and unload the just-opened PDF after user presses `OK`.
 
 ## 4. Test Requirements
 
@@ -171,6 +172,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 - **TST-012**: MUST include unit tests that validate removal of `Rotation`, `Use Ghostscript to optimize`, and `Include pages without selections` from Basic-tab conversion UI and removal of related runtime-option logic paths.
 - **TST-013**: MUST include unit tests that validate single-selection enforcement across creation paths and absence of centered selection-index rendering.
 - **TST-014**: MUST include unit tests that validate `pyproject.toml` defines `pdfframe` console-script mapping and mandatory Astral `uv` runtime dependencies.
+- **TST-015**: MUST include unit tests that validate mixed page size-orientation detection triggers modal incompatibility warning and loaded-file reset after `OK`, while uniform pages preserve loaded-file state and default output naming.
 
 ## 5. Evidence Matrix
 
@@ -235,6 +237,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | REQ-034 | `src/pdfframe/viewerselections.py::ViewerSelectionItem.paint` omits centered ordinal text rendering inside the selection area. |
 | REQ-035 | `pyproject.toml` declares package build metadata, dependencies, and `[project.scripts] pdfframe = "pdfframe.application:main"`. |
 | REQ-036 | `README.md` includes Astral `uv` installation workflow and Astral `uvx --from . pdfframe ...` live-execution examples. |
+| REQ-037 | `src/pdfframe/mainwindow.py::openFile/_hasCompatiblePageFormat` compare page-1 geometry/orientation against pages 2..N, show modal incompatibility warning, and clear loaded-file state after acknowledgement. |
 | TST-001 | `tests.sh` — executes test suite with `uv run --project <repo> pytest ...`, provisioning dependencies from `pyproject.toml`. |
 | TST-002 | `tests.sh` — defaults to `tests` target and runs `PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" uv run --project "${SCRIPT_PATH}" pytest "$@"`. |
 | TST-003 | `tests/test_pdfframecmd.py` validates script-style Ghostscript command generation for `frame` and `crop` modes. |
@@ -249,6 +252,7 @@ Unit tests are implemented under `tests/` and executed through `tests.sh`.
 | TST-012 | `tests/test_mainwindow_removed_basic_controls.py` validates removed Basic-tab controls are absent and removed runtime-option logic paths are not used during conversion. |
 | TST-013 | `tests/test_mainwindow_single_selection.py` validates single-selection creation guards and absence of centered selection-index rendering code paths. |
 | TST-014 | `tests/test_packaging_pyproject.py` validates `pyproject.toml` script mapping and required dependency declarations. |
+| TST-015 | `tests/test_mainwindow_openfile_page_format.py` validates mixed-format warning/reset behavior and uniform-format load persistence/default output naming. |
 
 ## 6. Test Coverage Summary
 
