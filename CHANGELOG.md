@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.5.0](https://github.com/Ogekuri/PdfFrame/compare/v0.4.0..v0.5.0) - 2026-03-03
+### ⛰️  Features
+- enforce uniform page format on load [useReq] *(mainwindow.openFile)*
+  - add REQ-037 and TST-015 for mixed-page-format handling\n- reject mixed size/orientation documents at open time with modal warning\n- add openFile unit tests and refresh WORKFLOW/REFERENCES traceability
+
+### 🐛  Bug Fixes
+- use fill=False to avoid white rectangles over redacted areas [useReq] *(_redact_outside_selection)*
+  - Change add_redact_annot fill parameter from (1,1,1) to False so that
+  - apply_redactions() removes content without drawing white fill rectangles
+  - over the redacted page areas. Frame mode now removes content outside
+  - selection cleanly without visible artifacts.
+  - Add reproducer test verifying no fill rectangles are added.
+- use redaction to physically remove content outside selection [useReq] *(crop_pdf_pages)*
+  - Replace _blank_outside_selection (white rectangle overlay) with
+  - _redact_outside_selection (PyMuPDF redaction API) to physically remove
+  - text, images, and line art outside the selection boundary.
+  - Both frame and crop modes now use redaction before page sizing:
+  - Frame mode: redact + keep original page dimensions
+  - Crop mode: redact + resize page to selection bounds
+  - No hidden artifacts remain outside the visible area.
+  - Adds two reproducer tests verifying content removal via get_text().
+- Fix frame mode, annotation cleanup, and UI freeze [useReq] *(crop_pdf_pages)*
+  - Frame mode now draws white fill outside selection instead of setting CropBox,
+  - preserving original page dimensions (REQ-010)
+  - Add xref-level /Annots null cleanup after API-based annotation/widget deletion
+  - to ensure all annotation types are removed (REQ-032)
+  - Add event_pump call before doc.save() to prevent UI freeze during PDF write
+  - (REQ-015, DES-009)
+  - Add _blank_outside_selection helper for frame-mode white rectangle drawing
+  - Add 3 reproducer tests: frame page size, mixed annotation types, event pump count
+  - Update pre-existing frame mode test for correct original-size page assertion
+
+### 🚜  Changes
+- BREAKING CHANGE: Replace GhostScript with PyMuPDF for PDF crop/frame processing [useReq] *(core)*
+  - Replace all GhostScript subprocess calls with PyMuPDF fitz API (crop_pdf_pages)
+  - Consolidate PreserveFields+ShowAnnots into single DeleteAnnots checkbox (default: enabled)
+  - Add bookmark preservation via TOC save/restore across page selection
+  - Remove GhostScript thread (THR:PROC:main#ghostscript-output-reader) and queue-based progress
+  - Implement callback-based per-page progress reporting with Qt event pump
+  - Use raw xref_set_key for crop-mode MediaBox to bypass coordinate transform issues
+  - Update all affected tests to use PyMuPDF-based assertions (77 tests pass)
+  - Update REQUIREMENTS.md, WORKFLOW.md, REFERENCES.md for new architecture
+  - Remove GhostScript-specific functions and error types from pdfframecmd.py
+  - Remove optimizePdfGhostscript from pdfframeper.py
+
+### 📚  Documentation
+- align usage docs with current CLI/GUI/config surfaces [useReq] *(readme)*
+  - update feature and quick-start text for current GUI behavior\n- document current CLI flags and compatibility semantics\n- add ~/.pdfframe/config.json schema and defaults
+
 ## [0.4.0](https://github.com/Ogekuri/PdfFrame/compare/v0.3.0..v0.4.0) - 2026-02-28
 ### 📚  Documentation
 - Update README.md doc.
@@ -133,8 +182,10 @@
 - \[0.2.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.2.0
 - \[0.3.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.3.0
 - \[0.4.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.4.0
+- \[0.5.0\]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.5.0
 
 [0.1.0]: https://github.com/Ogekuri/PdfFrame/releases/tag/v0.1.0
 [0.2.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.1.0..v0.2.0
 [0.3.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.2.0..v0.3.0
 [0.4.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.3.0..v0.4.0
+[0.5.0]: https://github.com/Ogekuri/PdfFrame/compare/v0.4.0..v0.5.0
